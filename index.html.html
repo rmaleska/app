@@ -1,0 +1,2632 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Coaching App</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+--bg:          #090b0d;
+--surface:     #111418;
+--text:        #e6e2d8;
+--muted:       #5a5750;
+--gold:        #c4a05a;
+--gold-dim:    #7a6235;
+--green:       #3d9e65;
+--green-light: #5dbe82;
+--red:         #b84040;
+--red-light:   #d96060;
+}
+
+html, body {
+height: 100%;
+background: var(--bg);
+color: var(--text);
+font-family: 'DM Sans', sans-serif;
+font-weight: 300;
+overflow: hidden;
+touch-action: manipulation;
+}
+
+body::after {
+content: '';
+position: fixed; inset: 0;
+background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+pointer-events: none; z-index: 9999;
+}
+
+/* ── SPLASH ── */
+#screenSplash { background: var(--bg); }
+.splash-btn {
+width: 120px; height: 120px; border-radius: 50%;
+border: 1px solid var(--muted);
+background: transparent; cursor: pointer;
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+gap: 10px; transition: border-color 0.4s;
+-webkit-tap-highlight-color: transparent;
+animation: splashPulse 2.5s ease-in-out infinite;
+}
+.splash-btn:hover { border-color: var(--gold); }
+.splash-dot {
+width: 8px; height: 8px; border-radius: 50%;
+background: var(--muted); transition: background 0.4s;
+}
+.splash-btn:hover .splash-dot { background: var(--gold); }
+.splash-hint {
+font-size: 0.68rem; letter-spacing: 0.2em;
+text-transform: uppercase; color: var(--muted);
+margin-top: 1.5rem; text-align: center;
+animation: splashFade 2.5s ease-in-out infinite;
+}
+@keyframes splashPulse {
+0%,100% { box-shadow: 0 0 0 0 transparent; }
+50%     { box-shadow: 0 0 0 12px #c4a05a0a; border-color: var(--gold-dim); }
+}
+@keyframes splashFade {
+0%,100% { opacity: 0.4; }
+50%     { opacity: 1; }
+}
+
+/* ── SCREENS ── */
+.screen {
+position: fixed; inset: 0;
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+padding: 2.5rem 2rem;
+opacity: 0; pointer-events: none;
+transition: opacity 0.6s ease;
+overflow-y: auto;
+}
+.screen.active { opacity: 1; pointer-events: all; }
+
+/* ── TYPOGRAPHY ── */
+.label {
+font-size: 0.68rem; letter-spacing: 0.22em;
+text-transform: uppercase; color: var(--muted);
+margin-bottom: 0.8rem; text-align: center;
+flex-shrink: 0;
+}
+.headline {
+font-family: 'Cormorant Garamond', serif;
+font-size: clamp(1.9rem, 6vw, 3rem);
+font-weight: 300; line-height: 1.2;
+letter-spacing: 0.01em; margin-bottom: 1rem;
+text-align: center; flex-shrink: 0;
+}
+.headline em { font-style: italic; color: var(--gold); }
+
+.body-text {
+font-size: 0.88rem; color: var(--muted);
+line-height: 1.85; max-width: 360px;
+text-align: center; margin-bottom: 2rem;
+}
+.body-text strong { color: var(--text); font-weight: 400; }
+
+/* ── BULLET LIST (welcome, intro) ── */
+.body-list {
+list-style: none; padding: 0; margin: 0 0 2rem;
+display: flex; flex-direction: column; gap: 0.75rem;
+max-width: 320px; text-align: left;
+}
+.body-list li {
+font-size: 0.88rem; color: var(--muted);
+line-height: 1.65; padding-left: 1.2rem; position: relative;
+}
+.body-list li::before {
+content: '–'; position: absolute; left: 0; color: var(--gold-dim);
+}
+.body-list li strong { color: var(--text); font-weight: 400; }
+
+/* ── STEP TEXT (long protocol texts) ── */
+.step-text {
+font-family: 'Cormorant Garamond', serif;
+font-size: clamp(1.15rem, 3.2vw, 1.35rem);
+font-weight: 300; line-height: 1.75;
+text-align: center; color: var(--text);
+max-width: 520px; max-height: 38vh;
+overflow-y: auto; margin-bottom: 1.5rem;
+padding: 0 0.5rem;
+scrollbar-width: thin;
+scrollbar-color: var(--muted) transparent;
+}
+.step-text::-webkit-scrollbar { width: 3px; }
+.step-text::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; }
+
+/* ── BUTTONS ── */
+.btn {
+background: transparent;
+border: 1px solid var(--muted);
+color: var(--text);
+font-family: 'DM Sans', sans-serif;
+font-size: 0.78rem; letter-spacing: 0.16em;
+text-transform: uppercase;
+padding: 1rem 3rem; cursor: pointer;
+transition: border-color 0.3s, color 0.3s, opacity 0.6s;
+-webkit-tap-highlight-color: transparent;
+flex-shrink: 0;
+}
+.btn:hover  { border-color: var(--gold); color: var(--gold); }
+.btn.go     { border-color: var(--green); color: var(--green); }
+.btn.go:hover { border-color: var(--green-light); color: var(--green-light); }
+/* B2 FIX: hidden state for buttons that should appear after TTS */
+.btn.hidden-until-tts {
+opacity: 0;
+pointer-events: none;
+}
+
+.amp-btn {
+width: 88px; height: 88px; border-radius: 50%; border: none;
+cursor: pointer; font-size: 2rem;
+display: flex; align-items: center; justify-content: center;
+transition: transform 0.12s;
+-webkit-tap-highlight-color: transparent;
+flex-shrink: 0;
+}
+.amp-btn:active { transform: scale(0.94); }
+.amp-btn.off    { opacity: 0 !important; pointer-events: none !important; }
+.amp-yes { background: radial-gradient(circle at 35% 35%, #5dbe82, #2a7048); box-shadow: 0 4px 20px #3d9e6544; }
+.amp-no  { background: radial-gradient(circle at 35% 35%, #e04848, #a01818); box-shadow: 0 4px 20px #c8303060; }
+.amp-label {
+font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+color: var(--muted); text-align: center;
+white-space: nowrap; display: block;
+}
+
+/* ── SUD ── */
+.sud-grid {
+display: grid; grid-template-columns: repeat(5, 1fr);
+gap: 8px; width: 100%; max-width: 320px; margin-bottom: 1rem; flex-shrink: 0;
+}
+.sud-btn {
+aspect-ratio: 1; border: 1px solid #ffffff0f;
+background: var(--surface); color: var(--muted);
+font-family: 'Cormorant Garamond', serif;
+font-size: 1.4rem; font-weight: 300;
+cursor: pointer; display: flex; align-items: center; justify-content: center;
+transition: border-color 0.2s, color 0.2s, background 0.2s;
+-webkit-tap-highlight-color: transparent;
+}
+.sud-btn:hover, .sud-btn:active { border-color: var(--gold); color: var(--gold); background: #1a1510; }
+.sud-btn.selected { border-color: var(--gold); color: var(--bg); background: var(--gold); }
+
+/* ── PHASE DOTS ── */
+.phase-dots { display: flex; gap: 6px; margin-bottom: 1rem; flex-shrink: 0; }
+.dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); transition: background 0.4s; }
+.dot.active { background: var(--gold); }
+
+/* ── PART BADGE ── */
+.part-badge {
+font-size: 0.68rem; color: var(--muted);
+letter-spacing: 0.14em; text-transform: uppercase;
+margin-bottom: 0.4rem; min-height: 1rem; text-align: center; flex-shrink: 0;
+}
+
+/* ── INFO SCREEN (S16, S17, S18) ── */
+.info-text {
+font-size: 0.9rem; color: var(--muted);
+line-height: 1.9; max-width: 400px;
+text-align: center; margin-bottom: 2rem;
+max-height: 45vh; overflow-y: auto;
+padding: 0 0.5rem;
+scrollbar-width: thin;
+scrollbar-color: var(--muted) transparent;
+}
+.info-text::-webkit-scrollbar { width: 3px; }
+.info-text::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; }
+
+/* ── PROTOCOL (light) ── */
+#screenProtocol { background: #f0ece2; color: #1a1810; }
+#screenProtocol .label   { color: #9a9488; }
+#screenProtocol .headline { color: #1a1810; }
+#screenProtocol .headline em { color: #8a6520; }
+
+.proto-grid {
+display: grid; grid-template-columns: 1fr 1fr 1fr;
+gap: 1px; background: #d0ccbe;
+width: 100%; max-width: 340px; margin: 1.5rem 0; flex-shrink: 0;
+}
+.proto-cell { background: #f0ece2; padding: 1.2rem 0.8rem; text-align: center; }
+.proto-val {
+font-family: 'Cormorant Garamond', serif;
+font-size: 2.4rem; font-weight: 300; line-height: 1; color: #1a1810;
+}
+.proto-val.positive { color: #2a7048; }
+.proto-lbl { font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: #9a9488; margin-top: 4px; }
+.proto-note { font-size: 0.82rem; color: #6a6458; text-align: center; max-width: 300px; line-height: 1.7; margin-bottom: 1rem; flex-shrink: 0; }
+.proto-wipe { font-size: 0.7rem; color: #aaa49a; text-align: center; margin-bottom: 2rem; flex-shrink: 0; }
+.btn-end {
+background: #1a1810; border: none; color: #f0ece2;
+font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+letter-spacing: 0.16em; text-transform: uppercase;
+padding: 1rem 3rem; cursor: pointer; transition: background 0.3s; flex-shrink: 0;
+}
+.btn-end:hover { background: #2a2818; }
+
+/* ── NAME INPUT ── */
+
+.practice-hint {
+font-size: 0.75rem; letter-spacing: 0.16em;
+text-transform: uppercase; color: var(--muted);
+text-align: center; margin-bottom: 0.5rem; flex-shrink: 0;
+min-height: 1.2rem;
+}
+.practice-btns {
+position: fixed; bottom: 2rem; left: 0; right: 0;
+display: none; pointer-events: none; z-index: 100;
+height: 120px;
+}
+.practice-btns.active { display: block; pointer-events: all; }
+.practice-no-col {
+position: absolute; left: 1.8rem; bottom: 0.5rem;
+display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.practice-yes-col {
+position: absolute; right: 1.8rem; bottom: 0.5rem;
+display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+
+/* ── SPIRAL ── */
+.spiral-wrap {
+position: relative; width: 200px; height: 200px;
+margin: 1rem 0; flex-shrink: 0;
+flex-direction: column; align-items: center; justify-content: center;
+}
+.spiral-canvas {
+width: 200px; height: 200px;
+border-radius: 50%;
+}
+
+/* ── FIXED BOTTOM BUTTONS (main session) ── */
+.session-btns {
+position: fixed; bottom: 2rem; left: 0; right: 0;
+display: none; justify-content: space-between;
+padding: 0 1.8rem 0.5rem; pointer-events: none; z-index: 100;
+}
+.session-btns.active:not(.large) { display: flex; pointer-events: all; }
+.session-no-col, .session-yes-col {
+display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+
+/* ── GROSSE SESSION-BUTTONS (Kalibrierung + Sitzung) ── */
+.session-btns.large {
+padding: 0;
+position: fixed; inset: 0;
+display: none;
+pointer-events: none; z-index: 100;
+}
+.session-btns.large.active {
+display: flex;
+pointer-events: all;
+}
+.session-btns.large .session-no-col,
+.session-btns.large .session-yes-col {
+width: 50%; height: 100%;
+flex: none;
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+gap: 0; padding-bottom: 0;
+position: relative;
+}
+.session-btns.large .amp-btn {
+width: 100% !important;
+height: 100% !important;
+border-radius: 0 !important;
+font-size: 4rem !important;
+opacity: 0 !important;
+pointer-events: none !important;
+position: absolute; inset: 0;
+transition: none !important;
+}
+.session-btns.large .session-no-col {
+border-right: 2px solid #ffffff14;
+box-sizing: border-box;
+}
+.session-btns.large .session-yes-col {
+box-sizing: border-box;
+}
+.session-btns.large .amp-btn:not(.off) {
+opacity: 1 !important;
+pointer-events: all !important;
+}
+.session-btns.large .amp-btn.off {
+opacity: 0 !important;
+pointer-events: none !important;
+}
+.session-btns.large .amp-label {
+position: absolute; z-index: 1;
+bottom: 1.5rem; left: 0; right: 0;
+font-size: 0.8rem; letter-spacing: 0.18em;
+color: #ffffffaa;
+text-align: center;
+}
+
+/* ── TOAST ── */
+.toast {
+position: fixed; bottom: 2rem; left: 50%;
+transform: translateX(-50%) translateY(14px);
+background: #1a1d22; border: 1px solid #ffffff14;
+color: var(--text); font-size: 0.8rem;
+padding: 0.75rem 1.5rem; border-radius: 3px;
+opacity: 0; transition: opacity 0.3s, transform 0.3s;
+pointer-events: none; max-width: 300px;
+text-align: center; z-index: 1000; white-space: pre-line;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.soft { border-color: var(--gold-dim); color: var(--gold); }
+
+/* ── INFO ONBOARDING SCREEN ── */
+.info-onboard-text {
+font-size: 1rem; color: var(--muted);
+line-height: 1.9; max-width: 380px;
+text-align: left; margin-bottom: 1.5rem;
+max-height: 52vh; overflow-y: auto;
+padding: 0 0.5rem;
+scrollbar-width: thin;
+scrollbar-color: var(--muted) transparent;
+}
+.info-onboard-text::-webkit-scrollbar { width: 3px; }
+.info-onboard-text::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; }
+.info-onboard-text p { margin-bottom: 1rem; }
+.info-onboard-text strong { color: var(--text); font-weight: 400; }
+.info-onboard-text .warning { color: #c4a05a88; font-size: 0.92rem; }
+
+.info-checkbox-wrap {
+display: flex; align-items: flex-start; gap: 0.75rem;
+max-width: 380px; margin-bottom: 1.5rem;
+cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.info-checkbox-wrap input[type="checkbox"] {
+appearance: none; -webkit-appearance: none;
+width: 22px; height: 22px; min-width: 22px;
+border: 1px solid var(--muted); background: transparent;
+cursor: pointer; margin-top: 2px;
+transition: border-color 0.3s, background 0.3s;
+position: relative; flex-shrink: 0;
+}
+.info-checkbox-wrap input[type="checkbox"]:checked {
+border-color: var(--gold); background: var(--gold);
+}
+.info-checkbox-wrap input[type="checkbox"]:checked::after {
+content: '✓'; position: absolute;
+top: 50%; left: 50%; transform: translate(-50%,-50%);
+font-size: 0.82rem; color: var(--bg); font-weight: 700;
+}
+.info-checkbox-label {
+font-size: 0.95rem; color: var(--muted); line-height: 1.65;
+}
+
+/* Splash branding */
+.splash-brand {
+font-family: 'Cormorant Garamond', serif;
+font-size: clamp(1.6rem, 5vw, 2.2rem);
+font-weight: 300; letter-spacing: 0.12em;
+color: var(--text); text-align: center;
+margin-bottom: 0.3rem;
+}
+.splash-sub {
+font-size: 0.65rem; letter-spacing: 0.28em;
+text-transform: uppercase; color: var(--muted);
+text-align: center; margin-bottom: 2rem;
+}
+
+/* Language selector */
+.lang-selector {
+display: flex; gap: 0.6rem; justify-content: center;
+margin-bottom: 2rem;
+}
+.lang-btn {
+background: transparent; border: 1px solid var(--muted);
+color: var(--muted); font-size: 0.62rem; letter-spacing: 0.18em;
+text-transform: uppercase; padding: 0.35rem 0.8rem;
+cursor: pointer; transition: border-color 0.3s, color 0.3s;
+-webkit-tap-highlight-color: transparent;
+}
+.lang-btn.active {
+border-color: var(--gold); color: var(--gold);
+}
+.lang-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+</style>
+
+</head>
+<body>
+
+<!-- SPLASH -->
+<div class="screen active" id="screenSplash">
+  <div class="splash-brand">Influencial</div>
+  <div class="splash-sub">Silent Coaching</div>
+  <div class="lang-selector">
+    <button class="lang-btn active" id="langBtn-de" onclick="setLang('de')">DE</button>
+    <button class="lang-btn" id="langBtn-en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" id="langBtn-hy" onclick="setLang('hy')">ՀՅ</button>
+    <button class="lang-btn" id="langBtn-ru" onclick="setLang('ru')">RU</button>
+    <button class="lang-btn" id="langBtn-es" onclick="setLang('es')">ES</button>
+  </div>
+  <button class="splash-btn" onclick="splashStart()">
+    <div class="splash-dot"></div>
+  </button>
+  <div class="splash-hint">Tippe um zu beginnen</div>
+  <!-- DEV-ONLY – vor Veroeffentlichung entfernen -->
+  <button onclick="devMenuToggle()" style="position:fixed;top:1rem;right:1rem;background:#1a1d22;border:1px solid #c4a05a55;color:#c4a05a88;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Dev Skip &#9662;</button>
+  <button onclick="adminOpen()" style="position:fixed;top:1rem;right:7.5rem;background:#1a1d22;border:1px solid #4a7a9b88;color:#4a7a9b;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Admin</button>
+  <div id="devMenu" style="display:none;position:fixed;top:2.8rem;right:1rem;background:#0e1215;border:1px solid #c4a05a44;z-index:9999;min-width:180px;">
+    <div onclick="devJump('aha')"    style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; AHA-Sequenz</div>
+    <div onclick="devJump('problem')"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Kernsatz</div>
+    <div onclick="devJump('presud')"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Belastungsgrad</div>
+    <div onclick="devJump('calib1')"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Kalibrierung 1</div>
+    <div onclick="devJump('calib2')"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Kalibrierung 2</div>
+    <div onclick="devJump('contact')"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Start Hauptteil</div>
+    <div onclick="devJump(1)"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S1 Untersuchung</div>
+    <div onclick="devJump(4)"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S4 Weitere Teile?</div>
+    <div onclick="devJump(10)" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S10 Kontrolle</div>
+    <div onclick="devJump(12)" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S12 Finale Reinigung</div>
+    <div onclick="devJump(13)" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S13 Bewusstsein</div>
+    <div onclick="devJump(16)" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S16 Verborgen OK</div>
+    <div onclick="devJump(17)" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S17 Abschluss</div>
+    <div onclick="devJump('postsud')" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;">&#8594; Post-SUD</div>
+  </div>
+  <!-- /DEV-ONLY -->
+</div>
+
+<!-- §SCREEN:INFO -->
+<div class="screen" id="screenInfo" style="padding-bottom: 5rem;">
+  <div class="label">Influencial · Silent Coaching</div>
+  <div class="info-onboard-text" id="infoText">
+    <p>Du hast ein inneres Wissen, das klüger ist als dein Verstand. Manche nennen es Bauchgefühl, innere Stimme oder Intuition. Diese App gibt ihm Raum, <strong>alte Muster zu verändern</strong> – ohne dass du über dein Problem sprechen oder nachdenken musst.</p>
+    <p>Du drückst während der Sitzung nur zwei Buttons: <strong>Ja</strong> oder <strong>Nein</strong>. Mehr wird nicht von dir verlangt.</p>
+    <p class="warning"><strong>Wichtiger Hinweis</strong><br>
+    Diese App ist ein Coaching-Angebot und kein medizinisches Produkt. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.</p>
+  </div>
+  <label class="info-checkbox-wrap">
+    <input type="checkbox" id="infoCheckbox" onchange="infoCheckChanged()">
+    <span class="info-checkbox-label">Ich bestätige, dass keiner dieser Ausschlussgründe auf mich zutrifft, und nutze diese App eigenverantwortlich.</span>
+  </label>
+  <button class="btn hidden-until-tts" id="infoBtn" onclick="infoNext()">Weiter</button>
+</div>
+
+<!-- §SCREEN:NAME -->
+<!-- §SCREEN:WELCOME -->
+<div class="screen" id="screenWelcome">
+  <div class="label">Coaching App</div>
+  <h1 class="headline">Willkommen<br>bei dir <em>selbst.</em></h1>
+  <ul class="body-list" id="welcomeText">
+    <li>Deine Aufmerksamkeit</li>
+    <li>Dein Bauchgefühl</li>
+  </ul>
+  <button class="btn hidden-until-tts" id="welcomeBtn" onclick="welcomeNext()">Weiter</button>
+</div>
+
+<!-- §SCREEN:PROBLEM -->
+<div class="screen" id="screenProblem">
+  <div class="label">Dein Thema</div>
+  <h2 class="headline">Dein <em>Kernsatz.</em></h2>
+  <div class="info-onboard-text" style="text-align:center;max-height:none;">
+    <p>Bevor du beginnst — nimm dir einen Moment.</p>
+    <p>Formuliere dein Thema als einen klaren Satz. Zum Beispiel: <strong>„Ich kann schlecht einschlafen."</strong> Oder: <strong>„Ich fühle mich in sozialen Situationen unwohl."</strong></p>
+    <p>Kein Erklären, kein Analysieren — nur ein Satz, so konkret wie möglich. Halte ihn innerlich bereit.</p>
+  </div>
+  <button class="btn hidden-until-tts" id="problemBtn" onclick="problemNext()">Ich habe meinen Satz</button>
+</div>
+
+<!-- §SCREEN:INTRO -->
+<div class="screen" id="screenIntro">
+  <div class="label">Wie es funktioniert</div>
+  <h2 class="headline">Drei <em>Ebenen</em><br>in dir.</h2>
+  <ul class="body-list" id="introText">
+    <li><strong>Dein Bauchgefühl</strong> – die weise Instanz, die diese Sitzung leitet.</li>
+    <li><strong>Dein Unbewusstes</strong> – ein System aus inneren Teilen, die alte Erfahrungen gespeichert haben.</li>
+    <li><strong>Du selbst</strong> – der beobachtet und die Buttons drückt.</li>
+  </ul>
+  <!-- B2 FIX: Button starts hidden, revealed after TTS -->
+  <button class="btn hidden-until-tts" id="introBtn" onclick="introNext()">Weiter</button>
+</div>
+
+<!-- §SCREEN:PRACTICE -->
+<div class="screen" id="screenPractice">
+  <div class="label">Kurze Übung</div>
+  <h2 class="headline">Lern die<br><em>Buttons</em> kennen.</h2>
+  <p class="body-text" id="practiceText">Tippe einmal auf <strong>Rot</strong> – links unten.<br>Dann einmal auf <strong>Grün</strong> – rechts unten.<br>Augen können schon fast zu sein.</p>
+  <div class="practice-hint" id="practiceHint"></div>
+</div>
+<div class="practice-btns" id="practiceBtns">
+  <div class="practice-no-col">
+    <button class="amp-btn amp-no off" id="practiceNo" onclick="practiceAnswer('no')">✗</button>
+    <span class="amp-label">Nein</span>
+  </div>
+  <div class="practice-yes-col">
+    <button class="amp-btn amp-yes off" id="practiceYes" onclick="practiceAnswer('yes')">✓</button>
+    <span class="amp-label">Ja</span>
+  </div>
+</div>
+
+
+<!-- §SCREEN:AHA -->
+<div class="screen" id="screenAha">
+  <div class="label">Ein Moment für dich</div>
+  <h2 class="headline" id="ahaHeadline">–</h2>
+  <p class="body-text" id="ahaText" style="max-width:340px;text-align:center;line-height:1.9;"></p>
+  <div class="practice-hint" id="ahaHint" style="margin-top:1.5rem;"></div>
+</div>
+<div class="practice-btns" id="ahaBtns">
+  <div class="practice-no-col">
+    <button class="amp-btn amp-no off" id="ahaNo" onclick="ahaAnswer('no')">✗</button>
+    <span class="amp-label" id="ahaNoLabel">Nein</span>
+  </div>
+  <div class="practice-yes-col">
+    <button class="amp-btn amp-yes off" id="ahaYes" onclick="ahaAnswer('yes')">✓</button>
+    <span class="amp-label">Ja</span>
+  </div>
+</div>
+
+<!-- §SCREEN:CALIB2-INTRO -->
+<div class="screen" id="screenCalib2Intro">
+  <div class="label">Vorbereitung</div>
+  <h2 class="headline" style="font-size:1.6rem;">Schließe jetzt<br>die <em>Augen.</em></h2>
+  <p class="body-text">Die nächsten Fragen beantwortest du genauso spontan — ohne nachzudenken, ohne abzuwägen. Dein erster Impuls ist die richtige Antwort.<br><br>Warum? Weil bewusstes Nachdenken dich bisher nicht zu einer dauerhaften Lösung geführt hat. Das Unbewusste weiß mehr — und genau das werden wir jetzt nutzen.<br><br>Drücke einfach das, was du als erstes spürst.</p>
+</div>
+
+<!-- §SCREEN:CALIB2 -->
+<div class="screen" id="screenCalib2">
+  <div class="label">Kalibrierung · Augen zu</div>
+  <div class="step-text" id="calib2Text" style="height:40vh;font-size:clamp(1.1rem,3.5vw,1.5rem);display:flex;align-items:center;justify-content:center;">–</div>
+</div>
+
+<!-- §SCREEN:LANDSCAPE -->
+<div class="screen" id="screenLandscape">
+  <div class="label">Vorbereitung</div>
+  <h2 class="headline" style="font-size:1.6rem;">Drehe dein<br>Telefon <em>quer.</em></h2>
+  <p class="body-text">Halte es mit beiden Händen — Daumen links und rechts.<br><br>So kannst du die Buttons blind drücken, wenn deine Augen gleich geschlossen sind.</p>
+  <p class="body-text" id="landscapeWarning" style="display:none;color:var(--gold);margin-top:-0.5rem;">Bitte zuerst das Telefon drehen.</p>
+  <button class="btn go" onclick="screenLandscapeNext()">Bereit</button>
+</div>
+
+<!-- §SCREEN:CALIB -->
+<div class="screen" id="screenCalib">
+  <div class="label">Kalibrierung</div>
+  <div class="step-text" id="calibText" style="height:40vh;font-size:clamp(1.1rem,3.5vw,1.5rem);display:flex;align-items:center;justify-content:center;">–</div>
+</div>
+<!-- Fixed bottom buttons for calibration -->
+<div class="session-btns" id="calibBtns">
+  <div class="session-no-col">
+    <button class="amp-btn amp-no off" id="calibNo" onclick="calibAnswer(false)">✗</button>
+    <span class="amp-label">Nein</span>
+  </div>
+  <div class="session-yes-col">
+    <button class="amp-btn amp-yes off" id="calibYes" onclick="calibAnswer(true)">✓</button>
+    <span class="amp-label">Ja</span>
+  </div>
+</div>
+
+<!-- Fixed bottom buttons for calib2 -->
+<div class="session-btns" id="calib2Btns">
+  <div class="session-no-col">
+    <button class="amp-btn amp-no off" id="calib2No" onclick="calib2Answer(false)">✗</button>
+    <span class="amp-label">Nein</span>
+  </div>
+  <div class="session-yes-col">
+    <button class="amp-btn amp-yes off" id="calib2Yes" onclick="calib2Answer(true)">✓</button>
+    <span class="amp-label">Ja</span>
+  </div>
+</div>
+
+
+<!-- §SCREEN:PRE-SUD -->
+<div class="screen" id="screenPreSUD">
+  <div class="label">Phase I · Einschätzung</div>
+  <h2 class="headline" style="font-size:1.5rem;">Wie stark spürst du<br>das Thema <em>gerade?</em></h2>
+  <p class="body-text" style="margin-bottom:1.2rem;">Tippe spontan auf eine Zahl von 1 bis 10.</p>
+  <div class="sud-grid" id="preSudGrid"></div>
+</div>
+
+<!-- §SCREEN:CONTACT -->
+<div class="screen" id="screenContact">
+  <div class="label">Phase II · Kontakt</div>
+  <div class="phase-dots">
+    <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="step-text" id="contactText">–</div>
+</div>
+<!-- Fixed bottom button for contact -->
+<div class="session-btns" id="contactBtns">
+  <div class="session-yes-col" style="flex:1;">
+    <button class="amp-btn amp-yes off" id="contactBtn" onclick="contactGo()">✓</button>
+    <span class="amp-label">Ja</span>
+  </div>
+</div>
+
+<!-- §SCREEN:STEP (universal – S1–S18) -->
+<div class="screen" id="screenStep">
+  <div class="label" id="stepLabel">–</div>
+  <div class="phase-dots" id="stepDots"></div>
+  <div class="part-badge" id="stepBadge"></div>
+  <!-- Augen-zu Gesicht (nur während Übergang) -->
+  <div id="stepEyesWrap" style="display:none;flex-direction:column;align-items:center;justify-content:center;margin:1rem 0;flex-shrink:0;">
+    <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <!-- Gesicht -->
+      <circle cx="60" cy="60" r="52" fill="none" stroke="#c4a05a44" stroke-width="1.5"/>
+      <!-- Linkes Auge geschlossen -->
+      <path d="M34 52 Q42 48 50 52" fill="none" stroke="#c4a05a" stroke-width="2" stroke-linecap="round"/>
+      <!-- Rechtes Auge geschlossen -->
+      <path d="M70 52 Q78 48 86 52" fill="none" stroke="#c4a05a" stroke-width="2" stroke-linecap="round"/>
+      <!-- Mund neutral -->
+      <path d="M46 74 Q60 80 74 74" fill="none" stroke="#c4a05a66" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <div style="font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:#5a5750;margin-top:1rem;">Augen zu</div>
+  </div>
+  <div class="step-text" id="stepText" style="display:none">–</div>
+  <!-- Spiral (rekon/both/green steps) -->
+  <div id="stepSpiralWrap" class="spiral-wrap" style="display:none">
+    <canvas class="spiral-canvas" id="spiralCanvas" width="200" height="200"></canvas>
+  </div>
+</div>
+<!-- Fixed bottom buttons for session -->
+<div class="session-btns" id="sessionBtns">
+  <div class="session-no-col" id="sessionNoCol">
+    <button class="amp-btn amp-no off" id="stepNo" onclick="stepAnswer(false)">✗</button>
+    <span class="amp-label">Nein</span>
+  </div>
+  <div class="session-yes-col" id="sessionYesCol">
+    <button class="amp-btn amp-yes off" id="stepYes" onclick="stepAnswer(true)">✓</button>
+    <span class="amp-label" id="stepYesLabel">Ja</span>
+  </div>
+</div>
+
+
+
+<!-- §SCREEN:POST-SUD -->
+<div class="screen" id="screenPostSUD">
+  <div class="label">Abschluss · Einschätzung</div>
+  <h2 class="headline" style="font-size:1.5rem;">Wie stark spürst du<br>das Thema <em>jetzt?</em></h2>
+  <p class="body-text" style="margin-bottom:1.2rem;">Tippe spontan auf eine Zahl von 1 bis 10.</p>
+  <div class="sud-grid" id="postSudGrid"></div>
+</div>
+
+<!-- §SCREEN:PROTOCOL -->
+<div class="screen" id="screenProtocol">
+  <div class="label">Sitzungsprotokoll</div>
+  <h2 class="headline">Sitzung <em>abgeschlossen.</em></h2>
+  <div class="proto-grid">
+    <div class="proto-cell">
+      <div class="proto-val" id="protoPartsVal">–</div>
+      <div class="proto-lbl">Teile</div>
+    </div>
+    <div class="proto-cell">
+      <div class="proto-val" id="protoPreVal">–</div>
+      <div class="proto-lbl">Vorher</div>
+    </div>
+    <div class="proto-cell">
+      <div class="proto-val" id="protoPostVal">–</div>
+      <div class="proto-lbl">Nachher</div>
+    </div>
+  </div>
+  <div class="proto-note" id="protoNote"></div>
+  <div class="proto-wipe">Alle Daten werden nach dem Schließen unwiderruflich gelöscht.</div>
+  <button class="btn-end" onclick="endSession()">Sitzung beenden</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══ ADMIN PANEL ══ -->
+<div id="adminOverlay" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:10000;align-items:center;justify-content:center;">
+  <div id="adminPanel" style="background:#0e1215;border:1px solid #2a3a4a;width:min(94vw,640px);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem;border-bottom:1px solid #1e2a34;flex-shrink:0;">
+      <div style="font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:#4a7a9b;">Admin &middot; Protokoll-Editor</div>
+      <div style="display:flex;gap:0.6rem;align-items:center;">
+        <span id="adminStepCounter" style="font-size:0.68rem;color:#5a5750;letter-spacing:0.1em;"></span>
+        <button onclick="adminClose()" style="background:transparent;border:1px solid #2a3a4a;color:#5a5750;font-size:0.7rem;letter-spacing:0.12em;padding:0.3rem 0.7rem;cursor:pointer;text-transform:uppercase;">Schliessen</button>
+      </div>
+    </div>
+
+    <!-- Step label -->
+    <div style="padding:0.8rem 1.2rem 0;flex-shrink:0;">
+      <div id="adminStepLabel" style="font-family:serif;font-size:1.1rem;font-weight:300;color:#c4a05a;"></div>
+    </div>
+
+    <!-- Scrollable content -->
+    <div style="overflow-y:auto;padding:0.8rem 1.2rem 1rem;flex:1;display:flex;flex-direction:column;gap:0.9rem;">
+
+      <!-- Typ -->
+      <div>
+        <div style="font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:#5a5750;margin-bottom:0.4rem;">Typ</div>
+        <select id="adminType" style="background:#111418;border:1px solid #2a3a4a;color:#e6e2d8;font-size:0.82rem;padding:0.5rem 0.7rem;width:100%;outline:none;">
+          <option value="rekon">rekon -- Spirale + Signal + nur Gruen</option>
+          <option value="both">both -- Ring + Gruen und Rot</option>
+          <option value="green">green -- Ring + nur Gruen</option>
+          <option value="info">info -- Text + Weiter-Button</option>
+        </select>
+      </div>
+
+      <!-- Text -->
+      <div>
+        <div style="font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:#5a5750;margin-bottom:0.4rem;">Text (wird vorgelesen und angezeigt)</div>
+        <textarea id="adminText" rows="7" style="background:#111418;border:1px solid #2a3a4a;color:#e6e2d8;font-size:0.82rem;line-height:1.6;padding:0.6rem 0.7rem;width:100%;resize:vertical;outline:none;"></textarea>
+      </div>
+
+      <!-- Alternativtext S16 -->
+      <div id="adminTextAltWrap" style="display:none;">
+        <div style="font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:#5a5750;margin-bottom:0.4rem;">Alternativtext -- wenn Klient S13 Nein gewählt hat</div>
+        <textarea id="adminTextAlt" rows="5" style="background:#111418;border:1px solid #2a3a4a;color:#e6e2d8;font-size:0.82rem;line-height:1.6;padding:0.6rem 0.7rem;width:100%;resize:vertical;outline:none;"></textarea>
+      </div>
+
+      <!-- Logik -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+        <div>
+          <div style="font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:#3d9e65;margin-bottom:0.4rem;">Bei Ja -- Schritt Nr.</div>
+          <input id="adminOnYes" type="text" style="background:#111418;border:1px solid #1e3d2a;color:#5dbe82;font-size:0.9rem;padding:0.5rem 0.7rem;width:100%;outline:none;" placeholder="z.B. 2 oder POST_SUD">
+        </div>
+        <div>
+          <div style="font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:#b84040;margin-bottom:0.4rem;">Bei Nein -- Schritt Nr.</div>
+          <input id="adminOnNo" type="text" style="background:#111418;border:1px solid #3a1e1e;color:#d96060;font-size:0.9rem;padding:0.5rem 0.7rem;width:100%;outline:none;" placeholder="leer = wie Ja">
+        </div>
+      </div>
+
+      <!-- parts_count -->
+      <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;">
+        <input type="checkbox" id="adminPartsCount" style="accent-color:#c4a05a;width:14px;height:14px;">
+        <span style="font-size:0.78rem;color:#5a5750;letter-spacing:0.06em;">parts_counter nach diesem Schritt erhoehen</span>
+      </label>
+
+      <!-- Speichern -->
+      <button onclick="adminSave()" style="background:#1a3a2a;border:1px solid #3d9e6566;color:#5dbe82;font-size:0.72rem;letter-spacing:0.16em;text-transform:uppercase;padding:0.75rem;cursor:pointer;width:100%;">Aenderungen speichern</button>
+      <div id="adminSaveMsg" style="font-size:0.72rem;color:#3d9e65;letter-spacing:0.1em;text-align:center;min-height:1rem;"></div>
+
+    </div>
+
+    <!-- Navigation -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.8rem 1.2rem;border-top:1px solid #1e2a34;flex-shrink:0;">
+      <button onclick="adminNav(-1)" style="background:transparent;border:1px solid #2a3a4a;color:#5a5750;font-size:0.7rem;letter-spacing:0.12em;padding:0.4rem 1rem;cursor:pointer;text-transform:uppercase;">Zurueck</button>
+      <div id="adminDots" style="display:flex;gap:5px;"></div>
+      <button onclick="adminNav(+1)" style="background:transparent;border:1px solid #2a3a4a;color:#5a5750;font-size:0.7rem;letter-spacing:0.12em;padding:0.4rem 1rem;cursor:pointer;text-transform:uppercase;">Weiter</button>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════
+// §JS:LANG  – Zentrales Textobjekt & Sprache
+// ══════════════════════════════════════════════════
+// Struktur pro Sprache:
+//   tts_lang   – BCP-47 Sprach-Code für Web Speech API
+//   tts_voices – Bevorzugte Stimmen (Reihenfolge = Priorität)
+//   mp3        – Optionaler MP3-Pfad pro Schlüssel (leer = TTS)
+//   ui         – UI-Texte (Buttons, Labels, Toasts)
+//   screens    – TTS-Texte für Onboarding-Screens
+//   calib      – Kalibrierungs-Pools (true/false Aussagen)
+//   steps      – Protokoll-Texte S1–S18
+
+const LANG = {
+
+  // ── DEUTSCH ──────────────────────────────────────
+  de: {
+    tts_lang: 'de-DE',
+    tts_voices: ['katja', 'hedda'],
+
+    mp3: {
+      // Schlüssel = mp3-Dateiname ohne Pfad/Extension
+      // Pfad-Basis: audio/de/
+      // Beispiel: info: 'ui-01'  → audio/de/ui-01.mp3
+      // Leer lassen = TTS wird verwendet
+    },
+    mp3_base: 'audio/de/',
+
+    ui: {
+      hint:            'Tippe um zu beginnen',
+      weiter:          'Weiter',
+      ja:              'Ja',
+      nein:            'Nein',
+      bereit:          'Bereit',
+      ich_habe_satz:   'Ich habe meinen Satz',
+      sitzung_beenden: 'Sitzung beenden',
+      teile_lbl:       'Teile',
+      vorher_lbl:      'Vorher',
+      nachher_lbl:     'Nachher',
+      teile_singular:  'Teil',
+      teile_plural:    'Teile',
+      belastung_reduziert: (d) => `Du hast die Belastung heute um ${d} ${d===1?'Punkt':'Punkte'} reduziert.`,
+      prozess_weiter:  'Der Prozess arbeitet weiter – auch nach der Sitzung.',
+      daten_loeschen:  'Alle Daten werden nach dem Schließen unwiderruflich gelöscht.',
+      toast_spontaner: 'Bitte antworte spontaner – vertrau deinem ersten Impuls.',
+      toast_asif:      'Wenn du unsicher bist – tu einfach so als ob.',
+      toast_asif_btn:  'Wenn du unsicher bist, drücke einfach den Button.',
+      toast_screen:    'Tipp: Stelle sicher, dass dein Bildschirm nicht automatisch ausgeht.',
+      badge_singular:  '1 Teil bearbeitet',
+      badge_plural:    (n) => `${n} Teile bearbeitet`,
+      augen_zu:        'Augen zu',
+      abgeschlossen:   'Sitzung abgeschlossen.',
+    },
+
+    screens: {
+      // Info-Screen
+      info_tts: 'Du hast ein inneres Wissen, das klüger ist als dein Verstand. Manche nennen es Bauchgefühl, innere Stimme oder Intuition. Diese App gibt ihm Raum, alte Muster zu verändern – ohne dass du über dein Problem sprechen oder nachdenken musst. Du drückst während der Sitzung nur zwei Buttons: Ja oder Nein. Mehr wird nicht von dir verlangt. Wichtiger Hinweis: Diese App ist ein Coaching-Angebot und kein medizinisches Produkt. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.',
+      info_mp3: '',  // z.B. 'ui-01'
+
+      // Welcome-Screen
+      welcome1_tts: 'Willkommen bei dir selbst.',
+      welcome1_mp3: '',
+      welcome2_tts: 'Du brauchst nur zwei Dinge: deine Aufmerksamkeit – und dein Bauchgefühl.',
+      welcome2_mp3: '',
+
+      // Problem-Screen
+      problem_tts: 'Bevor du beginnst — nimm dir einen Moment. Formuliere dein Thema als einen klaren Satz. Zum Beispiel: Ich kann schlecht einschlafen. Oder: Ich fühle mich in sozialen Situationen unwohl. Kein Erklären, kein Analysieren — nur ein Satz, so konkret wie möglich. Halte ihn innerlich bereit.',
+      problem_mp3: '',
+
+      // PreSUD
+      presud_tts: 'Ruf dir jetzt deinen Satz innerlich in Erinnerung. Spür, wie stark das Thema dich gerade belastet — und tippe dann spontan eine Zahl.',
+      presud_mp3: '',
+
+      // Intro (drei Ebenen)
+      intro1_tts: 'Gut. Jetzt zeige ich dir, wie die Sitzung funktioniert.',
+      intro1_mp3: '',
+      intro2_tts: 'Es gibt drei Ebenen in dir.',
+      intro2_mp3: '',
+      intro3_tts: 'Dein Bauchgefühl – die weise Instanz, die diese Sitzung leitet. Dein Unbewusstes – ein System aus inneren Teilen, die alte Erfahrungen gespeichert haben. Du selbst – der beobachtet und die Buttons drückt.',
+      intro3_mp3: '',
+
+      // Button-Übung
+      practice1_tts: 'Kurze Übung. Tippe jetzt einmal auf Rot – links unten.',
+      practice1_mp3: '',
+      practice2_tts: 'Gut. Jetzt einmal Grün – rechts unten.',
+      practice2_mp3: '',
+      practice3_tts: 'Perfekt. Du kennst jetzt die Buttons.',
+      practice3_mp3: '',
+
+      // Calib1 finish
+      calib_gut_tts: 'Gut gemacht.',
+      calib_gut_mp3: '',
+      calib2_intro_tts: 'Schließe jetzt die Augen. Die nächsten Fragen beantwortest du genauso spontan — ohne nachzudenken, ohne abzuwägen. Dein erster Impuls ist die richtige Antwort. Weil bewusstes Nachdenken dich bisher nicht zu einer dauerhaften Lösung geführt hat. Das Unbewusste weiß mehr — und genau das werden wir jetzt nutzen. Drücke einfach das, was du als erstes spürst.',
+      calib2_intro_mp3: '',
+
+      // Calib2 start
+      calib2_start_tts: 'Augen zu. Antworte spontan.',
+      calib2_start_mp3: '',
+
+      // Contact
+      contact_tts: 'Dein Bauchgefühl bereitet sich jetzt vor.\n\nAtme kurz durch – und drücke den Button, wenn du bereit bist.',
+      contact_mp3: '',
+
+      // Eyes shut + ready
+      eyes_tts: 'Halte deine Augen während der gesamten Sitzung geschlossen – ich begleite dich.',
+      eyes_mp3: '',
+      ready_tts: 'Du bist der Übersetzer zwischen deinem Bauchgefühl und der App. Drücke Grün oder Rot, sobald du den Impuls spürst – das ist deine einzige Aufgabe. Reagiere spontan, ohne nachzudenken – dein erster Impuls ist immer richtig.',
+      ready_mp3: '',
+
+      // PostSUD
+      postsud1_tts: 'Du kannst jetzt die Augen wieder öffnen.',
+      postsud1_mp3: '',
+      postsud2_tts: 'Wie stark spürst du das Thema jetzt? Tippe spontan auf eine Zahl von 1 bis 10.',
+      postsud2_mp3: '',
+    },
+
+    calib: {
+      pool_true: [
+        'Ich bin ein Mensch.','Ich bin gerade wach.','Ich atme gerade.',
+        'Ich sitze oder liege gerade.','Es gibt Licht um mich herum.',
+        'Ich halte gerade ein Gerät.','Ich bin gerade irgendwo.',
+        'Ich habe zwei Hände.','Ich habe zwei Augen.','Ich habe einen Namen.',
+        'Ich bin älter als 5 Jahre.','Ich habe ein Gesicht.',
+        'Ich habe eine Körpergröße.','Ich wiege etwas.',
+        'Mein Herz schlägt gerade.','Ich kann gerade sehen.',
+        'Ich kann gerade hören.','Ich kann gerade denken.',
+        'Ich trage gerade Kleidung.','Ich habe gerade einen Kopf.',
+        'Ich bin nicht im Wasser.','Es gibt Licht hier.',
+        'Ich befinde mich auf der Erde.','Der Boden unter mir ist fest.',
+        'Um mich herum gibt es Objekte.','Ich befinde mich in einem Raum.',
+        'Ich erlebe gerade einen Moment.','Ich schaue gerade auf einen Bildschirm.',
+        'Ich nutze gerade Technologie.','Ich sehe gerade Text.',
+        'Ich nehme gerade etwas wahr.','Ich bin gerade anwesend.',
+        'Ich bin gerade bewusst.','Mein Geist ist gerade aktiv.',
+        'Es gibt eine Schwerkraft.','Die Erde ist rund.',
+        'Ein Tag hat 24 Stunden.','Zahlen existieren.',
+        'Sprache existiert.','2 ist mehr als 1.',
+        'Menschen brauchen Wasser.','Es gibt mehr als eine Farbe.',
+        'Tiere existieren.','Pflanzen existieren.','Es gibt andere Menschen.',
+      ],
+      pool_false: [
+        'Schnee ist schwarz.','Ich bin gerade ein Baum.','Feuer ist kalt.',
+        'Ich bin gerade unsichtbar.','Wasser ist trocken.',
+        'Die Sonne geht im Westen auf.','Ich habe drei Augen.',
+        'Ich bin gerade auf dem Mond.','Steine sind weich wie Wasser.',
+        'Ich bin jünger als 1 Jahr.',
+      ],
+    },
+
+    steps: [
+      { num:1,  label:'Schritt 1 · Untersuchung',      mp3:'', text:'Liebes Bauchgefühl, bitte untersuche das Problem, um dir das große Bild zu verschaffen, wie das Problem angefangen hat und warum es sich bis heute fortsetzt. Überprüfe Erinnerungen an Ereignisse, die möglicherweise etwas damit zu tun hatten, auch Muster, die du möglicherweise von anderen übernommen hast: von deiner Familie, deiner Umgebung, aus einer Zeit vor deiner eigenen Erinnerung, aus Erfahrungen, die nicht die deinen waren. Kommuniziere mit den beteiligten Teilen. Das Ziel ist für dich zu verstehen, wie das Problem ein Teil deines heutigen Lebens wurde. Liebes Bauchgefühl, bitte gehe bis an die Grenzen deiner Fähigkeiten und untersuche das Problem so umfassend, wie es jetzt möglich ist. Gib mir bitte einen Impuls, damit ich weiß, dass du damit fertig bist, einfach Ja.' },
+      { num:2,  label:'Schritt 2 · Identifikation',    mp3:'', text:'Liebes Bauchgefühl, ich bitte dich jetzt, den ersten Teil deines Geistes, zu identifizieren, der das Problem aktiv verursacht. Dieser Teil wurde durch Lebenserfahrungen oder durch Muster, die an dich weitergegeben wurden, so beeinflusst, dass er dein Problem aktiv verursacht und es ist deine Aufgabe, ihn überzeugend zu lehren, sich deinen heutigen Fähigkeiten, Kenntnissen, Bedürfnissen, Interessen, Werten und Neigungen anzupassen. Ich werde dich dazu anleiten und das sind die Schritte: der Teil muss zuerst identifiziert werden, dann muss er über das heutige Leben überzeugend informiert werden, diese neuen Informationen müssen von dem Teil integriert werden. Auf diese Weise wird der Teil neu belernt und kann deine heutigen Bedürfnisse unterstützen, ohne ein Problem zu verursachen. Dieser Teil weiß nur, was er damals wusste, als er erschaffen wurden. Er steckt in seiner Zeit fest und ist sich des heutigen Lebens nicht bewusst. Liebes Bauchgefühl, es ist deine Aufgabe, ihn neu zu erziehen und über das heutige Leben zu informieren, ihm ein Update zu geben, dabei leite ich dich an. Liebes Bauchgefühl, bitte mache jetzt den ersten Schritt und identifiziere diesen Teil. Wenn du damit fertig bist, gib mir bitte einen Impuls, einfach Ja.' },
+      { num:3,  label:'Schritt 3 · Erster Teil',       mp3:'', text:'Liebes Bauchgefühl, beginne jetzt mit dem ersten Teil. Dieser Teil steckt in der Vergangenheit fest. Er funktioniert auf der Grundlage des Wissens von damals, als er entstanden ist. Er kennt deine heutige Lebenssituation und die Auswirkungen seines Einflusses nicht. Liebes Bauchgefühl, deine Aufgabe ist es, den Teil überzeugend deine heutigen Fähigkeiten, Kenntnisse, Interessen, Überzeugungen und Neigungen zu lehren. Liebes Bauchgefühl, bitte kommuniziere mit diesem Teil auf folgende Weise: Danke dem Teil für alles, was er bisher für dich getan hat. Ich bitte dich, dem Teil erst zuzuhören und danach herauszufinden, was dieser Teil glaubt und warum er glaubt, was er glaubt. Und anschließend bitte ich dich, liebes Bauchgefühl, dass du, mit diesen neuen Informationen den Teil über die aktuelle Realität unterrichtest. Dieser Teil steckt in der Zeit fest, in der er erschaffen wurde und ignoriert deine heutige Lebenssituation. Er weiß nur, was du damals wusstest, in Unkenntnis deines jetzigen Lebens. Überzeuge den Teil, jetzt deine heutige Denkweise, deine Überzeugungen und deine Lebenssituation zu unterstützen. Gib ihm ein Update. Liebes Bauchgefühl, beginne jetzt bitte mit dem ersten Teil. Wenn du damit fertig bist, gib mir bitte einen Impuls, einfach Ja.' },
+      { num:4,  label:'Schritt 4 · Weitere Teile?',    mp3:'', text:'Liebes Bauchgefühl, gibt es noch einen weiteren Teil, der ebenfalls zum Problem beiträgt oder es aktiv verursacht? Gib mir bitte einen Impuls, einfach Ja oder Nein.' },
+      { num:5,  label:'Schritt 5 · Nächster Teil',     mp3:'', text:'Liebes Bauchgefühl, bitte arbeite jetzt mit dem nächsten Teil. Dieser Teil steckt in der Vergangenheit fest. Er funktioniert auf der Grundlage des Wissens von damals, als er entstanden ist. Er kennt deine heutige Lebenssituation und die Auswirkungen seines Einflusses nicht. Liebes Bauchgefühl, deine Aufgabe ist es, den Teil überzeugend deine heutigen Fähigkeiten, Kenntnisse, Interessen, Überzeugungen, Werte und Neigungen zu lehren. Liebes Bauchgefühl, bitte kommuniziere mit diesem Teil auf folgende Weise: Danke dem Teil für alles, was er bisher für dich getan hat. Ich bitte dich, dem Teil erst zuzuhören und danach herauszufinden, was dieser Teil glaubt und warum er glaubt, was er glaubt. Und anschließend bitte ich dich, liebes Bauchgefühl, dass du, mit diesen neuen Informationen den Teil über die aktuelle Realität unterrichtest. Dieser Teil steckt in der Zeit fest, in der er erschaffen wurde und ignoriert deine heutige Lebenssituation. Er weiß nur, was du damals wusstest, in Unkenntnis deines jetzigen Lebens. Überzeuge den Teil, jetzt deine heutige Denkweise, deine Überzeugungen und deine Lebenssituation zu unterstützen. Gib ihm ein Update. Liebes Bauchgefühl, beginne jetzt bitte mit dem nächsten Teil. Wenn du damit fertig bist, gib mir bitte einen Impuls, einfach Ja.' },
+      { num:6,  label:'Schritt 6 · Weitere Teile?',    mp3:'', text:'Liebes Bauchgefühl, gibt es noch einen weiteren Teil, der ebenfalls zum Problem beiträgt oder es aktiv verursacht? Gib mir bitte einen Impuls, einfach Ja oder Nein.' },
+      { num:7,  label:'Schritt 7 · Nächster Teil',     mp3:'', text:'Liebes Bauchgefühl, bitte arbeite jetzt mit dem nächsten Teil. Dieser Teil steckt in der Vergangenheit fest. Er funktioniert auf der Grundlage des Wissens von damals, als er entstanden ist. Er kennt deine heutige Lebenssituation und die Auswirkungen seines Einflusses nicht. Liebes Bauchgefühl, deine Aufgabe ist es, den Teil überzeugend deine heutigen Fähigkeiten, Kenntnisse, Interessen, Überzeugungen und Neigungen zu lehren. Liebes Bauchgefühl, bitte kommuniziere mit diesem Teil auf folgende Weise: Danke dem Teil für alles, was er bisher für dich getan hat. Ich bitte dich, dem Teil erst zuzuhören und danach herauszufinden, was dieser Teil glaubt und warum er glaubt, was er glaubt. Und anschließend bitte ich dich, liebes Bauchgefühl, dass du, mit diesen neuen Informationen den Teil über die aktuelle Realität unterrichtest. Liebes Bauchgefühl, dieser Teil steckt in der Zeit fest, in der er erschaffen wurde und ignoriert deine heutige Lebenssituation. Er weiß nur, was du damals wusstest, in Unkenntnis deines jetzigen Lebens. Überzeuge den Teil, jetzt deine heutige Denkweise, deine Überzeugungen und deine Lebenssituation zu unterstützen. Gib ihm ein Update. Liebes Bauchgefühl, beginne jetzt bitte mit dem nächsten Teil. Wenn du damit fertig bist, gib mir bitte einen Impuls, einfach Ja.' },
+      { num:8,  label:'Schritt 8 · Weitere Teile?',    mp3:'', text:'Gibt es noch weitere Teile, die zu dem Problem beitragen oder es aktiv verursachen? Gib mir bitte wieder einen Impuls, einfach Ja oder Nein.' },
+      { num:9,  label:'Schritt 9 · Weitere Teile',     mp3:'', text:'Liebes Bauchgefühl, du kennst jetzt die Vorgehensweise. Arbeite bitte mit den Teilen, die jetzt noch vorhanden sind auf die gleiche Art und Weise, die du schon kennst, also wiederhole jetzt diese Arbeit mit den weiteren Teilen. Wenn du damit fertig bist, gib mir bitte einen Impuls, einfach Ja.' },
+      { num:10, label:'Schritt 10 · Kontrolle',        mp3:'', text:'Liebes Bauchgefühl, jetzt geht es um die Kontrolle. Bitte überprüfe, ob noch weitere Teile im Zusammenhang mit dem Problem auftauchen oder vorhanden sind. Gibt es noch weitere Teile, die zu dem Problem beitragen oder es aktiv verursachen? Gib mir bitte wieder einen Impuls, einfach Ja oder Nein.' },
+      { num:11, label:'Schritt 11 · Bearbeitung',      mp3:'', text:'Liebes Bauchgefühl, arbeite bitte mit dem Teil oder den Teilen, die du noch gefunden hast auf die gleiche Art und Weise, die du schon kennst. Wenn du damit fertig bist, gib mir bitte einen Impuls, einfach Ja.' },
+      { num:12, label:'Schritt 12 · Neue Teile',       mp3:'', text:'Liebes Bauchgefühl, manchmal tauchen auch Teile erst auf, wenn schon andere Teile neu belernt wurden, auch das ist okay. Deshalb, Liebes Bauchgefühl, geh bitte noch einmal auf die Suche und finde heraus, welcher Teil oder welche Teile noch das Verlangen haben, das Problem zu verursachen. Wenn du diese Teile identifiziert hast, Liebes Bauchgefühl, belerne sie neu, wie du das schon zu Anfang getan hast. Wenn du damit fertig bist, gib mir bitte einen Impuls, einfach Ja.' },
+      { num:13, label:'Schritt 13 · Finale Reinigung', mp3:'', text:'Liebes Bauchgefühl, wenn es noch irgendetwas gibt, was du tun kannst, damit das Problem nie wieder in deinem Leben auftritt, dann tu das jetzt bitte! Du kannst z.B. einen Teil oder mehrere Teile löschen, die nicht mehr benötigt werden, du kannst auch Teile neu erschaffen, die zur Beseitigung des Problems beitragen. Du kannst Teilen neue Aufgaben zuweisen, die für die weitere Entwicklung förderlich sind. Und du kannst Verbindungen zwischen einzelnen Teilen lösen, die nicht mehr notwendig sind. Genauso kannst du neue Verbindungen zwischen einzelnen Teilen schaffen. Wenn einer, mehrere oder alles dieser Aufgaben notwendig oder hilfreich sind, um das Problem dauerhaft zu beseitigen, dann erledige das jetzt bitte. Gib mir einen Impuls, wenn wir fortfahren können – einfach Ja.' },
+      { num:14, label:'Schritt 14 · Bewusstsein',      mp3:'', text:'Und jetzt spreche ich zu dir persönlich, lieber Klient, lieber Nutzer dieser App. Möchtest du wissen, was dein Bauchgefühl bearbeitet hat? Gib mir bitte einen Hinweis, einen Impuls, einfach Ja oder Nein.' },
+      { num:15, label:'Schritt 15 · Innerer Zugang',   mp3:'', text:'Wenn du wissen willst, was bearbeitet wurde, sprich mir nach: Liebes Bauchgefühl, ich möchte gern wissen, was du bearbeitet hast, bitte mache es mir zugänglich, innerhalb von 1 Minute. Tue es durch Erinnerungen, eine innere Stimme oder durch Einsichten. Tue es, wie du es für angemessen hältst. Und wenn du, lieber Klient, lieber Nutzer eine Antwort erhalten hast, gib mir bitte einen Hinweis, einen Impuls, einfach Ja oder Nein.' },
+      { num:16, label:'Schritt 16 · Zweiter Versuch',  mp3:'', text:'Liebes Bauchgefühl, anscheinend sind bei deinem Menschen keine oder nur unzureichende Informationen angekommen. Bitte mache deinem Menschen jetzt alles zugänglich, was für ihn hilfreich und notwendig ist. Du, lieber Klient, lieber Nutzer dieser App, gibst bitte wieder ein Feedback, ob du irgendetwas wahrgenommen hast, einfach Ja oder Nein.' },
+      { num:17, label:'Schritt 17 · Hinweis',          mp3:'', mp3_alt:'',
+        text:'Okay, dann scheint dein Bauchgefühl der Ansicht zu sein, dass es im Moment besser für dich ist, wenn diese Informationen noch verborgen bleiben. Es kann trotzdem sein, dass im Lauf der nächsten Tage irgendwelche Eingebungen, Einfälle oder Erkenntnisse kommen, die mit deinem Problem zu tun haben können. Auch Träume sind möglich. Dein Bauchgefühl ist immer auf deiner Seite. Es weiß genau, wieviel es dir zumuten kann. Sei die nächsten Tage einfach aufmerksam, was in deinem Leben passiert. Manchmal sind es nur Kleinigkeiten, die du vielleicht gar nicht beachtest oder mit deinem Bauchgefühl in Verbindung bringst. Ganz egal, was es ist. Eine Veränderung hat auf jeden Fall stattgefunden.',
+        text_chose_not_to_know:'Das ist vollkommen in Ordnung.\n\nManche Menschen arbeiten lieber ohne zu wissen, was im Hintergrund bearbeitet wurde – und das ist eine genauso gute Entscheidung.\n\nDein Bauchgefühl hat trotzdem gearbeitet und eine Veränderung hat auf jeden Fall stattgefunden. Sei die nächsten Tage einfach aufmerksam – manches zeigt sich erst in der Stille.',
+        text_cta: 'Gib mir jetzt einen Impuls – einfach Ja.',
+      },
+      { num:18, label:'Schritt 18 · Abschluss',        mp3:'', text:'Noch ein kurzer abschließender Hinweis. In dieser kurzen Session hat schon eine erste Veränderung stattgefunden, ganz egal ob groß oder klein. Du kannst jederzeit zurückkehren und eine weitere Konversation mit deinem Bauchgefühl führen. Das kann sogar sehr hilfreich sein. Denn manchmal finden kleine Veränderungen statt, aber man fällt wieder in alte Verhaltensmuster zurück oder es kommt zu Ereignissen, die dich beeinflussen und es entstehen wieder neue Teile in deinem Unterbewusstsein. Manche Teile kommen auch erst zum Vorschein, wenn schon andere Teile bearbeitet wurden. Auch das ist vollkommen normal. Dann kann eine weitere Konversation mit deinem Bauchgefühl sehr hilfreich sein. Also, wenn du möchtest, ich bin jederzeit wieder für dich da.', text_cta: 'Gib mir jetzt einen Impuls – einfach Ja.' },
+      { num:19, label:'Schritt 19 · Danke',             mp3:'', text:'Liebes Bauchgefühl, vielen Dank für die geleistete Arbeit.' },
+    ],
+  },
+
+  // ── ENGLISH ──────────────────────────────────────
+  en: {
+    tts_lang: 'en-US',
+    tts_voices: ['samantha', 'karen', 'zira', 'hazel'],
+
+    mp3: {},
+    mp3_base: 'audio/en/',
+
+    ui: {
+      hint:            'Tap to begin',
+      weiter:          'Continue',
+      ja:              'Yes',
+      nein:            'No',
+      bereit:          'Ready',
+      ich_habe_satz:   'I have my sentence',
+      sitzung_beenden: 'End Session',
+      teile_lbl:       'Parts',
+      vorher_lbl:      'Before',
+      nachher_lbl:     'After',
+      teile_singular:  'Part',
+      teile_plural:    'Parts',
+      belastung_reduziert: (d) => `You reduced your burden by ${d} ${d===1?'point':'points'} today.`,
+      prozess_weiter:  'The process continues – even after the session.',
+      daten_loeschen:  'All data is permanently deleted after closing.',
+      toast_spontaner: 'Please answer more spontaneously – trust your first impulse.',
+      toast_asif:      'If you are unsure – just act as if.',
+      toast_asif_btn:  'If you are unsure, just press the button.',
+      toast_screen:    'Tip: Make sure your screen does not turn off automatically.',
+      badge_singular:  '1 Part processed',
+      badge_plural:    (n) => `${n} Parts processed`,
+      augen_zu:        'Eyes closed',
+      abgeschlossen:   'Session complete.',
+    },
+
+    screens: {
+      info_tts: 'You have an inner wisdom that is smarter than your conscious mind. Some call it gut feeling, inner voice, or intuition. This app gives it space to change old patterns – without you having to talk or think about your problem. During the session you press only two buttons: Yes or No. Nothing more is required of you. Important notice: This app is a coaching offering and not a medical product. It is not suitable for acute mental illness, mental crises, or suicidal thoughts. Please contact a doctor or psychiatric emergency service in those cases.',
+      info_mp3: '',
+      welcome1_tts: 'Welcome to yourself.',
+      welcome1_mp3: '',
+      welcome2_tts: 'You only need two things: your attention – and your gut feeling.',
+      welcome2_mp3: '',
+      problem_tts: 'Before you begin — take a moment. Formulate your topic as one clear sentence. For example: I sleep poorly. Or: I feel uncomfortable in social situations. No explaining, no analyzing — just one sentence. Hold it in your mind.',
+      problem_mp3: '',
+      presud_tts: 'Recall your sentence internally now. Feel how strongly this topic is burdening you right now — and tap a number spontaneously.',
+      presud_mp3: '',
+      intro1_tts: 'Good. Now I will show you how the session works.',
+      intro1_mp3: '',
+      intro2_tts: 'There are three levels inside you.',
+      intro2_mp3: '',
+      intro3_tts: 'Your gut feeling – the wise instance that guides this session. Your unconscious – a system of inner parts that have stored old experiences. You yourself – who observes and presses the buttons.',
+      intro3_mp3: '',
+      practice1_tts: 'Quick exercise. Tap the Red button now – bottom left.',
+      practice1_mp3: '',
+      practice2_tts: 'Good. Now tap Green – bottom right.',
+      practice2_mp3: '',
+      practice3_tts: 'Perfect. You now know the buttons.',
+      practice3_mp3: '',
+      calib_gut_tts: 'Well done.',
+      calib_gut_mp3: '',
+      calib2_intro_tts: 'Close your eyes now. Answer the next questions just as spontaneously — without thinking, without weighing. Your first impulse is the right answer. Why? Because conscious thinking has not led you to a lasting solution so far. The unconscious knows more — and that is exactly what we will use now. Simply press what you feel first.',
+      calib2_intro_mp3: '',
+      calib2_start_tts: 'Eyes closed. Answer spontaneously.',
+      calib2_start_mp3: '',
+      contact_tts: 'Your gut feeling is preparing now.\n\nTake a short breath – and press the button when you are ready.',
+      contact_mp3: '',
+      eyes_tts: 'Keep your eyes closed throughout the entire session – I am here with you.',
+      eyes_mp3: '',
+      ready_tts: 'You are the translator between your gut feeling and the app. Press Green or Red as soon as you feel the impulse – that is your only task. React spontaneously, without thinking – your first impulse is always right.',
+      ready_mp3: '',
+      postsud1_tts: 'You can open your eyes now.',
+      postsud1_mp3: '',
+      postsud2_tts: 'How strongly do you feel the topic now? Tap a number from 1 to 10 spontaneously.',
+      postsud2_mp3: '',
+    },
+
+    calib: {
+      pool_true: [
+        'I am a human.','I am awake right now.','I am breathing right now.',
+        'I am sitting or lying down.','There is light around me.',
+        'I am holding a device.','I am somewhere right now.',
+        'I have two hands.','I have two eyes.','I have a name.',
+        'I am older than 5 years.','I have a face.',
+        'I have a height.','I weigh something.',
+        'My heart is beating right now.','I can see right now.',
+        'I can hear right now.','I can think right now.',
+        'I am wearing clothes.','I have a head right now.',
+        'I am not in water.','There is light here.',
+        'I am on Earth.','The ground beneath me is solid.',
+        'There are objects around me.','I am in a space.',
+        'I am experiencing a moment right now.','I am looking at a screen.',
+        'I am using technology.','I can see text right now.',
+        'I am perceiving something right now.','I am present right now.',
+        'I am conscious right now.','My mind is active right now.',
+        'Gravity exists.','The Earth is round.',
+        'A day has 24 hours.','Numbers exist.',
+        'Language exists.','2 is more than 1.',
+        'Humans need water.','More than one color exists.',
+        'Animals exist.','Plants exist.','Other humans exist.',
+      ],
+      pool_false: [
+        'Snow is black.','I am a tree right now.','Fire is cold.',
+        'I am invisible right now.','Water is dry.',
+        'The sun rises in the west.','I have three eyes.',
+        'I am on the moon right now.','Stones are as soft as water.',
+        'I am younger than 1 year.',
+      ],
+    },
+
+    steps: [
+      { num:1,  label:'Step 1 · Investigation',      mp3:'', text:'Dear gut feeling, please investigate the problem to get the big picture of how the problem started and why it continues to this day. Review memories of events that may have had something to do with it. Communicate with the parts involved. The goal is for you to understand how the problem became part of your life today. Dear gut feeling, please go to the limits of your abilities and investigate the problem as thoroughly as possible right now. Please give me an impulse to let me know you are done, simply Yes.' },
+      { num:2,  label:'Step 2 · Identification',    mp3:'', text:'Dear gut feeling, I am asking you now to identify the first part of your mind that is actively causing the problem. This part has been influenced by life experiences in such a way that it actively causes your problem, and it is your task to convincingly teach it to adapt to your current abilities, knowledge, needs, interests, values, and inclinations. I will guide you through this and these are the steps: the part must first be identified, then it must be convincingly informed about life today, and these new pieces of information must be integrated by the part. In this way the part will be retrained and can support your current needs without causing a problem. This part only knows what it knew when it was created. It is stuck in its time and is not aware of life today. Dear gut feeling, it is your task to re-educate it and inform it about life today, to give it an update, and I will guide you through this. Dear gut feeling, please now take the first step and identify this part. When you are done, please give me an impulse, simply Yes.' },
+      { num:3,  label:'Step 3 · First Part',       mp3:'', text:'Dear gut feeling, begin now with the first part. This part is stuck in the past. It operates on the basis of the knowledge from the time when it was created. It does not know your current life situation and the effects of its influence. Dear gut feeling, your task is to convincingly teach the part your current abilities, knowledge, interests, beliefs, and inclinations. Dear gut feeling, please communicate with this part in the following way: Thank the part for everything it has done for you so far. I ask you to first listen to the part and then find out what this part believes and why it believes what it believes. And then I ask you, dear gut feeling, to teach the part about current reality with this new information. This part is stuck in the time when it was created and ignores your current life situation. It only knows what you knew then, unaware of your life now. Convince the part to now support your current mindset, your beliefs, and your life situation. Dear gut feeling, please begin now with the first part. When you are done, please give me an impulse, simply Yes.' },
+      { num:4,  label:'Step 4 · More Parts?',    mp3:'', text:'Dear gut feeling, is there another part that also contributes to or actively causes the problem? Please give me an impulse, simply Yes or No.' },
+      { num:5,  label:'Step 5 · Next Part',     mp3:'', text:'Dear gut feeling, please work now with the next part. This part is stuck in the past. It operates on the basis of the knowledge from the time when it was created. It does not know your current life situation and the effects of its influence. Dear gut feeling, your task is to convincingly teach the part your current abilities, knowledge, interests, beliefs, and inclinations. Dear gut feeling, please communicate with this part in the following way: Thank the part for everything it has done for you so far. I ask you to first listen to the part and then find out what this part believes and why it believes what it believes. And then I ask you, dear gut feeling, to teach the part about current reality with this new information. This part is stuck in the time when it was created and ignores your current life situation. It only knows what you knew then, unaware of your life now. Convince the part to now support your current mindset, your beliefs, and your life situation. Give it an update. Dear gut feeling, please begin now with the next part. When you are done, please give me an impulse, simply Yes.' },
+      { num:6,  label:'Step 6 · More Parts?',    mp3:'', text:'Dear gut feeling, is there another part that also contributes to or actively causes the problem? Please give me an impulse, simply Yes or No.' },
+      { num:7,  label:'Step 7 · Next Part',     mp3:'', text:'Dear gut feeling, please work now with the next part. This part is stuck in the past. It operates on the basis of the knowledge from the time when it was created. It does not know your current life situation and the effects of its influence. Dear gut feeling, your task is to convincingly teach the part your current abilities, knowledge, interests, beliefs, and inclinations. Dear gut feeling, please communicate with this part in the following way: Thank the part for everything it has done for you so far. I ask you to first listen to the part and then find out what this part believes and why it believes what it believes. And then I ask you, dear gut feeling, to teach the part about current reality with this new information. Dear gut feeling, this part is stuck in the time when it was created and ignores your current life situation. It only knows what you knew then, unaware of your life now. Convince the part to now support your current mindset, your beliefs, and your life situation. Give it an update. Dear gut feeling, please begin now with the next part. When you are done, please give me an impulse, simply Yes.' },
+      { num:8,  label:'Step 8 · More Parts?',    mp3:'', text:'Are there still more parts that contribute to or actively cause the problem? Please give me an impulse again, simply Yes or No.' },
+      { num:9,  label:'Step 9 · More Parts',     mp3:'', text:'Dear gut feeling, you now know the procedure. Please work with the parts that are still present in the same way you already know, so please now repeat this work with the remaining parts. When you are done, please give me an impulse, simply Yes.' },
+      { num:10, label:'Step 10 · Check',        mp3:'', text:'Dear gut feeling, now it is about the check. Please review once more whether any more parts related to the problem appear or are present. Are there still more parts that contribute to or actively cause the problem? Please give me an impulse again, simply Yes or No.' },
+      { num:11, label:'Step 11 · Processing',       mp3:'', text:'Dear gut feeling, please work with the part or parts you have just found in the same way that you already know. When you are done, please give me an impulse, simply Yes.' },
+      { num:12, label:'Step 12 · New Parts',       mp3:'', text:'Dear gut feeling, sometimes parts only appear once other parts have already been retrained – that is okay too. So, dear gut feeling, please search once more and find out which part or parts still have the desire to cause the problem. Once you have identified these parts, dear gut feeling, please retrain them as you have already done at the beginning. When you are done, please give me an impulse, simply Yes.' },
+      { num:13, label:'Step 13 · Final Clearing', mp3:'', text:'Dear gut feeling, if there is anything else you can do so that the problem never appears in your life again, please do that now. You can, for example, delete a part or several parts that are no longer needed. You can also create new parts that contribute to eliminating the problem. You can assign new tasks to parts that are conducive to further development. And you can dissolve connections between individual parts that are no longer necessary. Equally, you can create new connections between individual parts. If one, several, or all of these tasks are necessary or helpful to permanently eliminate the problem, please take care of that now. Give me an impulse when we can continue – simply Yes.' },
+      { num:14, label:'Step 14 · Awareness',      mp3:'', text:'And now I am speaking to you personally, dear client, dear user of this app. Would you like to know what your gut feeling has worked on? Please give me a hint, an impulse, simply Yes or No.' },
+      { num:15, label:'Step 15 · Inner Access',   mp3:'', text:'If you want to know what was worked on, please repeat after me: Dear gut feeling, I would like to know what you have worked on, please make it accessible to me within 1 minute. Do it through memories, an inner voice, or through insights. Do it in whatever way you deem appropriate. And when you, dear client, dear user, have received an answer, please give me a hint, an impulse, simply Yes or No.' },
+      { num:16, label:'Step 16 · Second Attempt',  mp3:'', text:'Dear gut feeling, apparently no or only insufficient information has reached your person. Please now make everything accessible to your person that is helpful and necessary for them. You, dear client, dear user of this app, please give feedback again on whether you perceived anything, simply Yes or No.' },
+      { num:17, label:'Step 17 · Note',          mp3:'', mp3_alt:'',
+        text:'Okay, then your gut feeling seems to be of the opinion that it is currently better for you if this information remains hidden for now. It may still be that over the next few days some inspirations, ideas, or insights will come that may be related to your problem. Dreams are also possible. Your gut feeling is always on your side. It knows exactly how much it can ask of you. Just be attentive over the next few days to what happens in your life. Sometimes it is just small things that you may not even notice or connect to your gut feeling. Whatever it is – a change has definitely taken place.',
+        text_chose_not_to_know:'That is completely fine.\n\nSome people prefer to work without knowing what was processed in the background – and that is an equally valid choice.\n\nYour gut feeling has still worked and a change has definitely taken place. Just be attentive over the next few days – some things only show themselves in stillness.',
+        text_cta: 'Please give me an impulse now – simply Yes.',
+      },
+      { num:18, label:'Step 18 · Closing',        mp3:'', text:'One brief closing note. In this short session a first change has already taken place, whether large or small. You can return at any time and have another conversation with your gut feeling. That can actually be very helpful. Because sometimes small changes take place, but one falls back into old behavioral patterns, or events occur that influence you and new parts form in your unconscious. Some parts also only appear once other parts have already been worked on. That is completely normal too. Then another conversation with your gut feeling can be very helpful. So, if you wish, I am always here for you again.', text_cta: 'Please give me an impulse now – simply Yes.' },
+      { num:19, label:'Step 19 · Thanks',             mp3:'', text:'Dear gut feeling, thank you very much for the work done.' },
+    ],
+  },
+
+  // ── ARMENISCH ────────────────────────────────────
+  hy: {
+    tts_lang: 'hy-AM',
+    tts_voices: [],  // Wird ergänzt sobald Stimmen verfügbar
+
+    mp3: {},
+    mp3_base: 'audio/hy/',
+
+    ui: {
+      hint:            'Հպեք սկսելու համար',
+      weiter:          'Շարունակել',
+      ja:              'Այո',
+      nein:            'Ոչ',
+      bereit:          'Պատրաստ եմ',
+      ich_habe_satz:   'Ունեմ իմ նախադասությունը',
+      sitzung_beenden: 'Ավարտել նիստը',
+      teile_lbl:       'Մասեր',
+      vorher_lbl:      'Առաջ',
+      nachher_lbl:     'Հետո',
+      teile_singular:  'Մաս',
+      teile_plural:    'Մասեր',
+      belastung_reduziert: (d) => `Այսօր դուք նվազեցրեցիք ձեր բեռը ${d} կետով։`,
+      prozess_weiter:  'Գործընթացը շարունակվում է – նույնիսկ նիստից հետո։',
+      daten_loeschen:  'Բոլոր տվյալները ոչնչացվում են փակելուց հետո։',
+      toast_spontaner: 'Խնդրում ենք պատասխանել ավելի ինքնաբուխ – վստահեք ձեր առաջին ազդակին։',
+      toast_asif:      'Եթե վստահ չեք – պարզապես վարվեք կարծես թե։',
+      toast_asif_btn:  'Եթե վստահ չեք, պարզապես սեղմեք կոճակը։',
+      toast_screen:    'Խորհուրդ. համոզվեք, որ ձեր էկրանը ավտոմատ չի անջատվում։',
+      badge_singular:  '1 մաս մշակված',
+      badge_plural:    (n) => `${n} մաս մշակված`,
+      augen_zu:        'Աչքերը փակ',
+      abgeschlossen:   'Նիստն ավարտված է։',
+    },
+
+    screens: {
+      // Տեքստերը կավելացվեն Արթուրի կամ Աննայի հետ համագործակցությամբ
+      info_tts: '', info_mp3: '',
+      welcome1_tts: '', welcome1_mp3: '',
+      welcome2_tts: '', welcome2_mp3: '',
+      problem_tts: '', problem_mp3: '',
+      presud_tts: '', presud_mp3: '',
+      intro1_tts: '', intro1_mp3: '',
+      intro2_tts: '', intro2_mp3: '',
+      intro3_tts: '', intro3_mp3: '',
+      practice1_tts: '', practice1_mp3: '',
+      practice2_tts: '', practice2_mp3: '',
+      practice3_tts: '', practice3_mp3: '',
+      calib_gut_tts: '', calib_gut_mp3: '',
+      calib2_intro_tts: '', calib2_intro_mp3: '',
+      calib2_start_tts: '', calib2_start_mp3: '',
+      contact_tts: '', contact_mp3: '',
+      eyes_tts: '', eyes_mp3: '',
+      ready_tts: '', ready_mp3: '',
+      postsud1_tts: '', postsud1_mp3: '',
+      postsud2_tts: '', postsud2_mp3: '',
+    },
+
+    calib: {
+      pool_true: [
+        'Ես մարդ եմ։','Ես հիմա արթուն եմ։','Ես հիմա շնչում եմ։',
+        'Ես հիմա նստած կամ պառկած եմ։','Ինձ շուրջ լույս կա։',
+        'Ես հիմա սարք եմ բռնել։','Ես հիմա ինչ-որ տեղ եմ։',
+        'Ես ունեմ երկու ձեռք։','Ես ունեմ երկու աչք։','Ես ունեմ անուն։',
+        'Ես 5 տարեկանից մեծ եմ։','Ես դեմք ունեմ։',
+        'Ես հասակ ունեմ։','Ես կշռում եմ ինչ-որ բան։',
+        'Իմ սիրտը հիմա բաբախում է։','Ես հիմա կարող եմ տեսնել։',
+        'Ես հիմա կարող եմ լսել։','Ես հիմա կարող եմ մտածել։',
+        'Ես հագուստ եմ կրում։','Ես հիմա գլուխ ունեմ։',
+        'Ես ջրի մեջ չեմ։','Այստեղ լույս կա։',
+        'Ես Երկրի վրա եմ։','Ինձ տակ գտնվող հատակը ամուր է։',
+        'Ինձ շուրջ առարկաներ կան։','Ես տարածությունում եմ գտնվում։',
+        'Ես հիմա պահ եմ ապրում։','Ես հիմա էկրան եմ դիտում։',
+        'Ես հիմա տեխնոլոգիա եմ օգտագործում։','Ես հիմա տեքստ եմ տեսնում։',
+        'Ես հիմա ինչ-որ բան եմ ընկալում։','Ես հիմա ներկա եմ։',
+        'Ես հիմա գիտակից եմ։','Իմ միտքը հիմա ակտիվ է։',
+        'Ձգողականություն կա։','Երկիրը կլոր է։',
+        'Օրը ունի 24 ժամ։','Թվեր կան։',
+        'Լեզու կա։','2-ը 1-ից մեծ է։',
+        'Մարդկանց ջուր է հարկավոր։','Ավելի քան մեկ գույն կա։',
+        'Կենդանիներ կան։','Բույսեր կան։','Ուրիշ մարդիկ կան։',
+      ],
+      pool_false: [
+        'Ձյունը սև է։','Ես հիմա ծառ եմ։','Կրակը սառն է։',
+        'Ես հիմա անտեսանելի եմ։','Ջուրը չոր է։',
+        'Արևը արևելքում մայր է մտնում։','Ես երեք աչք ունեմ։',
+        'Ես հիմա Լուսնի վրա եմ։','Քարերը ջրի պես փափուկ են։',
+        'Ես 1 տարեկանից փոքր եմ։',
+      ],
+    },
+
+    steps: [
+      // Քայլի տեքստերը կավելացվեն թարգմանությամբ
+      { num:1,  label:'Քայլ 1', mp3:'', text:'' },
+      { num:2,  label:'Քայլ 2', mp3:'', text:'' },
+      { num:3,  label:'Քայլ 3', mp3:'', text:'' },
+      { num:4,  label:'Քայլ 4', mp3:'', text:'' },
+      { num:5,  label:'Քայլ 5', mp3:'', text:'' },
+      { num:6,  label:'Քայլ 6', mp3:'', text:'' },
+      { num:7,  label:'Քայլ 7', mp3:'', text:'' },
+      { num:8,  label:'Քայլ 8', mp3:'', text:'' },
+      { num:9,  label:'Քայլ 9', mp3:'', text:'' },
+      { num:10, label:'Քայլ 10', mp3:'', text:'' },
+      { num:11, label:'Քայλ 11', mp3:'', text:'' },
+      { num:12, label:'Քայλ 12', mp3:'', text:'' },
+      { num:13, label:'Քայλ 13', mp3:'', text:'' },
+      { num:14, label:'Քայλ 14', mp3:'', text:'' },
+      { num:15, label:'Քայλ 15', mp3:'', text:'' },
+      { num:16, label:'Քայλ 16', mp3:'', text:'' },
+      { num:17, label:'Քայλ 17', mp3:'', mp3_alt:'', text:'', text_chose_not_to_know:'' },
+      { num:18, label:'Քայλ 18', mp3:'', text:'' },
+      { num:19, label:'Քայλ 19', mp3:'', text:'' },
+    ],
+  },
+
+  // ── RUSSISCH ─────────────────────────────────────
+  ru: {
+    tts_lang: 'ru-RU',
+    tts_voices: ['milena', 'irina'],
+
+    mp3: {},
+    mp3_base: 'audio/ru/',
+
+    ui: {
+      hint:            'Нажмите, чтобы начать',
+      weiter:          'Продолжить',
+      ja:              'Да',
+      nein:            'Нет',
+      bereit:          'Готов',
+      ich_habe_satz:   'У меня есть моё предложение',
+      sitzung_beenden: 'Завершить сессию',
+      teile_lbl:       'Части',
+      vorher_lbl:      'До',
+      nachher_lbl:     'После',
+      teile_singular:  'Часть',
+      teile_plural:    'Части',
+      belastung_reduziert: (d) => `Сегодня вы снизили нагрузку на ${d} ${d===1?'балл':'баллов'}.`,
+      prozess_weiter:  'Процесс продолжается – даже после сессии.',
+      daten_loeschen:  'Все данные безвозвратно удаляются после закрытия.',
+      toast_spontaner: 'Пожалуйста, отвечайте более спонтанно – доверяйте первому импульсу.',
+      toast_asif:      'Если сомневаетесь – просто делайте вид, что знаете.',
+      toast_asif_btn:  'Если сомневаетесь, просто нажмите кнопку.',
+      toast_screen:    'Совет: убедитесь, что экран не выключается автоматически.',
+      badge_singular:  '1 часть обработана',
+      badge_plural:    (n) => `${n} части обработано`,
+      augen_zu:        'Глаза закрыты',
+      abgeschlossen:   'Сессия завершена.',
+    },
+
+    screens: {
+      // Тексты будут добавлены позже
+      info_tts: '', info_mp3: '',
+      welcome1_tts: '', welcome1_mp3: '',
+      welcome2_tts: '', welcome2_mp3: '',
+      problem_tts: '', problem_mp3: '',
+      presud_tts: '', presud_mp3: '',
+      intro1_tts: '', intro1_mp3: '',
+      intro2_tts: '', intro2_mp3: '',
+      intro3_tts: '', intro3_mp3: '',
+      practice1_tts: '', practice1_mp3: '',
+      practice2_tts: '', practice2_mp3: '',
+      practice3_tts: '', practice3_mp3: '',
+      calib_gut_tts: '', calib_gut_mp3: '',
+      calib2_intro_tts: '', calib2_intro_mp3: '',
+      calib2_start_tts: '', calib2_start_mp3: '',
+      contact_tts: '', contact_mp3: '',
+      eyes_tts: '', eyes_mp3: '',
+      ready_tts: '', ready_mp3: '',
+      postsud1_tts: '', postsud1_mp3: '',
+      postsud2_tts: '', postsud2_mp3: '',
+    },
+
+    calib: {
+      pool_true: [
+        'Я человек.','Я сейчас бодрствую.','Я сейчас дышу.',
+        'Я сейчас сижу или лежу.','Вокруг меня есть свет.',
+        'Я держу устройство.','Я сейчас где-то нахожусь.',
+        'У меня две руки.','У меня два глаза.','У меня есть имя.',
+        'Мне больше 5 лет.','У меня есть лицо.',
+        'У меня есть рост.','Я что-то вешу.',
+        'Моё сердце сейчас бьётся.','Я сейчас могу видеть.',
+        'Я сейчас могу слышать.','Я сейчас могу думать.',
+        'На мне есть одежда.','У меня есть голова.',
+        'Я не в воде.','Здесь есть свет.',
+        'Я нахожусь на Земле.','Земля подо мной твёрдая.',
+        'Вокруг меня есть предметы.','Я нахожусь в пространстве.',
+        'Я переживаю момент прямо сейчас.','Я смотрю на экран.',
+        'Я использую технологии.','Я вижу текст прямо сейчас.',
+        'Я сейчас что-то воспринимаю.','Я сейчас присутствую.',
+        'Я сейчас осознаю.','Мой разум сейчас активен.',
+        'Существует гравитация.','Земля круглая.',
+        'В сутках 24 часа.','Числа существуют.',
+        'Язык существует.','2 больше, чем 1.',
+        'Люди нуждаются в воде.','Существует больше одного цвета.',
+        'Животные существуют.','Растения существуют.','Другие люди существуют.',
+      ],
+      pool_false: [
+        'Снег чёрный.','Я сейчас дерево.','Огонь холодный.',
+        'Я сейчас невидим.','Вода сухая.',
+        'Солнце встаёт на западе.','У меня три глаза.',
+        'Я сейчас на Луне.','Камни такие же мягкие, как вода.',
+        'Мне меньше 1 года.',
+      ],
+    },
+
+    steps: [
+      // Тексты шагов будут добавлены позже
+      { num:1,  label:'Шаг 1', mp3:'', text:'' },
+      { num:2,  label:'Шаг 2', mp3:'', text:'' },
+      { num:3,  label:'Шаг 3', mp3:'', text:'' },
+      { num:4,  label:'Шаг 4', mp3:'', text:'' },
+      { num:5,  label:'Шаг 5', mp3:'', text:'' },
+      { num:6,  label:'Шаг 6', mp3:'', text:'' },
+      { num:7,  label:'Шаг 7', mp3:'', text:'' },
+      { num:8,  label:'Шаг 8', mp3:'', text:'' },
+      { num:9,  label:'Шаг 9', mp3:'', text:'' },
+      { num:10, label:'Шаг 10', mp3:'', text:'' },
+      { num:11, label:'Шаг 11', mp3:'', text:'' },
+      { num:12, label:'Шаг 12', mp3:'', text:'' },
+      { num:13, label:'Шаг 13', mp3:'', text:'' },
+      { num:14, label:'Шаг 14', mp3:'', text:'' },
+      { num:15, label:'Шаг 15', mp3:'', text:'' },
+      { num:16, label:'Шаг 16', mp3:'', text:'' },
+      { num:17, label:'Шаг 17', mp3:'', mp3_alt:'', text:'', text_chose_not_to_know:'' },
+      { num:18, label:'Шаг 18', mp3:'', text:'' },
+      { num:19, label:'Шаг 19', mp3:'', text:'' },
+    ],
+  },
+
+  // ── ESPAÑOL ──────────────────────────────────────
+  es: {
+    tts_lang: 'es-ES',
+    tts_voices: ['monica', 'paulina', 'jorge'],
+
+    mp3: {},
+    mp3_base: 'audio/es/',
+
+    ui: {
+      hint:            'Toca para comenzar',
+      weiter:          'Continuar',
+      ja:              'Sí',
+      nein:            'No',
+      bereit:          'Listo',
+      ich_habe_satz:   'Tengo mi frase',
+      sitzung_beenden: 'Finalizar sesión',
+      teile_lbl:       'Partes',
+      vorher_lbl:      'Antes',
+      nachher_lbl:     'Después',
+      teile_singular:  'Parte',
+      teile_plural:    'Partes',
+      belastung_reduziert: (d) => `Hoy redujiste tu carga en ${d} ${d===1?'punto':'puntos'}.`,
+      prozess_weiter:  'El proceso continúa – también después de la sesión.',
+      daten_loeschen:  'Todos los datos se eliminan permanentemente al cerrar.',
+      toast_spontaner: 'Por favor responde más espontáneamente – confía en tu primer impulso.',
+      toast_asif:      'Si no estás seguro – actúa como si lo supieras.',
+      toast_asif_btn:  'Si no estás seguro, simplemente presiona el botón.',
+      toast_screen:    'Consejo: asegúrate de que tu pantalla no se apague automáticamente.',
+      badge_singular:  '1 parte procesada',
+      badge_plural:    (n) => `${n} partes procesadas`,
+      augen_zu:        'Ojos cerrados',
+      abgeschlossen:   'Sesión completada.',
+    },
+
+    screens: {
+      info_tts: 'Tienes un saber interior más inteligente que tu mente consciente. Algunos lo llaman instinto, voz interior o intuición. Esta app le da espacio para cambiar patrones antiguos – sin que tengas que hablar o pensar en tu problema. Durante la sesión solo presionas dos botones: Sí o No. No se te pide nada más. Aviso importante: Esta app es una oferta de coaching y no un producto médico. No es adecuada para enfermedades mentales agudas, crisis psíquicas o pensamientos suicidas. En esos casos, por favor contacta a un médico o servicio de urgencias psiquiátricas.',
+      info_mp3: '',
+      welcome1_tts: 'Bienvenido a ti mismo.',
+      welcome1_mp3: '',
+      welcome2_tts: 'Solo necesitas dos cosas: tu atención – y tu instinto.',
+      welcome2_mp3: '',
+      problem_tts: 'Antes de comenzar — tómate un momento. Formula tu tema como una frase clara. Por ejemplo: Duermo mal. O: Me siento incómodo en situaciones sociales. Sin explicar, sin analizar — solo una frase. Mantenla en tu mente.',
+      problem_mp3: '',
+      presud_tts: 'Recuerda tu frase interiormente ahora. Siente qué tan fuerte te carga este tema en este momento — y toca un número espontáneamente.',
+      presud_mp3: '',
+      intro1_tts: 'Bien. Ahora te mostraré cómo funciona la sesión.',
+      intro1_mp3: '',
+      intro2_tts: 'Hay tres niveles dentro de ti.',
+      intro2_mp3: '',
+      intro3_tts: 'Tu instinto – la instancia sabia que guía esta sesión. Tu inconsciente – un sistema de partes internas que han almacenado experiencias antiguas. Tú mismo – que observas y presionas los botones.',
+      intro3_mp3: '',
+      practice1_tts: 'Ejercicio rápido. Toca el botón Rojo ahora – abajo a la izquierda.',
+      practice1_mp3: '',
+      practice2_tts: 'Bien. Ahora toca Verde – abajo a la derecha.',
+      practice2_mp3: '',
+      practice3_tts: 'Perfecto. Ya conoces los botones.',
+      practice3_mp3: '',
+      calib_gut_tts: 'Muy bien.',
+      calib_gut_mp3: '',
+      calib2_intro_tts: 'Cierra los ojos ahora. Responde las próximas preguntas igual de espontáneamente — sin pensar, sin sopesar. Tu primer impulso es la respuesta correcta. ¿Por qué? Porque el pensamiento consciente no te ha llevado a una solución duradera hasta ahora. El inconsciente sabe más — y eso es exactamente lo que vamos a usar ahora. Simplemente presiona lo que sientas primero.',
+      calib2_intro_mp3: '',
+      calib2_start_tts: 'Ojos cerrados. Responde espontáneamente.',
+      calib2_start_mp3: '',
+      contact_tts: 'Tu instinto se está preparando ahora.\n\nRespira profundo – y presiona el botón cuando estés listo.',
+      contact_mp3: '',
+      eyes_tts: 'Mantén los ojos cerrados durante toda la sesión – estoy aquí contigo.',
+      eyes_mp3: '',
+      ready_tts: 'Eres el traductor entre tu instinto y la app. Presiona Verde o Rojo tan pronto como sientas el impulso – esa es tu única tarea. Reacciona espontáneamente, sin pensar – tu primer impulso siempre es el correcto.',
+      ready_mp3: '',
+      postsud1_tts: 'Ahora puedes abrir los ojos.',
+      postsud1_mp3: '',
+      postsud2_tts: '¿Qué tan fuerte sientes el tema ahora? Toca espontáneamente un número del 1 al 10.',
+      postsud2_mp3: '',
+    },
+
+    calib: {
+      pool_true: [
+        'Soy un ser humano.','Estoy despierto ahora mismo.','Estoy respirando ahora.',
+        'Estoy sentado o acostado.','Hay luz a mi alrededor.',
+        'Estoy sosteniendo un dispositivo.','Estoy en algún lugar ahora mismo.',
+        'Tengo dos manos.','Tengo dos ojos.','Tengo un nombre.',
+        'Tengo más de 5 años.','Tengo una cara.',
+        'Tengo una altura.','Peso algo.',
+        'Mi corazón está latiendo ahora.','Puedo ver ahora mismo.',
+        'Puedo escuchar ahora mismo.','Puedo pensar ahora mismo.',
+        'Llevo ropa puesta.','Tengo una cabeza ahora mismo.',
+        'No estoy en el agua.','Hay luz aquí.',
+        'Estoy en la Tierra.','El suelo bajo mis pies es sólido.',
+        'Hay objetos a mi alrededor.','Estoy en un espacio.',
+        'Estoy viviendo un momento ahora mismo.','Estoy mirando una pantalla.',
+        'Estoy usando tecnología.','Puedo ver texto ahora mismo.',
+        'Estoy percibiendo algo ahora mismo.','Estoy presente ahora.',
+        'Soy consciente ahora mismo.','Mi mente está activa ahora.',
+        'Existe la gravedad.','La Tierra es redonda.',
+        'Un día tiene 24 horas.','Los números existen.',
+        'El lenguaje existe.','2 es más que 1.',
+        'Los humanos necesitan agua.','Existe más de un color.',
+        'Los animales existen.','Las plantas existen.','Otras personas existen.',
+      ],
+      pool_false: [
+        'La nieve es negra.','Soy un árbol ahora mismo.','El fuego es frío.',
+        'Soy invisible ahora mismo.','El agua está seca.',
+        'El sol sale por el oeste.','Tengo tres ojos.',
+        'Estoy en la luna ahora mismo.','Las piedras son tan blandas como el agua.',
+        'Tengo menos de 1 año.',
+      ],
+    },
+
+    steps: [
+      { num:1,  label:'Paso 1 · Investigación',      mp3:'', text:'Querido instinto, por favor investiga el problema para obtener el panorama completo de cómo comenzó el problema y por qué continúa hasta hoy. Revisa recuerdos de eventos que puedan haber tenido algo que ver. Comunícate con las partes involucradas. El objetivo es que entiendas cómo el problema se convirtió en parte de tu vida hoy. Querido instinto, por favor ve hasta los límites de tus capacidades e investiga el problema tan a fondo como sea posible ahora mismo. Por favor dame un impulso para hacerme saber que has terminado, simplemente Sí.' },
+      { num:2,  label:'Paso 2 · Identificación',    mp3:'', text:'Querido instinto, ahora te pido que identifiques la primera parte de tu mente que está causando activamente el problema. Esta parte ha sido influenciada por experiencias de vida de tal manera que causa activamente tu problema, y es tu tarea enseñarle de manera convincente a adaptarse a tus capacidades, conocimientos, necesidades, intereses, valores e inclinaciones actuales. Te guiaré a través de esto y estos son los pasos: la parte primero debe ser identificada, luego debe ser informada de manera convincente sobre la vida actual, y esta nueva información debe ser integrada por la parte. De esta manera la parte será reentrenada y podrá apoyar tus necesidades actuales sin causar un problema. Esta parte solo sabe lo que sabía cuando fue creada. Está atrapada en su tiempo y no es consciente de la vida actual. Querido instinto, es tu tarea reeducarla e informarla sobre la vida actual, darle una actualización, y yo te guiaré a través de esto. Querido instinto, por favor da ahora el primer paso e identifica esta parte. Cuando hayas terminado, por favor dame un impulso, simplemente Sí.' },
+      { num:3,  label:'Paso 3 · Primera parte',       mp3:'', text:'Querido instinto, comienza ahora con la primera parte. Esta parte está atrapada en el pasado. Opera sobre la base del conocimiento de cuando fue creada. No conoce tu situación de vida actual ni los efectos de su influencia. Querido instinto, tu tarea es enseñarle a la parte de manera convincente tus capacidades, conocimientos, intereses, creencias e inclinaciones actuales. Querido instinto, por favor comunícate con esta parte de la siguiente manera: Agradece a la parte por todo lo que ha hecho por ti hasta ahora. Te pido que primero escuches a la parte y luego descubras qué cree esta parte y por qué cree lo que cree. Y luego te pido a ti, querido instinto, que enseñes a la parte sobre la realidad actual con esta nueva información. Esta parte está atrapada en el tiempo en que fue creada e ignora tu situación de vida actual. Solo sabe lo que sabías entonces, sin conocer tu vida ahora. Convence a la parte para que ahora apoye tu mentalidad actual, tus creencias y tu situación de vida. Querido instinto, por favor comienza ahora con la primera parte. Cuando hayas terminado, por favor dame un impulso, simplemente Sí.' },
+      { num:4,  label:'Paso 4 · ¿Más partes?',    mp3:'', text:'Querido instinto, ¿hay otra parte que también contribuye o causa activamente el problema? Por favor dame un impulso, simplemente Sí o No.' },
+      { num:5,  label:'Paso 5 · Siguiente parte',     mp3:'', text:'Querido instinto, por favor trabaja ahora con la siguiente parte. Esta parte está atrapada en el pasado. Opera sobre la base del conocimiento de cuando fue creada. No conoce tu situación de vida actual ni los efectos de su influencia. Querido instinto, tu tarea es enseñarle a la parte de manera convincente tus capacidades, conocimientos, intereses, creencias e inclinaciones actuales. Querido instinto, por favor comunícate con esta parte de la siguiente manera: Agradece a la parte por todo lo que ha hecho por ti hasta ahora. Te pido que primero escuches a la parte y luego descubras qué cree esta parte y por qué cree lo que cree. Y luego te pido a ti, querido instinto, que enseñes a la parte sobre la realidad actual con esta nueva información. Esta parte está atrapada en el tiempo en que fue creada e ignora tu situación de vida actual. Solo sabe lo que sabías entonces, sin conocer tu vida ahora. Convence a la parte para que ahora apoye tu mentalidad actual, tus creencias y tu situación de vida. Dale una actualización. Querido instinto, por favor comienza ahora con la siguiente parte. Cuando hayas terminado, por favor dame un impulso, simplemente Sí.' },
+      { num:6,  label:'Paso 6 · ¿Más partes?',    mp3:'', text:'Querido instinto, ¿hay otra parte que también contribuye o causa activamente el problema? Por favor dame un impulso, simplemente Sí o No.' },
+      { num:7,  label:'Paso 7 · Siguiente parte',     mp3:'', text:'Querido instinto, por favor trabaja ahora con la siguiente parte. Esta parte está atrapada en el pasado. Opera sobre la base del conocimiento de cuando fue creada. No conoce tu situación de vida actual ni los efectos de su influencia. Querido instinto, tu tarea es enseñarle a la parte de manera convincente tus capacidades, conocimientos, intereses, creencias e inclinaciones actuales. Querido instinto, por favor comunícate con esta parte de la siguiente manera: Agradece a la parte por todo lo que has hecho por ti hasta ahora. Te pido que primero escuches a la parte y luego descubras qué cree esta parte y por qué cree lo que cree. Y luego te pido a ti, querido instinto, que enseñes a la parte sobre la realidad actual con esta nueva información. Querido instinto, esta parte está atrapada en el tiempo en que fue creada e ignora tu situación de vida actual. Solo sabe lo que sabías entonces, sin conocer tu vida ahora. Convence a la parte para que ahora apoye tu mentalidad actual, tus creencias y tu situación de vida. Dale una actualización. Querido instinto, por favor comienza ahora con la siguiente parte. Cuando hayas terminado, por favor dame un impulso, simplemente Sí.' },
+      { num:8,  label:'Paso 8 · ¿Más partes?',    mp3:'', text:'¿Hay aún más partes que contribuyen o causan activamente el problema? Por favor dame un impulso de nuevo, simplemente Sí o No.' },
+      { num:9,  label:'Paso 9 · Más partes',     mp3:'', text:'Querido instinto, ya conoces el procedimiento. Por favor trabaja con las partes que aún están presentes de la misma manera que ya conoces, así que por favor repite ahora este trabajo con las partes restantes. Cuando hayas terminado, por favor dame un impulso, simplemente Sí.' },
+      { num:10, label:'Paso 10 · Verificación',        mp3:'', text:'Querido instinto, ahora se trata de la verificación. Por favor revisa una vez más si aún aparecen o están presentes más partes relacionadas con el problema. ¿Hay aún más partes que contribuyen o causan activamente el problema? Por favor dame un impulso de nuevo, simplemente Sí o No.' },
+      { num:11, label:'Paso 11 · Procesamiento',       mp3:'', text:'Querido instinto, por favor trabaja con la parte o las partes que acabas de encontrar de la misma manera que ya conoces. Cuando hayas terminado, por favor dame un impulso, simplemente Sí.' },
+      { num:12, label:'Paso 12 · Nuevas partes',       mp3:'', text:'Querido instinto, a veces las partes solo aparecen una vez que otras partes ya han sido reentrenadas – eso también está bien. Entonces, querido instinto, por favor busca una vez más y descubre qué parte o partes aún tienen el deseo de causar el problema. Una vez que hayas identificado estas partes, querido instinto, por favor reentrénalas como ya lo hiciste al principio. Cuando hayas terminado, por favor dame un impulso, simplemente Sí.' },
+      { num:13, label:'Paso 13 · Limpieza final', mp3:'', text:'Querido instinto, si hay algo más que puedas hacer para que el problema nunca vuelva a aparecer en tu vida, por favor hazlo ahora. Puedes, por ejemplo, eliminar una parte o varias partes que ya no se necesitan. También puedes crear nuevas partes que contribuyan a eliminar el problema. Puedes asignar nuevas tareas a partes que sean conducentes al desarrollo posterior. Y puedes disolver conexiones entre partes individuales que ya no son necesarias. Del mismo modo, puedes crear nuevas conexiones entre partes individuales. Si una, varias o todas estas tareas son necesarias o útiles para eliminar el problema de forma permanente, por favor ocúpate de eso ahora. Dame un impulso cuando podamos continuar – simplemente Sí.' },
+      { num:14, label:'Paso 14 · Conciencia',      mp3:'', text:'Y ahora te hablo a ti personalmente, querido cliente, querido usuario de esta app. ¿Te gustaría saber en qué ha trabajado tu instinto? Por favor dame una señal, un impulso, simplemente Sí o No.' },
+      { num:15, label:'Paso 15 · Acceso interior',   mp3:'', text:'Si quieres saber qué se trabajó, repite conmigo: Querido instinto, me gustaría saber en qué has trabajado, por favor hazlo accesible para mí dentro de 1 minuto. Hazlo a través de recuerdos, una voz interior o a través de percepciones. Hazlo de la manera que consideres apropiada. Y cuando tú, querido cliente, querido usuario, hayas recibido una respuesta, por favor dame una señal, un impulso, simplemente Sí o No.' },
+      { num:16, label:'Paso 16 · Segundo intento',  mp3:'', text:'Querido instinto, aparentemente no ha llegado información suficiente a tu persona. Por favor hazle accesible ahora a tu persona todo lo que sea útil y necesario para ella. Tú, querido cliente, querido usuario de esta app, por favor da nuevamente retroalimentación sobre si percibiste algo, simplemente Sí o No.' },
+      { num:17, label:'Paso 17 · Nota',          mp3:'', mp3_alt:'',
+        text:'De acuerdo, entonces parece que tu instinto considera que por el momento es mejor para ti que esta información permanezca oculta. Puede que aún ocurra que en los próximos días lleguen algunas inspiraciones, ideas o percepciones que puedan estar relacionadas con tu problema. Los sueños también son posibles. Tu instinto siempre está de tu lado. Sabe exactamente cuánto puede pedirte. Simplemente estate atento en los próximos días a lo que sucede en tu vida. A veces son solo pequeñas cosas que quizás ni notes o que no conectas con tu instinto. Sea lo que sea – un cambio definitivamente ha tenido lugar.',
+        text_chose_not_to_know:'Eso está completamente bien.\n\nAlgunas personas prefieren trabajar sin saber qué se procesó en el fondo – y esa es una decisión igualmente válida.\n\nTu instinto de todas formas ha trabajado y un cambio definitivamente ha tenido lugar. Simplemente estate atento en los próximos días – algunas cosas solo se muestran en la quietud.',
+        text_cta: 'Por favor dame un impulso ahora – simplemente Sí.',
+      },
+      { num:18, label:'Paso 18 · Cierre',        mp3:'', text:'Una breve nota de cierre. En esta corta sesión ya ha tenido lugar un primer cambio, ya sea grande o pequeño. Puedes regresar en cualquier momento y tener otra conversación con tu instinto. Eso puede ser muy útil. Porque a veces se producen pequeños cambios, pero uno vuelve a caer en viejos patrones de comportamiento, o ocurren eventos que te influyen y se forman nuevas partes en tu inconsciente. Algunas partes también solo aparecen una vez que otras partes ya han sido trabajadas. Eso también es completamente normal. Entonces otra conversación con tu instinto puede ser muy útil. Así que, si lo deseas, siempre estoy aquí para ti de nuevo.', text_cta: 'Por favor dame un impulso ahora – simplemente Sí.' },
+      { num:19, label:'Paso 19 · Gracias',             mp3:'', text:'Querido instinto, muchas gracias por el trabajo realizado.' },
+    ],
+  },
+};
+
+// ══════════════════════════════════════════════════
+// §JS:LANG-ENGINE  – aktive Sprache, TTS, MP3
+// ══════════════════════════════════════════════════
+let currentLang = 'de';
+let L = LANG.de;  // aktive Sprachkonfiguration
+
+function setLang(code) {
+  if (!LANG[code]) return;
+  currentLang = code;
+  L = LANG[code];
+  // STEPS + CALIB neu aufbauen
+  STEPS = buildSteps();
+  STEPS.forEach(s => STEP_MAP[s.num] = s);
+  CALIB_Q = buildCalibPool();
+  // Button-Highlighting
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('langBtn-' + code);
+  if (btn) btn.classList.add('active');
+  // Splash-Hint aktualisieren
+  const hint = document.querySelector('.splash-hint');
+  if (hint) hint.textContent = L.ui.hint;
+}
+
+// TTS-Stimme für aktive Sprache
+let ttsVoice = null;
+
+(function initVoices() {
+  const load = () => {
+    const voices = speechSynthesis.getVoices();
+    const preferred = (L.tts_voices || []);
+    ttsVoice = preferred.reduce((found, name) =>
+      found || voices.find(v => new RegExp(name, 'i').test(v.name)), null)
+      || voices.find(v => v.lang.startsWith(currentLang) && v.localService)
+      || voices.find(v => v.lang.startsWith(currentLang))
+      || null;
+  };
+  if (speechSynthesis.getVoices().length) load();
+  else speechSynthesis.onvoiceschanged = load;
+  setTimeout(load, 600);
+})();
+
+// AudioContext initialisieren (iOS benoetigt Nutzer-Geste)
+let _audioCtx = null;
+function ensureAudioCtx() {
+  if (_audioCtx) return;
+  try {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch(e) {}
+}
+
+// Haupt-Speak-Funktion: MP3 wenn vorhanden, sonst TTS
+let _currentAudio = null;
+
+function speak(textOrKey, onDone, mp3Key) {
+  const cb = onDone || function(){};
+
+  // MP3-Pfad bestimmen
+  const mp3file = mp3Key
+    ? (L.mp3[mp3Key] || '')
+    : '';
+  const mp3path = mp3file ? (L.mp3_base + mp3file + '.mp3') : '';
+
+  if (mp3path) {
+    // ── MP3 abspielen ──────────────────────────────
+    try {
+      if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
+      const audio = new Audio(mp3path);
+      _currentAudio = audio;
+      audio.onended  = () => { _currentAudio = null; cb(); };
+      audio.onerror  = () => { _currentAudio = null; _speakTTS(textOrKey, cb); }; // Fallback TTS
+      audio.play();
+    } catch(e) { _speakTTS(textOrKey, cb); }
+  } else {
+    // ── TTS ────────────────────────────────────────
+    _speakTTS(textOrKey, cb);
+  }
+}
+
+function _speakTTS(text, cb) {
+  const fallbackMs = Math.max(1500, Math.round(text.length * 80) + 800);
+  let done = false;
+  function finish() {
+    if (done) return; done = true;
+    clearTimeout(fallbackTimer); cb();
+  }
+  const fallbackTimer = setTimeout(finish, fallbackMs);
+  try {
+    speechSynthesis.cancel();
+    // Stimme für aktive Sprache neu laden
+    const voices = speechSynthesis.getVoices();
+    const preferred = (L.tts_voices || []);
+    ttsVoice = preferred.reduce((found, name) =>
+      found || voices.find(v => new RegExp(name, 'i').test(v.name)), null)
+      || voices.find(v => v.lang.startsWith(currentLang) && v.localService)
+      || voices.find(v => v.lang.startsWith(currentLang))
+      || null;
+    setTimeout(() => {
+      try {
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang  = L.tts_lang;
+        u.rate  = 0.88;
+        u.pitch = 1.0;
+        if (ttsVoice) u.voice = ttsVoice;
+        u.onend   = finish;
+        u.onerror = finish;
+        speechSynthesis.speak(u);
+      } catch(e) { finish(); }
+    }, 80);
+  } catch(e) { finish(); }
+}
+
+function cancelTTS() {
+  try { speechSynthesis.cancel(); } catch(e) {}
+  if (_currentAudio) { try { _currentAudio.pause(); } catch(e) {} _currentAudio = null; }
+}
+
+// B2 FIX: Reveal a hidden-until-tts button
+function showBtn(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('hidden-until-tts');
+}
+
+// ══════════════════════════════════════════════════
+// §JS:INTRO-FLOW  (Splash → Name → Welcome → Intro → Practice → Breath → Ready)
+// ══════════════════════════════════════════════════
+
+// DEV-ONLY – vor Veroeffentlichung entfernen
+function devMenuToggle() {
+  const m = document.getElementById('devMenu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+function devJump(target) {
+  document.getElementById('devMenu').style.display = 'none';
+  ensureAudioCtx();
+  S = freshSession();
+  S.client_name = 'Ralf';
+  S.sud_pre = 5;
+  if (target === 'aha') {
+    startAha();
+  } else if (target === 'problem') {
+    goTo('screenProblem');
+    setTimeout(() => speak(L.screens.problem_tts, () => showBtn('problemBtn')), 400);
+  } else if (target === 'presud') {
+    startPreSUD();
+  } else if (target === 'calib1') {
+    screenLandscapeNext();
+  } else if (target === 'calib2') {
+    startCalib2();
+  } else if (target === 'contact') {
+    startContact();
+  } else if (target === 'postsud') {
+    startPostSUD();
+  } else {
+    // Direkt zu einem Schritt springen
+    document.getElementById('sessionBtns').classList.add('active', 'large');
+    runStep(target);
+  }
+}
+// /DEV-ONLY
+// Flags für die drei Bedingungen
+let _infoTimerDone = false;
+let _infoTtsDone   = false;
+let _infoChecked   = false;
+
+function _infoTryReveal() {
+  if (_infoTimerDone && _infoTtsDone && _infoChecked) showBtn('infoBtn');
+}
+
+function splashStart() {
+  ensureAudioCtx();
+  // Stimme für gewählte Sprache neu initialisieren
+  _infoTimerDone = false; _infoTtsDone = false; _infoChecked = false;
+  if ('wakeLock' in navigator) {
+    navigator.wakeLock.request('screen').then(lock => {
+      window._wakeLock = lock;
+    }).catch(() => {});
+  } else {
+    setTimeout(() => toast(L.ui.toast_screen, 'soft'), 3000);
+  }
+  goTo('screenInfo');
+  setTimeout(() => { _infoTimerDone = true; _infoTryReveal(); }, 8000);
+  const infoTxt = L.screens.info_tts;
+  setTimeout(() => speak(infoTxt, () => { _infoTtsDone = true; _infoTryReveal(); }, L.screens.info_mp3 ? 'info' : null), 600);
+}
+
+function infoCheckChanged() {
+  const cb = document.getElementById('infoCheckbox');
+  _infoChecked = cb.checked;
+  if (!_infoChecked) {
+    document.getElementById('infoBtn').classList.add('hidden-until-tts');
+  } else {
+    _infoTryReveal();
+  }
+}
+
+function infoNext() {
+  goTo('screenWelcome');
+  setTimeout(() => {
+    speak(L.screens.welcome1_tts, () => {
+      setTimeout(() => {
+        speak(L.screens.welcome2_tts, () => showBtn('welcomeBtn'));
+      }, 300);
+    });
+  }, 400);
+}
+
+function welcomeNext() {
+  cancelTTS();
+  startAha();
+}
+
+function problemNext() {
+  cancelTTS();
+  startPreSUD();
+}
+
+function introNext() {
+  cancelTTS();
+  startPractice();
+}
+
+// ══════════════════════════════════════════════════
+// §JS:BUTTON-PRACTICE
+// ══════════════════════════════════════════════════
+let practicePhase = 0; // 0=wait for red, 1=wait for green, 2=done
+
+function startPractice() {
+  practicePhase = 0;
+  goTo('screenPractice');
+  document.getElementById('practiceHint').textContent = '';
+  setOff(['practiceYes','practiceNo'], true);
+  document.getElementById('practiceBtns').classList.add('active');
+
+  setTimeout(() => {
+    speak(L.screens.practice1_tts, () => {
+      setOff(['practiceNo'], false);
+      document.getElementById('practiceHint').textContent = '← ' + L.ui.nein;
+    });
+  }, 400);
+}
+
+function practiceAnswer(which) {
+  if (practicePhase === 0 && which === 'no') {
+    practicePhase = 1;
+    setOff(['practiceNo'], true);
+    document.getElementById('practiceHint').textContent = '';
+    setTimeout(() => {
+      speak(L.screens.practice2_tts, () => {
+        setOff(['practiceYes'], false);
+        document.getElementById('practiceHint').textContent = L.ui.ja + ' →';
+      });
+    }, 300);
+  } else if (practicePhase === 1 && which === 'yes') {
+    practicePhase = 2;
+    setOff(['practiceYes'], true);
+    document.getElementById('practiceBtns').classList.remove('active');
+    document.getElementById('practiceHint').textContent = '';
+    setTimeout(() => {
+      speak(L.screens.practice3_tts, () => {
+        setTimeout(() => startCalib(), 800);
+      });
+    }, 300);
+  }
+}
+
+
+// ══════════════════════════════════════════════════
+// §JS:AHA-SEQUENZ
+// ══════════════════════════════════════════════════
+const AHA_STEPS = [
+  {
+    headline: 'Eine kurze Frage.',
+    text: 'Gibt es etwas in deinem Leben, das dich gerade beschäftigt — auch wenn du es noch nicht genau benennen kannst?',
+    onYes: 2,
+    onNo: 'no1',
+  },
+  {
+    headline: 'Spür einmal nach.',
+    text: 'Ist da irgendwie etwas spürbar — egal wo, egal wie schwach?',
+    onYes: 3,
+    onNo: 'no2',
+  },
+  {
+    headline: 'Letzte Frage.',
+    text: 'Wäre es gut, wenn das leichter werden könnte?',
+    onYes: 'done',
+    onNo: 'no3',
+  },
+];
+
+let _ahaStep = 0;
+let _ahaShowingNoBridge = false;
+
+function startAha() {
+  _ahaStep = 0;
+  _ahaShowingNoBridge = false;
+  goTo('screenAha');
+  document.getElementById('ahaBtns').classList.add('active');
+  setOff(['ahaYes', 'ahaNo'], true);
+  _ahaShowStep();
+}
+
+function _ahaShowStep() {
+  const s = AHA_STEPS[_ahaStep];
+  document.getElementById('ahaHeadline').textContent = s.headline;
+  document.getElementById('ahaText').textContent = '';
+  document.getElementById('ahaHint').textContent = '';
+  setOff(['ahaYes', 'ahaNo'], true);
+  setTimeout(() => {
+    speak(s.text, () => {
+      document.getElementById('ahaText').textContent = s.text;
+      setOff(['ahaYes', 'ahaNo'], false);
+      document.getElementById('ahaHint').textContent = '← Nein   Ja →';
+    });
+  }, 400);
+}
+
+function ahaAnswer(which) {
+  if (_ahaShowingNoBridge) return;
+  const s = AHA_STEPS[_ahaStep];
+  setOff(['ahaYes', 'ahaNo'], true);
+  document.getElementById('ahaHint').textContent = '';
+
+  if (which === 'yes') {
+    const next = s.onYes;
+    if (next === 'done') {
+      _ahaDone();
+    } else {
+      _ahaStep = next - 1;
+      setTimeout(() => _ahaShowStep(), 400);
+    }
+  } else {
+    // Nein-Pfad
+    _ahaShowingNoBridge = true;
+    const action = s.onNo;
+
+    if (action === 'no1') {
+      const bridgeText = 'Das ist vollkommen in Ordnung. Manchmal ist es nur ein diffuses Gefühl, eine leichte Unruhe — etwas, das einfach da ist, ohne einen Namen zu haben.';
+      speak(bridgeText, () => {
+        document.getElementById('ahaText').textContent = bridgeText;
+        _ahaShowingNoBridge = false;
+        _ahaStep = 1; // weiter zu Frage 2
+        setTimeout(() => _ahaShowStep(), 800);
+      });
+    } else if (action === 'no2') {
+      const bridgeText = 'Manchmal zeigt es sich erst, wenn man genauer hinhört. Das ist völlig normal. Und wenn dies gerade nicht der richtige Moment für dich ist — du kannst jederzeit zurückkommen.';
+      speak(bridgeText, () => {
+        document.getElementById('ahaText').textContent = bridgeText;
+        document.getElementById('ahaHeadline').textContent = '';
+        // Zwei Buttons: Rot = Abbruch, Grün = Trotzdem weiter
+        document.getElementById('ahaNoLabel').textContent = 'Später';
+        setOff(['ahaNo'], false);
+        setOff(['ahaYes'], false);
+        document.getElementById('ahaHint').textContent = '← Später   Trotzdem →';
+        _ahaShowingNoBridge = false;
+        // Überschreibe onYes/onNo temporär per Flag
+        _ahaStep = 99; // Sonderfall
+      });
+    } else if (action === 'no3') {
+      const bridgeText = 'Dann ist jetzt vielleicht nicht der richtige Moment — du kannst jederzeit zurückkommen.';
+      speak(bridgeText, () => {
+        document.getElementById('ahaText').textContent = bridgeText;
+        document.getElementById('ahaNoLabel').textContent = 'Später';
+        setOff(['ahaNo'], false);
+        document.getElementById('ahaHint').textContent = '← Später';
+        _ahaShowingNoBridge = false;
+        _ahaStep = 98; // Sonderfall Abbruch
+      });
+    }
+  }
+}
+
+// Überschreibe ahaAnswer für Sonderfälle nach Nein
+const _ahaAnswerOrig = ahaAnswer;
+// Patching via wrapper:
+(function() {
+  const orig = window.ahaAnswer;
+  window.ahaAnswer = function(which) {
+    if (_ahaStep === 99) {
+      // Nach Frage 2 Nein: Grün = Frage 3, Rot = Abbruch
+      setOff(['ahaYes','ahaNo'], true);
+      document.getElementById('ahaHint').textContent = '';
+      document.getElementById('ahaNoLabel').textContent = 'Nein';
+      if (which === 'yes') {
+        _ahaStep = 2;
+        setTimeout(() => _ahaShowStep(), 400);
+      } else {
+        _ahaAbort();
+      }
+      return;
+    }
+    if (_ahaStep === 98) {
+      // Nach Frage 3 Nein: nur Rot = Abbruch
+      if (which === 'no') _ahaAbort();
+      return;
+    }
+    orig(which);
+  };
+})();
+
+function _ahaDone() {
+  document.getElementById('ahaBtns').classList.remove('active');
+  const closingText = L.aha ? L.aha.closing : 'Genau dafür ist diese Session. Lass uns beginnen.';
+  document.getElementById('ahaHeadline').textContent = '';
+  document.getElementById('ahaText').textContent = closingText;
+  document.getElementById('ahaHint').textContent = '';
+  speak(closingText, () => {
+    setTimeout(() => {
+      goTo('screenProblem');
+      setTimeout(() => {
+        speak(L.screens.problem_tts, () => showBtn('problemBtn'));
+      }, 400);
+    }, 800);
+  });
+}
+
+function _ahaAbort() {
+  document.getElementById('ahaBtns').classList.remove('active');
+  goTo('screenSplash');
+}
+
+
+// ══════════════════════════════════════════════════
+// type: 'rekon'  – animation then green only
+//       'green'  – ring, green only
+//       'both'   – ring, green + red
+//       'info'   – text + weiter button, no ring
+// on_yes / on_no: step number (1-based) or special: 'POST_SUD'
+// parts_count: true → increment parts_counter after rekon
+// B3 FIX: S16 has two text variants via S.s16_reason
+// ══════════════════════════════════════════════════
+
+// Statische Protokoll-Metadaten (Typ, Routing, Dots) – sprachunabhängig
+const STEPS_META = [
+  { num:1,  dots:[1,0,0,0,0], type:'rekon', on_yes:2 },
+  { num:2,  dots:[1,1,0,0,0], type:'rekon', on_yes:3 },
+  { num:3,  dots:[1,1,1,0,0], type:'rekon', parts_count:true, on_yes:4 },
+  { num:4,  dots:[1,1,1,1,0], type:'both',  on_yes:5, on_no:10 },
+  { num:5,  dots:[1,1,1,1,0], type:'rekon', parts_count:true, on_yes:6 },
+  { num:6,  dots:[1,1,1,1,0], type:'both',  on_yes:7, on_no:10 },
+  { num:7,  dots:[1,1,1,1,0], type:'rekon', parts_count:true, on_yes:8 },
+  { num:8,  dots:[1,1,1,1,0], type:'both',  on_yes:9, on_no:10 },
+  { num:9,  dots:[1,1,1,1,0], type:'rekon', parts_count:true, on_yes:10 },
+  { num:10, dots:[1,1,1,1,1], type:'both',  on_yes:11, on_no:13 },
+  { num:11, dots:[1,1,1,1,1], type:'rekon', parts_count:true, on_yes:12 },
+  { num:12, dots:[1,1,1,1,1], type:'rekon', parts_count:true, on_yes:13 },
+  { num:13, dots:[1,1,1,1,1], type:'rekon', on_yes:14 },
+  { num:14, dots:[1,1,1,1,1], type:'both',  on_yes:15, on_no:17, on_no_reason:'chose_not_to_know' },
+  { num:15, dots:[1,1,1,1,1], type:'both',  on_yes:18, on_no:16 },
+  { num:16, dots:[1,1,1,1,1], type:'both',  on_yes:18, on_no:17, on_no_reason:'hidden_by_gut' },
+  { num:17, dots:[1,1,1,1,1], type:'info',  on_yes:18 },
+  { num:18, dots:[1,1,1,1,1], type:'info',  on_yes:19 },
+  { num:19, dots:[1,1,1,1,1], type:'info',  on_yes:'POST_SUD' },
+];
+
+function buildSteps() {
+  const langSteps = L.steps;
+  const stepMap = {};
+  langSteps.forEach(s => stepMap[s.num] = s);
+  return STEPS_META.map(meta => {
+    const ls = stepMap[meta.num] || {};
+    return Object.assign({}, meta, {
+      label: ls.label || ('Step ' + meta.num),
+      text:  ls.text  || '',
+      text_chose_not_to_know: ls.text_chose_not_to_know || undefined,
+      mp3:   ls.mp3   || '',
+      mp3_alt: ls.mp3_alt || '',
+    });
+  });
+}
+
+let STEPS   = buildSteps();
+let STEP_MAP = {};
+STEPS.forEach(s => STEP_MAP[s.num] = s);
+
+// ══════════════════════════════════════════════════
+// §JS:CALIB-POOL  (aus LANG-Objekt, buildCalibPool)
+// ══════════════════════════════════════════════════
+const CALIB_TRUE_COUNT  = 8;
+const CALIB_FALSE_COUNT = 2;
+
+function buildCalibPool() {
+  const pool = L.calib;
+  const t = [...pool.pool_true].sort(() => Math.random() - 0.5).slice(0, CALIB_TRUE_COUNT);
+  const f = [...pool.pool_false].sort(() => Math.random() - 0.5).slice(0, CALIB_FALSE_COUNT);
+  return [...t.map(x => ({ text: x, correct: true })),
+          ...f.map(x => ({ text: x, correct: false }))]
+         .sort(() => Math.random() - 0.5);
+}
+let CALIB_Q = buildCalibPool();
+
+
+// ══════════════════════════════════════════════════
+// §JS:SESSION-STATE  (freshSession, S, visibilitychange)
+// ══════════════════════════════════════════════════
+let S = freshSession();
+function freshSession() {
+  return {
+    client_name: null,         // Vorname / Wunschansprache
+    sud_pre: null, sud_post: null,
+    parts_counter: 0,
+    rt_samples: [], calib_index: 0, calib_errors: 0,
+    locked: false,
+    asif_timer: null,
+    current_step: null,
+    s16_reason: null, // B3 FIX: 'chose_not_to_know' | 'hidden_by_gut'
+  };
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    S = freshSession();
+  } else {
+    // Wake Lock neu anfordern wenn App wieder sichtbar
+    if ('wakeLock' in navigator && window._wakeLock === null) {
+      navigator.wakeLock.request('screen').then(lock => {
+        window._wakeLock = lock;
+      }).catch(() => {});
+    }
+  }
+});
+
+// ══════════════════════════════════════════════════
+// §JS:UTILS  (goTo, toast, setOff, median, arcSet, startRing, stopRing)
+// ══════════════════════════════════════════════════
+function goTo(id) {
+  cancelTTS();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // Hide all fixed overlays – each screen activates only what it needs
+  ['calibBtns','sessionBtns','practiceBtns','contactBtns','calib2Btns'].forEach(bid => {
+    const el = document.getElementById(bid);
+    if (el) el.classList.remove('active', 'large');
+  });
+}
+
+function toast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type + ' show';
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+function setOff(ids, off) {
+  ids.forEach(id => { const el = document.getElementById(id); if (el) el.classList.toggle('off', off); });
+}
+
+function median(arr) {
+  if (!arr.length) return 500;
+  const s = [...arr].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2;
+}
+
+// ══════════════════════════════════════════════════
+// RING
+// ══════════════════════════════════════════════════
+const CIRC = 2 * Math.PI * 95;
+
+// ══════════════════════════════════════════════════
+// §JS:SPIRAL
+// ══════════════════════════════════════════════════
+let spiralRAF = null;
+let spiralAngle = 0;
+
+function spiralStart() {
+  const canvas = document.getElementById('spiralCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    spiralAngle += 0.012;
+    const turns = 5;
+    const maxR = 88;
+    ctx.beginPath();
+    for (let i = 0; i <= 360 * turns; i++) {
+      const a = (i * Math.PI / 180) + spiralAngle;
+      const r = (i / (360 * turns)) * maxR;
+      const x = cx + r * Math.cos(a);
+      const y = cy + r * Math.sin(a);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    const grad = ctx.createLinearGradient(cx - maxR, cy, cx + maxR, cy);
+    grad.addColorStop(0, '#c4a05a22');
+    grad.addColorStop(0.5, '#c4a05a88');
+    grad.addColorStop(1, '#c4a05a22');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    spiralRAF = requestAnimationFrame(draw);
+  }
+  spiralRAF = requestAnimationFrame(draw);
+}
+
+function spiralStop() {
+  if (spiralRAF) { cancelAnimationFrame(spiralRAF); spiralRAF = null; }
+  const canvas = document.getElementById('spiralCanvas');
+  if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+
+
+
+// ══════════════════════════════════════════════════
+// §JS:BREATHING
+// ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// §JS:CALIBRATION  (startCalib, showCalibQ, calibAnswer, finishCalib)
+// ══════════════════════════════════════════════════
+function startCalib() {
+  goTo('screenLandscape');
+}
+
+function isLandscape() {
+  if (screen.orientation && screen.orientation.type) {
+    return screen.orientation.type.startsWith('landscape');
+  }
+  // Fallback
+  return window.innerWidth > window.innerHeight;
+}
+
+function screenLandscapeNext() {
+  if (!isLandscape()) {
+    document.getElementById('landscapeWarning').style.display = 'block';
+    return;
+  }
+  document.getElementById('landscapeWarning').style.display = 'none';
+  CALIB_Q = buildCalibPool();
+  S.rt_samples=[]; S.calib_index=0; S.calib_errors=0;
+  goTo('screenCalib');
+  document.getElementById('calibBtns').classList.add('active', 'large');
+  showCalibQ();
+}
+
+// Orientierungswechsel während Kalibrierung: zurück zum Landscape-Screen
+window.addEventListener('resize', () => {
+  const inCalib = document.getElementById('screenCalib').classList.contains('active')
+               || document.getElementById('screenCalib2').classList.contains('active');
+  if (inCalib && !isLandscape()) {
+    cancelTTS();
+    spiralStop();
+    ['calibBtns','calib2Btns'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('active','large');
+    });
+    S.locked = true;
+    goTo('screenLandscape');
+    document.getElementById('landscapeWarning').style.display = 'block';
+  }
+});
+
+function showCalibQ() {
+  if (S.calib_index >= CALIB_Q.length) { finishCalib(); return; }
+  const q = CALIB_Q[S.calib_index];
+  S.locked = true;
+  setOff(['calibYes','calibNo'], true);
+
+  document.getElementById('calibText').textContent = q.text;
+  speak(q.text, () => {
+    if (!S.locked) return;
+    setTimeout(() => {
+      S.locked = false;
+      setOff(['calibYes','calibNo'], false);
+      S._calibStart = performance.now();
+
+    }, 250);
+  });
+}
+
+function calibTimeout() {
+  if (S.locked) return;
+  S.locked=true; setOff(['calibYes','calibNo'],true);
+  toast(L.ui.toast_asif,'soft');
+  S.calib_index++;
+  setTimeout(() => { S.locked=false; showCalibQ(); }, 1800);
+}
+
+function calibAnswer(response) {
+  if (S.locked) return;
+  cancelTTS();
+  S.locked=true; setOff(['calibYes','calibNo'],true);
+  const rt = Math.round(performance.now() - S._calibStart);
+  const ok = (response === CALIB_Q[S.calib_index].correct);
+  if (!ok) {
+    S.calib_errors++;
+    toast(L.ui.toast_spontaner);
+    setTimeout(() => { S.locked=false; showCalibQ(); }, 1800);
+  } else {
+    S.rt_samples.push(rt); S.calib_index++;
+    setTimeout(() => { S.locked=false; showCalibQ(); }, 350);
+  }
+}
+
+function finishCalib() {
+  document.getElementById('calibBtns').classList.remove('active', 'large');
+  const score = Math.round((CALIB_Q.length - S.calib_errors) / CALIB_Q.length * 100);
+  if (score >= 80) {
+    speak(L.screens.calib_gut_tts, () => {
+      setTimeout(() => {
+        goTo('screenCalib2Intro');
+        setTimeout(() => {
+          speak(L.screens.calib2_intro_tts, () => setTimeout(startCalib2, 1500));
+        }, 400);
+      }, 2500);
+    });
+  } else if (score >= 65) { toast(L.ui.toast_spontaner); setTimeout(startCalib, 2000); }
+  else                    { toast(L.ui.toast_spontaner); setTimeout(startCalib, 2000); }
+}
+
+// ══════════════════════════════════════════════════
+// §JS:CALIB2  (zweite Kalibrierung, Augen geschlossen)
+// ══════════════════════════════════════════════════
+let CALIB2_Q = [];
+
+function startCalib2() {
+  _calib2Done = false;
+  CALIB2_Q = buildCalibPool();
+  S.calib_index = 0; S.calib_errors = 0;
+  goTo('screenCalib2');
+  document.getElementById('calib2Btns').classList.add('active', 'large');
+  speak(L.screens.calib2_start_tts, () => setTimeout(showCalib2Q, 800));
+}
+
+function showCalib2Q() {
+  if (S.calib_index >= CALIB2_Q.length) { finishCalib2(); return; }
+  const q = CALIB2_Q[S.calib_index];
+  S.locked = true;
+  setOff(['calib2Yes','calib2No'], true);
+  document.getElementById('calib2Text').textContent = q.text;
+  speak(q.text, () => {
+    if (!S.locked) return;
+    setTimeout(() => {
+      S.locked = false;
+      setOff(['calib2Yes','calib2No'], false);
+      S._calibStart = performance.now();
+    }, 250);
+  });
+}
+
+function calib2Answer(response) {
+  if (S.locked) return;
+  cancelTTS();
+  S.locked = true;
+  setOff(['calib2Yes','calib2No'], true);
+  const ok = (response === CALIB2_Q[S.calib_index].correct);
+  if (!ok) S.calib_errors++;
+  S.calib_index++;
+  setTimeout(() => { S.locked = false; showCalib2Q(); }, 350);
+}
+
+let _calib2Done = false;
+function finishCalib2() {
+  if (_calib2Done) return;
+  _calib2Done = true;
+  document.getElementById('calib2Btns').classList.remove('active', 'large');
+  setTimeout(() => startContact(), 500);
+}
+
+// ══════════════════════════════════════════════════
+// §JS:PRE-SUD  (startPreSUD, buildSUD)
+// ══════════════════════════════════════════════════
+function startPreSUD() {
+  goTo('screenPreSUD');
+  setTimeout(() => {
+    speak(L.screens.presud_tts, () => {
+      buildSUD('preSudGrid', val => { S.sud_pre = val; goToIntro(); });
+    });
+  }, 400);
+}
+
+function goToIntro() {
+  goTo('screenIntro');
+  setTimeout(() => {
+    speak(L.screens.intro1_tts, () => {
+      setTimeout(() => {
+        speak(L.screens.intro2_tts, () => {
+          setTimeout(() => {
+            speak(L.screens.intro3_tts, () => showBtn('introBtn'));
+          }, 300);
+        });
+      }, 400);
+    });
+  }, 400);
+}
+
+function buildSUD(gridId, cb) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  for (let i=1; i<=10; i++) {
+    const btn = document.createElement('button');
+    btn.className='sud-btn'; btn.textContent=i;
+    btn.onclick = () => {
+      grid.querySelectorAll('.sud-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      setTimeout(() => cb(i), 450);
+    };
+    grid.appendChild(btn);
+  }
+}
+
+// ══════════════════════════════════════════════════
+// §JS:CONTACT  (startContact, contactGo)
+// ══════════════════════════════════════════════════
+function startContact() {
+  goTo('screenContact');
+  document.getElementById('contactBtns').classList.add('active', 'large');
+  S.locked=true; setOff(['contactBtn'],true);
+  const nameGreet = '';
+  document.getElementById('contactText').textContent = L.screens.contact_tts;
+  speak(L.screens.contact_tts, () => {
+    if (!S.locked) return;
+    setTimeout(() => {
+      S.locked=false; setOff(['contactBtn'],false);
+      clearTimeout(S.asif_timer);
+      S.asif_timer = setTimeout(() => toast(L.ui.toast_asif_btn,'soft'), 10000);
+    }, 250);
+  });
+}
+
+function contactGo() {
+  if (S.locked) return;
+  clearTimeout(S.asif_timer);
+  S.locked = true;
+  setOff(['contactBtn'], true);
+  document.getElementById('contactBtns').classList.remove('active', 'large');
+  goTo('screenStep');
+  document.getElementById('stepEyesWrap').style.display = 'flex';
+  speak(L.screens.eyes_tts, () => {
+    setTimeout(() => {
+      speak(L.screens.ready_tts, () => {
+        setTimeout(() => runStep(1), 600);
+      });
+    }, 400);
+  });
+}
+
+// ══════════════════════════════════════════════════
+// §JS:STEP-RUNNER  (runStep, startStepRekon, activateStepButtons, stepAnswer, stepInfoNext)
+// ══════════════════════════════════════════════════
+function runStep(num) {
+  const step = STEP_MAP[num];
+  if (!step) { startPostSUD(); return; }
+  S.current_step = step;
+  S.locked = true;
+
+  // B3 FIX: For S16, pick the right text variant based on reason
+  let displayText = step.text;
+  if (step.num === 16 && S.s16_reason === 'chose_not_to_know' && step.text_chose_not_to_know) {
+    displayText = step.text_chose_not_to_know;
+  }
+  // (name placeholder removed – MP3-ready)
+
+  document.getElementById('stepLabel').textContent = step.label;
+  // Text nur für info-Schritte anzeigen – außer 16, 17, 18 (nur Audio, Augen zu)
+  const isInfo = step.type === 'info';
+  const audioOnly = isInfo && [16, 17, 18].includes(step.num);
+  const stepTextEl = document.getElementById('stepText');
+  stepTextEl.textContent = displayText;
+  stepTextEl.style.display = (isInfo && !audioOnly) ? 'block' : 'none';
+  stepTextEl.scrollTop = 0;
+
+  const badge = document.getElementById('stepBadge');
+  badge.textContent = S.parts_counter > 0
+    ? (S.parts_counter === 1 ? L.ui.badge_singular : L.ui.badge_plural(S.parts_counter)) : '';
+
+  const dotsEl = document.getElementById('stepDots');
+  dotsEl.innerHTML = '';
+  (step.dots||[]).forEach(active => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (active ? ' active' : '');
+    dotsEl.appendChild(d);
+  });
+
+  // Hide all dynamic areas
+  const infoWrap = document.getElementById('stepInfoWrap');
+  if (infoWrap) infoWrap.style.display = 'none';
+  document.getElementById('sessionBtns').classList.remove('active', 'large');
+  document.getElementById('sessionNoCol').style.visibility = 'hidden';
+
+  // B5 FIX: Reset info button
+  const infoBtn = document.getElementById('stepInfoBtn');
+  if (infoBtn) infoBtn.classList.add('hidden-until-tts');
+
+  setOff(['stepYes','stepNo'], true);
+  document.getElementById('stepYes').style.opacity = '';
+  document.getElementById('stepNo').style.opacity = '';
+
+  // Stop spiral if running from previous step
+  spiralStop();
+
+  goTo('screenStep');
+  document.getElementById('stepEyesWrap').style.display = 'none';
+
+  // Show spiral immediately for rekon/green/both steps (visible while TTS plays)
+  const spiralWrap = document.getElementById('stepSpiralWrap');
+  if (isInfo) {
+    spiralWrap.style.display = 'none';
+  } else {
+    spiralWrap.style.display = 'flex';
+    spiralStart();
+  }
+
+  // No headline TTS – go straight to text
+  speak(displayText, () => {
+    if (step.type === 'rekon') {
+      setTimeout(() => startStepRekon(step), 300);
+    } else if (step.type === 'green' || step.type === 'both') {
+      setTimeout(() => activateStepButtons(step), 300);
+    } else if (step.type === 'info') {
+      const activateInfoBtn = () => {
+        setTimeout(() => {
+          S.locked = false;
+          const yesLabel = document.getElementById('stepYesLabel');
+          if (yesLabel) yesLabel.textContent = L.ui.ja;
+          document.getElementById('sessionNoCol').style.visibility = 'hidden';
+          document.getElementById('sessionBtns').classList.add('active', 'large');
+          setOff(['stepYes'], false);
+        }, 300);
+      };
+      if (step.text_cta) {
+        setTimeout(() => speak(step.text_cta, activateInfoBtn), 300);
+      } else {
+        activateInfoBtn();
+      }
+    }
+  });
+}
+
+// Step: rekon – spiral already running, buttons erscheinen sofort
+function startStepRekon(step) {
+  const wrap = document.getElementById('stepSpiralWrap');
+  wrap.style.display = 'flex';
+  if (!spiralRAF) spiralStart();
+  ensureAudioCtx();
+  if (step.parts_count) S.parts_counter++;
+  activateStepButtons(step);
+}
+
+// Step: show fixed bottom buttons
+function activateStepButtons(step) {
+  const noCol = document.getElementById('sessionNoCol');
+  noCol.style.visibility = (step.type === 'both') ? 'visible' : 'hidden';
+
+  const yesLabel = document.getElementById('stepYesLabel');
+  if (yesLabel) yesLabel.textContent = L.ui.ja;
+
+  document.getElementById('sessionBtns').classList.add('active', 'large');
+
+  setTimeout(() => {
+    S.locked = false;
+    setOff(['stepYes'], false);
+    if (step.type === 'both') setOff(['stepNo'], false);
+    S._qStart = performance.now();
+  }, 300);
+}
+
+function stepAnswer(response) {
+  if (S.locked) return;
+  // Sofort ausblenden beim Drücken
+  const yesEl = document.getElementById('stepYes');
+  const noEl = document.getElementById('stepNo');
+  if (yesEl) yesEl.style.opacity = '0';
+  if (noEl) noEl.style.opacity = '0';
+  document.getElementById('sessionBtns').classList.remove('active', 'large');
+  const step = S.current_step;
+
+  // Info steps use the green button as "Weiter" – route to stepInfoNext
+  if (step.type === 'info') { stepInfoNext(); return; }
+
+  cancelTTS();
+  S.locked=true;
+  spiralStop();
+  setOff(['stepYes','stepNo'],true);
+  document.getElementById('sessionBtns').classList.remove('active', 'large');
+
+  if (!response && step.on_no_reason) S.s16_reason = step.on_no_reason;
+
+  const next = response ? step.on_yes : (step.on_no || step.on_yes);
+
+  if (next === 'POST_SUD')   { setTimeout(startPostSUD, 400); }
+  else if (next === 'PROTOCOL') { setTimeout(showProtocol, 400); }
+  else                       { setTimeout(() => runStep(next), 400); }
+}
+
+// Info screen next button
+function stepInfoNext() {
+  const step = S.current_step;
+  const next = step.on_yes;
+  if (next === 'POST_SUD')      startPostSUD();
+  else if (next === 'PROTOCOL') showProtocol();
+  else                          runStep(next);
+}
+
+// ══════════════════════════════════════════════════
+// §JS:POST-SUD  (startPostSUD)
+// ══════════════════════════════════════════════════
+function startPostSUD() {
+  goTo('screenPostSUD');
+  setTimeout(() => {
+    speak(L.screens.postsud1_tts, () => {
+      setTimeout(() => {
+        speak(L.screens.postsud2_tts, () => {
+          buildSUD('postSudGrid', val => { S.sud_post = val; showProtocol(); });
+        });
+      }, 400);
+    });
+  }, 400);
+}
+
+// ══════════════════════════════════════════════════
+// §JS:PROTOCOL  (showProtocol, endSession)
+// ══════════════════════════════════════════════════
+function showProtocol() {
+  goTo('screenProtocol');
+  const pre  = S.sud_pre  ?? '–';
+  const post = S.sud_post ?? '–';
+  const diff = (S.sud_pre!==null && S.sud_post!==null) ? S.sud_pre - S.sud_post : null;
+
+  document.getElementById('protoPartsVal').textContent = S.parts_counter;
+  document.getElementById('protoPreVal').textContent   = pre;
+  document.getElementById('protoPostVal').textContent  = post;
+
+  // Labels
+  const lblEls = document.querySelectorAll('.proto-lbl');
+  if (lblEls[0]) lblEls[0].textContent = L.ui.teile_lbl;
+  if (lblEls[1]) lblEls[1].textContent = L.ui.vorher_lbl;
+  if (lblEls[2]) lblEls[2].textContent = L.ui.nachher_lbl;
+
+  const noteEl = document.getElementById('protoNote');
+  const postEl = document.getElementById('protoPostVal');
+  postEl.classList.remove('positive');
+
+  if (diff===null)   noteEl.textContent='';
+  else if (diff>0) { postEl.classList.add('positive'); noteEl.textContent = L.ui.belastung_reduziert(diff); }
+  else               noteEl.textContent = L.ui.prozess_weiter;
+
+  // Wipe text + end button
+  const wipeEl = document.querySelector('.proto-wipe');
+  if (wipeEl) wipeEl.textContent = L.ui.daten_loeschen;
+  const endBtn = document.querySelector('.btn-end');
+  if (endBtn) endBtn.textContent = L.ui.sitzung_beenden;
+}
+
+function endSession() {
+  cancelTTS();
+  spiralStop();
+  S = freshSession();
+  // Wake Lock freigeben
+  if (window._wakeLock) { window._wakeLock.release(); window._wakeLock = null; }
+  // B2 FIX: Re-hide buttons for next session
+  ['welcomeBtn','introBtn','problemBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden-until-tts');
+  });
+  goTo('screenSplash');
+}
+
+// ══════════════════════════════════════════════════
+// §JS:ADMIN-PANEL
+// ══════════════════════════════════════════════════
+let adminIndex = 0; // index in STEPS array (0-based)
+
+function adminOpen() {
+  adminIndex = 0;
+  adminRender();
+  const overlay = document.getElementById('adminOverlay');
+  overlay.style.display = 'flex';
+}
+
+function adminClose() {
+  document.getElementById('adminOverlay').style.display = 'none';
+  document.getElementById('adminSaveMsg').textContent = '';
+}
+
+function adminNav(dir) {
+  adminSave(true); // silent save before navigating
+  adminIndex = Math.max(0, Math.min(STEPS.length - 1, adminIndex + dir));
+  adminRender();
+}
+
+function adminRender() {
+  const step = STEPS[adminIndex];
+  // Counter
+  document.getElementById('adminStepCounter').textContent = (adminIndex + 1) + ' / ' + STEPS.length;
+  // Label
+  document.getElementById('adminStepLabel').textContent = step.label || ('Schritt ' + step.num);
+  // Typ
+  document.getElementById('adminType').value = step.type || 'rekon';
+  // Text
+  document.getElementById('adminText').value = step.text || '';
+  // Alternativtext (nur S16)
+  const altWrap = document.getElementById('adminTextAltWrap');
+  const altTA = document.getElementById('adminTextAlt');
+  if (step.num === 16) {
+    altWrap.style.display = 'block';
+    altTA.value = step.text_chose_not_to_know || '';
+  } else {
+    altWrap.style.display = 'none';
+    altTA.value = '';
+  }
+  // Logik
+  document.getElementById('adminOnYes').value = step.on_yes !== undefined ? String(step.on_yes) : '';
+  document.getElementById('adminOnNo').value  = step.on_no  !== undefined ? String(step.on_no)  : '';
+  // parts_count
+  document.getElementById('adminPartsCount').checked = !!step.parts_count;
+  // Dots
+  const dotsEl = document.getElementById('adminDots');
+  dotsEl.innerHTML = '';
+  STEPS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.style.cssText = 'width:5px;height:5px;border-radius:50%;background:' + (i === adminIndex ? '#c4a05a' : '#2a3a4a') + ';cursor:pointer;';
+    d.onclick = () => { adminSave(true); adminIndex = i; adminRender(); };
+    dotsEl.appendChild(d);
+  });
+  // Clear save message
+  document.getElementById('adminSaveMsg').textContent = '';
+}
+
+function adminSave(silent) {
+  const step = STEPS[adminIndex];
+  // Text
+  step.text = document.getElementById('adminText').value;
+  // Alternativtext S16
+  if (step.num === 16) {
+    step.text_chose_not_to_know = document.getElementById('adminTextAlt').value;
+  }
+  // Typ
+  step.type = document.getElementById('adminType').value;
+  // Logik on_yes
+  const yesVal = document.getElementById('adminOnYes').value.trim();
+  if (yesVal === 'POST_SUD' || yesVal === 'PROTOCOL') {
+    step.on_yes = yesVal;
+  } else if (yesVal !== '') {
+    step.on_yes = parseInt(yesVal) || step.on_yes;
+  }
+  // Logik on_no
+  const noVal = document.getElementById('adminOnNo').value.trim();
+  if (noVal === '') {
+    delete step.on_no;
+  } else if (noVal === 'POST_SUD' || noVal === 'PROTOCOL') {
+    step.on_no = noVal;
+  } else {
+    step.on_no = parseInt(noVal) || step.on_no;
+  }
+  // parts_count
+  step.parts_count = document.getElementById('adminPartsCount').checked || undefined;
+  // Rebuild STEP_MAP
+  STEPS.forEach(s => STEP_MAP[s.num] = s);
+  // Feedback
+  if (!silent) {
+    const msg = document.getElementById('adminSaveMsg');
+    msg.textContent = 'Gespeichert (aktiv bis Seitenreload)';
+    setTimeout(() => { msg.textContent = ''; }, 3000);
+  }
+}
+
+</script>
+
+</body>
+</html>

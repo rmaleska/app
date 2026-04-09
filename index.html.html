@@ -1632,6 +1632,29 @@ function devJump(target) {
 let _infoTimerDone = false;
 let _infoTtsDone   = false;
 let _infoChecked   = false;
+window._wakeLock   = null;
+
+// ── NoSleep Fallback (iOS < 16.4 & unsupported browsers) ──────────────
+// Ein unsichtbares, stummgeschaltetes Video-Loop verhindert den Screen-Sleep
+// auf Geräten, die die Wake Lock API nicht unterstützen.
+(function() {
+  const vid = document.createElement('video');
+  vid.setAttribute('playsinline', '');
+  vid.setAttribute('muted', '');
+  vid.setAttribute('loop', '');
+  vid.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1';
+  // Minimales MP4 (1x1 px, schwarz, 1 Sek.) als Data-URL
+  vid.src = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAA01tZGF0AAACrAYF//+p3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE0MiByMjQzOSBhOWFhOTI4IC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAxNCAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYWRzPTYgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBpbnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIGJfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9MCB3ZWlnaHRwPTIga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAPZWxpYnJhcnkAAAAMbGliZmFhYyAxLjI4AAADhG1vb3YAAABsbXZoZAAAAAAAAAAAAAAAAAAAA+gAAAPoAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIidHJhawAAAFx0a2hkAAAAAwAAAAAAAAAAAAAAAQAAAAAAAAPoAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAIAAAACAAAAAABsW1kaWEAAAAgbWRoZAAAAAAAAAAAAAAAAAAAKAAAACoAVcQAAAAAAC1oZGxyAAAAAAAAAABzb3VuAAAAAAAAAAAAAAAAU291bmRIYW5kbGVyAAAAASxtaW5mAAAAEHNtaGQAAAAAAAAAAAAAAABEZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAEMc3RibAAAAGRzdHNkAAAAAAAAAAEAAABUbXA0YQAAAAAAAAABAAAAAAAAAAAAAgAQAAAAACoAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhzdHRzAAAAAAAAAAEAAAAKAAAEAAAAABRzdHN6AAAAAAAAAAAAAAAAAAAAABRzdHNjAAAAAAAAAAEAAAABAAAACgAAAAEAAAA0Y3R0cwAAAAAAAAAKAAAAAQAABAAAAAABAAAIAAAAAAEAAAQAAAAAAQAABAAAAAABAAAIAAAAAAEAAAQAAAAAAQAABAAAAAABAAACAAAAAAEAAAQAAAAABHN0c3MAAAAAAAAAEwAAAAEAAAACAAAAAwAAAAQAAAAFAAAABgAAAAcAAAAIAAAACQAAAAoAAAAUc3RjbwAAAAAAAAABAAAAMAAAAFd1ZHRhAAAAT21ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAAKmlsc3QAAAAiqa1uYW0AAAAaZGF0YQAAAAABAAAARG9reQ==';
+  document.body.appendChild(vid);
+  window._noSleepVideo = vid;
+  // Wird gestartet wenn WakeLock nicht verfügbar
+  window._noSleepStart = function() {
+    vid.play().catch(() => {});
+  };
+  window._noSleepStop = function() {
+    vid.pause();
+  };
+}());
 
 function _infoTryReveal() {
   if (_infoTimerDone && _infoTtsDone && _infoChecked) showBtn('infoBtn');
@@ -1644,9 +1667,10 @@ function splashStart() {
   if ('wakeLock' in navigator) {
     navigator.wakeLock.request('screen').then(lock => {
       window._wakeLock = lock;
-    }).catch(() => {});
+      lock.addEventListener('release', () => { window._wakeLock = null; });
+    }).catch(() => { window._noSleepStart(); });
   } else {
-    setTimeout(() => toast(L.ui.toast_screen, 'soft'), 3000);
+    window._noSleepStart();
   }
   goTo('screenInfo');
   setTimeout(() => { _infoTimerDone = true; _infoTryReveal(); }, 8000);
@@ -1981,11 +2005,12 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     S = freshSession();
   } else {
-    // Wake Lock neu anfordern wenn App wieder sichtbar
-    if ('wakeLock' in navigator && window._wakeLock === null) {
+    // Wake Lock neu anfordern wenn kein aktives Lock vorhanden
+    if ('wakeLock' in navigator && (!window._wakeLock || window._wakeLock.released)) {
       navigator.wakeLock.request('screen').then(lock => {
         window._wakeLock = lock;
-      }).catch(() => {});
+        lock.addEventListener('release', () => { window._wakeLock = null; });
+      }).catch(() => { window._noSleepStart(); });
     }
   }
 });
@@ -2519,6 +2544,7 @@ function endSession() {
   S = freshSession();
   // Wake Lock freigeben
   if (window._wakeLock) { window._wakeLock.release(); window._wakeLock = null; }
+  window._noSleepStop();
   // B2 FIX: Re-hide buttons for next session
   ['welcomeBtn','introBtn','problemBtn'].forEach(id => {
     const el = document.getElementById(id);

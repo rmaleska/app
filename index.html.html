@@ -1566,13 +1566,6 @@ function _speakTTS(text, cb) {
 
   try {
     speechSynthesis.cancel();
-    const voices = speechSynthesis.getVoices();
-    const preferred = (L.tts_voices || []);
-    ttsVoice = preferred.reduce((found, name) =>
-      found || voices.find(v => new RegExp(name, 'i').test(v.name)), null)
-      || voices.find(v => v.lang.startsWith(currentLang) && v.localService)
-      || voices.find(v => v.lang.startsWith(currentLang))
-      || null;
     setTimeout(() => {
       try {
         const u = new SpeechSynthesisUtterance(text);
@@ -1624,6 +1617,7 @@ function devMenuToggle() {
 function devJump(target) {
   document.getElementById('devMenu').style.display = 'none';
   ensureAudioCtx();
+  ensureWakeLock();
   S = freshSession();
   S.client_name = 'Ralf';
   S.sud_pre = 5;
@@ -1681,18 +1675,26 @@ function _infoTryReveal() {
   if (_infoTimerDone && _infoTtsDone && _infoChecked) showBtn('infoBtn');
 }
 
-function splashStart() {
-  ensureAudioCtx();
-  // Stimme für gewählte Sprache neu initialisieren
-  _infoTimerDone = false; _infoTtsDone = false; _infoChecked = false;
+function ensureWakeLock() {
   if ('wakeLock' in navigator) {
-    navigator.wakeLock.request('screen').then(lock => {
-      window._wakeLock = lock;
-      lock.addEventListener('release', () => { window._wakeLock = null; });
-    }).catch(() => { window._noSleepStart(); });
+    if (!window._wakeLock) {
+      navigator.wakeLock.request('screen').then(lock => {
+        window._wakeLock = lock;
+        lock.addEventListener('release', () => {
+          window._wakeLock = null;
+          window._noSleepStart();
+        });
+      }).catch(() => { window._noSleepStart(); });
+    }
   } else {
     window._noSleepStart();
   }
+}
+
+function splashStart() {
+  ensureAudioCtx();
+  _infoTimerDone = false; _infoTtsDone = false; _infoChecked = false;
+  ensureWakeLock();
   goTo('screenInfo');
   setTimeout(() => { _infoTimerDone = true; _infoTryReveal(); }, 8000);
   const infoTxt = L.screens.info_tts;
@@ -1756,6 +1758,7 @@ function startPractice() {
 }
 
 function practiceAnswer(which) {
+  ensureWakeLock();
   if (practicePhase === 0 && which === 'no') {
     practicePhase = 1;
     setOff(['practiceNo'], true);
@@ -1832,6 +1835,7 @@ function _ahaShowStep() {
 }
 
 function ahaAnswer(which) {
+  ensureWakeLock();
   if (_ahaShowingNoBridge) return;
   const s = AHA_STEPS[_ahaStep];
   setOff(['ahaYes', 'ahaNo'], true);
@@ -2026,11 +2030,13 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     S = freshSession();
   } else {
-    // Wake Lock neu anfordern wenn kein aktives Lock vorhanden
-    if ('wakeLock' in navigator && (!window._wakeLock || window._wakeLock.released)) {
+    if ('wakeLock' in navigator && !window._wakeLock) {
       navigator.wakeLock.request('screen').then(lock => {
         window._wakeLock = lock;
-        lock.addEventListener('release', () => { window._wakeLock = null; });
+        lock.addEventListener('release', () => {
+          window._wakeLock = null;
+          window._noSleepStart();
+        });
       }).catch(() => { window._noSleepStart(); });
     }
   }
@@ -2194,6 +2200,7 @@ function calibTimeout() {
 }
 
 function calibAnswer(response) {
+  ensureWakeLock();
   if (S.locked) return;
   cancelTTS();
   S.locked=true; setOff(['calibYes','calibNo'],true);
@@ -2256,6 +2263,7 @@ function showCalib2Q() {
 }
 
 function calib2Answer(response) {
+  ensureWakeLock();
   if (S.locked) return;
   cancelTTS();
   S.locked = true;
@@ -2336,6 +2344,7 @@ function startContact() {
 }
 
 function contactGo() {
+  ensureWakeLock();
   if (S.locked) return;
   clearTimeout(S.asif_timer);
   S.locked = true;
@@ -2473,6 +2482,7 @@ function activateStepButtons(step) {
 }
 
 function stepAnswer(response) {
+  ensureWakeLock();
   if (S.locked) return;
   // Sofort ausblenden beim Drücken
   const yesEl = document.getElementById('stepYes');
@@ -2565,7 +2575,7 @@ function endSession() {
   S = freshSession();
   // Wake Lock freigeben
   if (window._wakeLock) { window._wakeLock.release(); window._wakeLock = null; }
-  window._noSleepStop();
+  if (window._noSleepVideo && !window._noSleepVideo.paused) window._noSleepStop();
   // B2 FIX: Re-hide buttons for next session
   ['welcomeBtn','introBtn','problemBtn'].forEach(id => {
     const el = document.getElementById(id);

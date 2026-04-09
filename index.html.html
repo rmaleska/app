@@ -1547,16 +1547,25 @@ function speak(textOrKey, onDone, mp3Key) {
 }
 
 function _speakTTS(text, cb) {
-  const fallbackMs = Math.max(1500, Math.round(text.length * 80) + 800);
+  // Safari iOS feuert onend oft nicht – Watchdog erkennt wenn Sprache
+  // aufgehört hat ohne dass onend kam, und löst finish() aus.
+  const estimatedMs = Math.max(1500, Math.round(text.length * 65) + 800);
   let done = false;
+  let watchdogInterval = null;
+  let utteranceStarted = false;
+
   function finish() {
     if (done) return; done = true;
-    clearTimeout(fallbackTimer); cb();
+    clearTimeout(hardFallback);
+    clearInterval(watchdogInterval);
+    cb();
   }
-  const fallbackTimer = setTimeout(finish, fallbackMs);
+
+  // Harter Fallback: greift wenn alles andere versagt
+  const hardFallback = setTimeout(finish, estimatedMs + 3000);
+
   try {
     speechSynthesis.cancel();
-    // Stimme für aktive Sprache neu laden
     const voices = speechSynthesis.getVoices();
     const preferred = (L.tts_voices || []);
     ttsVoice = preferred.reduce((found, name) =>
@@ -1571,9 +1580,21 @@ function _speakTTS(text, cb) {
         u.rate  = 0.88;
         u.pitch = 1.0;
         if (ttsVoice) u.voice = ttsVoice;
+        u.onstart = () => { utteranceStarted = true; };
         u.onend   = finish;
         u.onerror = finish;
         speechSynthesis.speak(u);
+
+        // Watchdog: prüft alle 300ms ob Safari fertig ist aber onend nicht feuerte
+        watchdogInterval = setInterval(() => {
+          if (!speechSynthesis.speaking && !speechSynthesis.pending) {
+            if (utteranceStarted) {
+              clearInterval(watchdogInterval);
+              if (!done) finish();
+            }
+          }
+        }, 300);
+
       } catch(e) { finish(); }
     }, 80);
   } catch(e) { finish(); }

@@ -1524,13 +1524,15 @@ function ensureAudioCtx() {
 // Haupt-Speak-Funktion: MP3 wenn vorhanden, sonst TTS
 let _currentAudio = null;
 
-function speak(textOrKey, onDone, mp3Key) {
+function speak(textOrKey, onDone, mp3Key, mp3Direct) {
   const cb = onDone || function(){};
 
   // MP3-Pfad bestimmen
-  const mp3file = mp3Key
-    ? (L.mp3[mp3Key] || '')
-    : '';
+  // mp3Direct: Dateiname direkt (z.B. 's01'), ohne Umweg über L.mp3{}
+  // mp3Key:    Schlüssel in L.mp3{} (Legacy, nur Info-Screen)
+  const mp3file = mp3Direct
+    ? mp3Direct
+    : mp3Key ? (L.mp3[mp3Key] || '') : '';
   const mp3path = mp3file ? (L.mp3_base + mp3file + '.mp3') : '';
 
   if (mp3path) {
@@ -1628,7 +1630,7 @@ function devJump(target) {
     startAha();
   } else if (target === 'problem') {
     goTo('screenProblem');
-    setTimeout(() => speak(L.screens.problem_tts, () => showBtn('problemBtn')), 400);
+    setTimeout(() => speak(L.screens.problem_tts, () => showBtn('problemBtn'), null, L.screens.problem_mp3 || null), 400);
   } else if (target === 'presud') {
     startPreSUD();
   } else if (target === 'calib1') {
@@ -1701,7 +1703,7 @@ function splashStart() {
   goTo('screenInfo');
   setTimeout(() => { _infoTimerDone = true; _infoTryReveal(); }, 8000);
   const infoTxt = L.screens.info_tts;
-  setTimeout(() => speak(infoTxt, () => { _infoTtsDone = true; _infoTryReveal(); }, L.screens.info_mp3 ? 'info' : null), 600);
+  setTimeout(() => speak(infoTxt, () => { _infoTtsDone = true; _infoTryReveal(); }, null, L.screens.info_mp3 || null), 600);
 }
 
 function infoCheckChanged() {
@@ -1719,9 +1721,9 @@ function infoNext() {
   setTimeout(() => {
     speak(L.screens.welcome1_tts, () => {
       setTimeout(() => {
-        speak(L.screens.welcome2_tts, () => showBtn('welcomeBtn'));
+        speak(L.screens.welcome2_tts, () => showBtn('welcomeBtn'), null, L.screens.welcome2_mp3 || null);
       }, 300);
-    });
+    }, null, L.screens.welcome1_mp3 || null);
   }, 400);
 }
 
@@ -1756,7 +1758,7 @@ function startPractice() {
     speak(L.screens.practice1_tts, () => {
       setOff(['practiceNo'], false);
       document.getElementById('practiceHint').textContent = '← ' + L.ui.nein;
-    });
+    }, null, L.screens.practice1_mp3 || null);
   }, 400);
 }
 
@@ -1770,7 +1772,7 @@ function practiceAnswer(which) {
       speak(L.screens.practice2_tts, () => {
         setOff(['practiceYes'], false);
         document.getElementById('practiceHint').textContent = L.ui.ja + ' →';
-      });
+      }, null, L.screens.practice2_mp3 || null);
     }, 300);
   } else if (practicePhase === 1 && which === 'yes') {
     practicePhase = 2;
@@ -1780,7 +1782,7 @@ function practiceAnswer(which) {
     setTimeout(() => {
       speak(L.screens.practice3_tts, () => {
         setTimeout(() => startCalib(), 800);
-      });
+      }, null, L.screens.practice3_mp3 || null);
     }, 300);
   }
 }
@@ -1931,7 +1933,7 @@ function _ahaDone() {
     setTimeout(() => {
       goTo('screenProblem');
       setTimeout(() => {
-        speak(L.screens.problem_tts, () => showBtn('problemBtn'));
+        speak(L.screens.problem_tts, () => showBtn('problemBtn'), null, L.screens.problem_mp3 || null);
       }, 400);
     }, 800);
   });
@@ -2136,7 +2138,7 @@ function spiralStop() {
 // ══════════════════════════════════════════════════
 function startCalib() {
   goTo('screenLandscape');
-  speak(L.screens.landscape_tts, null);
+  speak(L.screens.landscape_tts, null, null, L.screens.landscape_mp3 || null);
 }
 
 function isLandscape() {
@@ -2174,7 +2176,7 @@ window.addEventListener('resize', () => {
     S.locked = true;
     goTo('screenLandscape');
     document.getElementById('landscapeWarning').style.display = 'block';
-    setTimeout(() => speak(L.screens.landscape_tts, null), 400);
+    setTimeout(() => speak(L.screens.landscape_tts, null, null, L.screens.landscape_mp3 || null), 400);
   }
 });
 
@@ -2229,10 +2231,10 @@ function finishCalib() {
       setTimeout(() => {
         goTo('screenCalib2Intro');
         setTimeout(() => {
-          speak(L.screens.calib2_intro_tts, () => setTimeout(startCalib2, 1500));
+          speak(L.screens.calib2_intro_tts, () => setTimeout(startCalib2, 1500), null, L.screens.calib2_intro_mp3 || null);
         }, 400);
       }, 2500);
-    });
+    }, null, L.screens.calib_gut_mp3 || null);
   } else if (score >= 65) { toast(L.ui.toast_spontaner); setTimeout(startCalib, 2000); }
   else                    { toast(L.ui.toast_spontaner); setTimeout(startCalib, 2000); }
 }
@@ -2248,7 +2250,7 @@ function startCalib2() {
   S.calib_index = 0; S.calib_errors = 0;
   goTo('screenCalib2');
   document.getElementById('calib2Btns').classList.add('active', 'large');
-  speak(L.screens.calib2_start_tts, () => setTimeout(showCalib2Q, 800));
+  speak(L.screens.calib2_start_tts, () => setTimeout(showCalib2Q, 800), null, L.screens.calib2_start_mp3 || null);
 }
 
 function showCalib2Q() {
@@ -2295,7 +2297,7 @@ function startPreSUD() {
   setTimeout(() => {
     speak(L.screens.presud_tts, () => {
       buildSUD('preSudGrid', val => { S.sud_pre = val; goToIntro(); });
-    });
+    }, null, L.screens.presud_mp3 || null);
   }, 400);
 }
 
@@ -2306,11 +2308,11 @@ function goToIntro() {
       setTimeout(() => {
         speak(L.screens.intro2_tts, () => {
           setTimeout(() => {
-            speak(L.screens.intro3_tts, () => showBtn('introBtn'));
+            speak(L.screens.intro3_tts, () => showBtn('introBtn'), null, L.screens.intro3_mp3 || null);
           }, 300);
-        });
+        }, null, L.screens.intro2_mp3 || null);
       }, 400);
-    });
+    }, null, L.screens.intro1_mp3 || null);
   }, 400);
 }
 
@@ -2345,7 +2347,7 @@ function startContact() {
       clearTimeout(S.asif_timer);
       S.asif_timer = setTimeout(() => toast(L.ui.toast_asif_btn,'soft'), 10000);
     }, 250);
-  });
+  }, null, L.screens.contact_mp3 || null);
 }
 
 function contactGo() {
@@ -2361,9 +2363,9 @@ function contactGo() {
     setTimeout(() => {
       speak(L.screens.ready_tts, () => {
         setTimeout(() => runStep(1), 600);
-      });
+      }, null, L.screens.ready_mp3 || null);
     }, 400);
-  });
+  }, null, L.screens.eyes_mp3 || null);
 }
 
 // ══════════════════════════════════════════════════
@@ -2455,7 +2457,7 @@ function runStep(num) {
         activateInfoBtn();
       }
     }
-  });
+  }, null, step.mp3 || null);
 }
 
 // Step: rekon – spiral already running, buttons erscheinen sofort
@@ -2534,9 +2536,9 @@ function startPostSUD() {
       setTimeout(() => {
         speak(L.screens.postsud2_tts, () => {
           buildSUD('postSudGrid', val => { S.sud_post = val; showProtocol(); });
-        });
+        }, null, L.screens.postsud2_mp3 || null);
       }, 400);
-    });
+    }, null, L.screens.postsud1_mp3 || null);
   }, 400);
 }
 

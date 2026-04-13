@@ -2382,7 +2382,12 @@ function runStep(num) {
   if (step.num === 16 && S.s16_reason === 'chose_not_to_know' && step.text_chose_not_to_know) {
     displayText = step.text_chose_not_to_know;
   }
-  // (name placeholder removed – MP3-ready)
+  // S17: pick mp3 variant based on reason (s17a = hidden_by_gut, s17b = chose_not_to_know)
+  let stepMp3 = step.mp3 || null;
+  if (step.num === 17 && S.s16_reason === 'chose_not_to_know' && step.mp3_alt) {
+    stepMp3 = step.mp3_alt;
+    displayText = step.text_chose_not_to_know || step.text;
+  }
 
   document.getElementById('stepLabel').textContent = step.label;
   // Text nur für info-Schritte anzeigen – außer 16, 17, 18 (nur Audio, Augen zu)
@@ -2457,7 +2462,7 @@ function runStep(num) {
         activateInfoBtn();
       }
     }
-  }, null, step.mp3 || null);
+  }, null, stepMp3);
 }
 
 // Step: rekon – spiral already running, buttons erscheinen sofort

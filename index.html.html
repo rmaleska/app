@@ -913,35 +913,31 @@ const LANG = {
     },
 
     calib: {
-      pool_true: [
-        'Ich bin ein Mensch.','Ich bin gerade wach.','Ich atme gerade.',
-        'Ich sitze oder liege gerade.','Es gibt Licht um mich herum.',
-        'Ich halte gerade ein Gerät.','Ich bin gerade irgendwo.',
-        'Ich habe zwei Hände.','Ich habe zwei Augen.','Ich habe einen Namen.',
-        'Ich bin älter als 5 Jahre.','Ich habe ein Gesicht.',
-        'Ich habe eine Körpergröße.','Ich wiege etwas.',
-        'Mein Herz schlägt gerade.','Ich kann gerade sehen.',
-        'Ich kann gerade hören.','Ich kann gerade denken.',
-        'Ich trage gerade Kleidung.','Ich habe gerade einen Kopf.',
-        'Ich bin nicht im Wasser.','Es gibt Licht hier.',
-        'Ich befinde mich auf der Erde.','Der Boden unter mir ist fest.',
-        'Um mich herum gibt es Objekte.','Ich befinde mich in einem Raum.',
-        'Ich erlebe gerade einen Moment.','Ich schaue gerade auf einen Bildschirm.',
-        'Ich nutze gerade Technologie.','Ich sehe gerade Text.',
-        'Ich nehme gerade etwas wahr.','Ich bin gerade anwesend.',
-        'Ich bin gerade bewusst.','Mein Geist ist gerade aktiv.',
-        'Es gibt eine Schwerkraft.','Die Erde ist rund.',
-        'Ein Tag hat 24 Stunden.','Zahlen existieren.',
-        'Sprache existiert.','2 ist mehr als 1.',
-        'Menschen brauchen Wasser.','Es gibt mehr als eine Farbe.',
-        'Tiere existieren.','Pflanzen existieren.','Es gibt andere Menschen.',
+      // Set A – Calib 1 (Augen offen)
+      set_a: [
+        { text: 'Ich bin ein Mensch.',          correct: true,  mp3: 'ca-01' },
+        { text: 'Ich habe einen Namen.',        correct: true,  mp3: 'ca-02' },
+        { text: 'Ich habe ein Gesicht.',        correct: true,  mp3: 'ca-03' },
+        { text: 'Ich wiege etwas.',             correct: true,  mp3: 'ca-04' },
+        { text: 'Mein Herz schlägt gerade.',    correct: true,  mp3: 'ca-05' },
+        { text: 'Die Erde ist rund.',           correct: true,  mp3: 'ca-06' },
+        { text: 'Ein Tag hat 24 Stunden.',      correct: true,  mp3: 'ca-07' },
+        { text: 'Zahlen existieren.',           correct: true,  mp3: 'ca-08' },
+        { text: 'Schnee ist schwarz.',          correct: false, mp3: 'ca-09' },
+        { text: 'Feuer ist kalt.',              correct: false, mp3: 'ca-10' },
       ],
-      pool_false: [
-        'Schnee ist schwarz.','Ich bin gerade ein Baum.','Feuer ist kalt.',
-        'Ich bin gerade unsichtbar.','Wasser ist trocken.',
-        'Die Sonne geht im Westen auf.','Ich habe drei Augen.',
-        'Ich bin gerade auf dem Mond.','Steine sind weich wie Wasser.',
-        'Ich bin jünger als 1 Jahr.',
+      // Set B – Calib 2 (Augen geschlossen)
+      set_b: [
+        { text: 'Ich habe einen Kopf.',             correct: true,  mp3: 'cb-01' },
+        { text: 'Ich befinde mich auf der Erde.',   correct: true,  mp3: 'cb-02' },
+        { text: 'Ich nehme gerade etwas wahr.',     correct: true,  mp3: 'cb-03' },
+        { text: 'Sprache existiert.',               correct: true,  mp3: 'cb-04' },
+        { text: '2 ist mehr als 1.',                correct: true,  mp3: 'cb-05' },
+        { text: 'Menschen brauchen Wasser.',        correct: true,  mp3: 'cb-06' },
+        { text: 'Es gibt mehr als eine Farbe.',     correct: true,  mp3: 'cb-07' },
+        { text: 'Es gibt andere Menschen.',         correct: true,  mp3: 'cb-08' },
+        { text: 'Wasser ist trocken.',              correct: false, mp3: 'cb-09' },
+        { text: 'Ich bin jünger als 1 Jahr.',       correct: false, mp3: 'cb-10' },
       ],
     },
 
@@ -966,8 +962,9 @@ const LANG = {
         text:'Okay, dann scheint dein Bauchgefühl der Ansicht zu sein, dass es im Moment besser für dich ist, wenn diese Informationen noch verborgen bleiben. Es kann trotzdem sein, dass im Lauf der nächsten Tage irgendwelche Eingebungen, Einfälle oder Erkenntnisse kommen, die mit deinem Problem zu tun haben können. Auch Träume sind möglich. Dein Bauchgefühl ist immer auf deiner Seite. Es weiß genau, wieviel es dir zumuten kann. Sei die nächsten Tage einfach aufmerksam, was in deinem Leben passiert. Manchmal sind es nur Kleinigkeiten, die du vielleicht gar nicht beachtest oder mit deinem Bauchgefühl in Verbindung bringst. Ganz egal, was es ist. Eine Veränderung hat auf jeden Fall stattgefunden.',
         text_chose_not_to_know:'Das ist vollkommen in Ordnung.\n\nManche Menschen arbeiten lieber ohne zu wissen, was im Hintergrund bearbeitet wurde – und das ist eine genauso gute Entscheidung.\n\nDein Bauchgefühl hat trotzdem gearbeitet und eine Veränderung hat auf jeden Fall stattgefunden. Sei die nächsten Tage einfach aufmerksam – manches zeigt sich erst in der Stille.',
         text_cta: 'Gib mir jetzt einen Impuls – einfach Ja.',
+        mp3_cta: 's-cta',
       },
-      { num:18, label:'Schritt 18 · Abschluss',        mp3:'s18', text:'Noch ein kurzer abschließender Hinweis. In dieser kurzen Session hat schon eine erste Veränderung stattgefunden, ganz egal ob groß oder klein. Du kannst jederzeit zurückkehren und eine weitere Konversation mit deinem Bauchgefühl führen. Das kann sogar sehr hilfreich sein. Denn manchmal finden kleine Veränderungen statt, aber man fällt wieder in alte Verhaltensmuster zurück oder es kommt zu Ereignissen, die dich beeinflussen und es entstehen wieder neue Teile in deinem Unterbewusstsein. Manche Teile kommen auch erst zum Vorschein, wenn schon andere Teile bearbeitet wurden. Auch das ist vollkommen normal. Dann kann eine weitere Konversation mit deinem Bauchgefühl sehr hilfreich sein. Also, wenn du möchtest, ich bin jederzeit wieder für dich da.', text_cta: 'Gib mir jetzt einen Impuls – einfach Ja.' },
+      { num:18, label:'Schritt 18 · Abschluss',        mp3:'s18', text:'Noch ein kurzer abschließender Hinweis. In dieser kurzen Session hat schon eine erste Veränderung stattgefunden, ganz egal ob groß oder klein. Du kannst jederzeit zurückkehren und eine weitere Konversation mit deinem Bauchgefühl führen. Das kann sogar sehr hilfreich sein. Denn manchmal finden kleine Veränderungen statt, aber man fällt wieder in alte Verhaltensmuster zurück oder es kommt zu Ereignissen, die dich beeinflussen und es entstehen wieder neue Teile in deinem Unterbewusstsein. Manche Teile kommen auch erst zum Vorschein, wenn schon andere Teile bearbeitet wurden. Auch das ist vollkommen normal. Dann kann eine weitere Konversation mit deinem Bauchgefühl sehr hilfreich sein. Also, wenn du möchtest, ich bin jederzeit wieder für dich da.', text_cta: 'Gib mir jetzt einen Impuls – einfach Ja.', mp3_cta: 's-cta' },
       { num:19, label:'Schritt 19 · Danke',             mp3:'s19', text:'Liebes Bauchgefühl, vielen Dank für die geleistete Arbeit.' },
     ],
   },
@@ -1537,14 +1534,17 @@ function speak(textOrKey, onDone, mp3Key, mp3Direct) {
 
   if (mp3path) {
     // ── MP3 abspielen ──────────────────────────────
-    try {
-      if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
-      const audio = new Audio(mp3path);
-      _currentAudio = audio;
-      audio.onended  = () => { _currentAudio = null; cb(); };
-      audio.onerror  = () => { _currentAudio = null; _speakTTS(textOrKey, cb); }; // Fallback TTS
-      audio.play();
-    } catch(e) { _speakTTS(textOrKey, cb); }
+    // setTimeout 50ms: iOS blockiert neuen Audio()-Aufruf direkt aus onended-Callback
+    setTimeout(() => {
+      try {
+        if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
+        const audio = new Audio(mp3path);
+        _currentAudio = audio;
+        audio.onended  = () => { _currentAudio = null; cb(); };
+        audio.onerror  = () => { _currentAudio = null; _speakTTS(textOrKey, cb); };
+        audio.play().catch(() => { _currentAudio = null; _speakTTS(textOrKey, cb); });
+      } catch(e) { _speakTTS(textOrKey, cb); }
+    }, 50);
   } else {
     // ── TTS ────────────────────────────────────────
     _speakTTS(textOrKey, cb);
@@ -1795,18 +1795,21 @@ const AHA_STEPS = [
   {
     headline: 'Eine kurze Frage.',
     text: 'Gibt es etwas in deinem Leben, das dich gerade beschäftigt — auch wenn du es noch nicht genau benennen kannst?',
+    mp3: 'aha-01',
     onYes: 2,
     onNo: 'no1',
   },
   {
     headline: 'Spür einmal nach.',
     text: 'Ist da irgendwie etwas spürbar — egal wo, egal wie schwach?',
+    mp3: 'aha-02',
     onYes: 3,
     onNo: 'no2',
   },
   {
     headline: 'Letzte Frage.',
     text: 'Wäre es gut, wenn das leichter werden könnte?',
+    mp3: 'aha-03',
     onYes: 'done',
     onNo: 'no3',
   },
@@ -1835,7 +1838,7 @@ function _ahaShowStep() {
       document.getElementById('ahaText').textContent = s.text;
       setOff(['ahaYes', 'ahaNo'], false);
       document.getElementById('ahaHint').textContent = '← Nein   Ja →';
-    });
+    }, null, null, s.mp3 || null);
   }, 400);
 }
 
@@ -1866,7 +1869,7 @@ function ahaAnswer(which) {
         _ahaShowingNoBridge = false;
         _ahaStep = 1; // weiter zu Frage 2
         setTimeout(() => _ahaShowStep(), 800);
-      });
+      }, null, 'aha-no1');
     } else if (action === 'no2') {
       const bridgeText = 'Manchmal zeigt es sich erst, wenn man genauer hinhört. Das ist völlig normal. Und wenn dies gerade nicht der richtige Moment für dich ist — du kannst jederzeit zurückkommen.';
       speak(bridgeText, () => {
@@ -1880,7 +1883,7 @@ function ahaAnswer(which) {
         _ahaShowingNoBridge = false;
         // Überschreibe onYes/onNo temporär per Flag
         _ahaStep = 99; // Sonderfall
-      });
+      }, null, 'aha-no2');
     } else if (action === 'no3') {
       const bridgeText = 'Dann ist jetzt vielleicht nicht der richtige Moment — du kannst jederzeit zurückkommen.';
       speak(bridgeText, () => {
@@ -1890,7 +1893,7 @@ function ahaAnswer(which) {
         document.getElementById('ahaHint').textContent = '← Später';
         _ahaShowingNoBridge = false;
         _ahaStep = 98; // Sonderfall Abbruch
-      });
+      }, null, 'aha-no3');
     }
   }
 }
@@ -1936,7 +1939,7 @@ function _ahaDone() {
         speak(L.screens.problem_tts, () => showBtn('problemBtn'), null, L.screens.problem_mp3 || null);
       }, 400);
     }, 800);
-  });
+  }, null, 'aha-closing');
 }
 
 function _ahaAbort() {
@@ -2001,17 +2004,25 @@ STEPS.forEach(s => STEP_MAP[s.num] = s);
 // ══════════════════════════════════════════════════
 // §JS:CALIB-POOL  (aus LANG-Objekt, buildCalibPool)
 // ══════════════════════════════════════════════════
-const CALIB_TRUE_COUNT  = 8;
-const CALIB_FALSE_COUNT = 2;
-
 function buildCalibPool() {
+  // Set A – Calib 1 (Augen offen)
   const pool = L.calib;
-  const t = [...pool.pool_true].sort(() => Math.random() - 0.5).slice(0, CALIB_TRUE_COUNT);
-  const f = [...pool.pool_false].sort(() => Math.random() - 0.5).slice(0, CALIB_FALSE_COUNT);
+  if (pool.set_a) return [...pool.set_a];
+  // Fallback für Sprachen ohne feste Sets (TTS)
+  const t = [...pool.pool_true].sort(() => Math.random() - 0.5).slice(0, 8);
+  const f = [...pool.pool_false].sort(() => Math.random() - 0.5).slice(0, 2);
   return [...t.map(x => ({ text: x, correct: true })),
           ...f.map(x => ({ text: x, correct: false }))]
          .sort(() => Math.random() - 0.5);
 }
+
+function buildCalibPoolB() {
+  // Set B – Calib 2 (Augen geschlossen)
+  const pool = L.calib;
+  if (pool.set_b) return [...pool.set_b];
+  return buildCalibPool(); // Fallback
+}
+
 let CALIB_Q = buildCalibPool();
 
 
@@ -2195,7 +2206,7 @@ function showCalibQ() {
       S._calibStart = performance.now();
 
     }, 250);
-  });
+  }, null, q.mp3 || null);
 }
 
 function calibTimeout() {
@@ -2246,7 +2257,7 @@ let CALIB2_Q = [];
 
 function startCalib2() {
   _calib2Done = false;
-  CALIB2_Q = buildCalibPool();
+  CALIB2_Q = buildCalibPoolB();
   S.calib_index = 0; S.calib_errors = 0;
   goTo('screenCalib2');
   document.getElementById('calib2Btns').classList.add('active', 'large');
@@ -2266,7 +2277,7 @@ function showCalib2Q() {
       setOff(['calib2Yes','calib2No'], false);
       S._calibStart = performance.now();
     }, 250);
-  });
+  }, null, q.mp3 || null);
 }
 
 function calib2Answer(response) {
@@ -2457,7 +2468,7 @@ function runStep(num) {
         }, 300);
       };
       if (step.text_cta) {
-        setTimeout(() => speak(step.text_cta, activateInfoBtn), 300);
+        setTimeout(() => speak(step.text_cta, activateInfoBtn, null, step.mp3_cta || null), 300);
       } else {
         activateInfoBtn();
       }

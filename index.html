@@ -1777,10 +1777,9 @@ function infoCheckChanged() {
 function infoNext() {
   goTo('screenWelcome');
   setTimeout(() => {
+    // iOS-Safe: welcome1 → welcome2 nahtlos, kein setTimeout dazwischen
     speak(L.screens.welcome1_tts, () => {
-      setTimeout(() => {
-        speak(L.screens.welcome2_tts, () => showBtn('welcomeBtn'), null, L.screens.welcome2_mp3 || null);
-      }, 300);
+      speak(L.screens.welcome2_tts, () => showBtn('welcomeBtn'), null, L.screens.welcome2_mp3 || null);
     }, null, L.screens.welcome1_mp3 || null);
   }, 400);
 }
@@ -1839,7 +1838,8 @@ function practiceAnswer(which) {
     document.getElementById('practiceHint').textContent = '';
     setTimeout(() => {
       speak(L.screens.practice3_tts, () => {
-        setTimeout(() => startCalib(), 800);
+        // iOS-Safe: direkt weiter zu startCalib (startet landscape-mp3), kein setTimeout
+        startCalib();
       }, null, L.screens.practice3_mp3 || null);
     }, 300);
   }
@@ -2303,7 +2303,8 @@ function calibAnswer(response) {
     setTimeout(() => { S.locked=false; showCalibQ(); }, 1800);
   } else {
     S.rt_samples.push(rt); S.calib_index++;
-    setTimeout(() => { S.locked=false; showCalibQ(); }, 350);
+    // iOS-Safe: kurze 50ms-Pause, User-Tap-Kontext bleibt für nächstes Audio erhalten.
+    setTimeout(() => { S.locked=false; showCalibQ(); }, 50);
   }
 }
 
@@ -2311,13 +2312,13 @@ function finishCalib() {
   document.getElementById('calibBtns').classList.remove('active', 'large');
   const score = Math.round((CALIB_Q.length - S.calib_errors) / CALIB_Q.length * 100);
   if (score >= 80) {
+    // iOS-Safe: nahtlose Audio-Kette calib_gut → calib2_intro → startCalib2
+    // Keine setTimeouts zwischen Audios - iOS würde sonst die Audio-Erlaubnis entziehen.
     speak(L.screens.calib_gut_tts, () => {
-      setTimeout(() => {
-        goTo('screenCalib2Intro');
-        setTimeout(() => {
-          speak(L.screens.calib2_intro_tts, () => setTimeout(startCalib2, 1500), null, L.screens.calib2_intro_mp3 || null);
-        }, 400);
-      }, 2500);
+      goTo('screenCalib2Intro');
+      speak(L.screens.calib2_intro_tts, () => {
+        startCalib2();
+      }, null, L.screens.calib2_intro_mp3 || null);
     }, null, L.screens.calib_gut_mp3 || null);
   } else if (score >= 65) { toast(L.ui.toast_spontaner); setTimeout(startCalib, 2000); }
   else                    { toast(L.ui.toast_spontaner); setTimeout(startCalib, 2000); }
@@ -2334,7 +2335,8 @@ function startCalib2() {
   S.calib_index = 0; S.calib_errors = 0;
   goTo('screenCalib2');
   document.getElementById('calib2Btns').classList.add('active', 'large');
-  speak(L.screens.calib2_start_tts, () => setTimeout(showCalib2Q, 800), null, L.screens.calib2_start_mp3 || null);
+  // iOS-Safe: nahtlos zu showCalib2Q (startet cb-01.mp3), kein setTimeout dazwischen
+  speak(L.screens.calib2_start_tts, () => showCalib2Q(), null, L.screens.calib2_start_mp3 || null);
 }
 
 function showCalib2Q() {
@@ -2362,7 +2364,8 @@ function calib2Answer(response) {
   const ok = (response === CALIB2_Q[S.calib_index].correct);
   if (!ok) S.calib_errors++;
   S.calib_index++;
-  setTimeout(() => { S.locked = false; showCalib2Q(); }, 350);
+  // iOS-Safe: kurze 50ms-Pause reicht - User-Tap-Kontext bleibt für nächstes Audio erhalten.
+  setTimeout(() => { S.locked = false; showCalib2Q(); }, 50);
 }
 
 let _calib2Done = false;
@@ -2370,7 +2373,9 @@ function finishCalib2() {
   if (_calib2Done) return;
   _calib2Done = true;
   document.getElementById('calib2Btns').classList.remove('active', 'large');
-  setTimeout(() => startContact(), 500);
+  // iOS-Safe: direkt zu startContact - das letzte cb-*.mp3 ist gerade geendet,
+  // Audio-Kette ist noch aktiv, contact_tts kann nahtlos starten.
+  startContact();
 }
 
 // ══════════════════════════════════════════════════
@@ -2392,24 +2397,22 @@ function showLofty() {
   loftyEl.textContent = text;
   loftyEl.classList.remove('visible');
   setTimeout(() => loftyEl.classList.add('visible'), 100);
+  // iOS-Safe: Kein setTimeout zwischen Audios. goToIntro() direkt im onended.
+  // Das nächste speak() wird nahtlos aus der MP3-Kette gestartet - iOS toleriert das.
   speak(text, () => {
-    setTimeout(() => goToIntro(), 1200);
+    goToIntro();
   }, null, L.screens.lofty_mp3 || null);
 }
 
 function goToIntro() {
   goTo('screenIntro');
-  setTimeout(() => {
-    speak(L.screens.intro1_tts, () => {
-      setTimeout(() => {
-        speak(L.screens.intro2_tts, () => {
-          setTimeout(() => {
-            speak(L.screens.intro3_tts, () => showBtn('introBtn'), null, L.screens.intro3_mp3 || null);
-          }, 300);
-        }, null, L.screens.intro2_mp3 || null);
-      }, 400);
-    }, null, L.screens.intro1_mp3 || null);
-  }, 400);
+  // iOS-Safe: Alle drei Intro-MP3s in nahtloser Kette, ohne setTimeout dazwischen.
+  // Der Screen-Wechsel via goTo() ist OK, solange kein Audio-Gap entsteht.
+  speak(L.screens.intro1_tts, () => {
+    speak(L.screens.intro2_tts, () => {
+      speak(L.screens.intro3_tts, () => showBtn('introBtn'), null, L.screens.intro3_mp3 || null);
+    }, null, L.screens.intro2_mp3 || null);
+  }, null, L.screens.intro1_mp3 || null);
 }
 
 function buildSUD(gridId, cb) {
@@ -2455,12 +2458,11 @@ function contactGo() {
   document.getElementById('contactBtns').classList.remove('active', 'large');
   goTo('screenStep');
   document.getElementById('stepEyesWrap').style.display = 'flex';
+  // iOS-Safe: nahtlose Kette eyes → ready → S1, keine setTimeouts zwischen Audios
   speak(L.screens.eyes_tts, () => {
-    setTimeout(() => {
-      speak(L.screens.ready_tts, () => {
-        setTimeout(() => runStep(1), 600);
-      }, null, L.screens.ready_mp3 || null);
-    }, 400);
+    speak(L.screens.ready_tts, () => {
+      runStep(1);
+    }, null, L.screens.ready_mp3 || null);
   }, null, L.screens.eyes_mp3 || null);
 }
 
@@ -2633,12 +2635,11 @@ function stepInfoNext() {
 function startPostSUD() {
   goTo('screenPostSUD');
   setTimeout(() => {
+    // iOS-Safe: postsud1 → postsud2 nahtlos, kein setTimeout dazwischen
     speak(L.screens.postsud1_tts, () => {
-      setTimeout(() => {
-        speak(L.screens.postsud2_tts, () => {
-          buildSUD('postSudGrid', val => { S.sud_post = val; showProtocol(); });
-        }, null, L.screens.postsud2_mp3 || null);
-      }, 400);
+      speak(L.screens.postsud2_tts, () => {
+        buildSUD('postSudGrid', val => { S.sud_post = val; showProtocol(); });
+      }, null, L.screens.postsud2_mp3 || null);
     }, null, L.screens.postsud1_mp3 || null);
   }, 400);
 }
@@ -2680,8 +2681,8 @@ function showProtocol() {
   const endBtn = document.getElementById('protoEndBtn');
   if (endBtn) { endBtn.textContent = L.ui.sitzung_beenden; endBtn.classList.add('hidden-until-tts'); }
 
-  // Start closing sequence after a short pause
-  setTimeout(() => startProtoClosing(), 1200);
+  // iOS-Safe: kurze Pause für Screen-Render, dann Audio-Kette starten
+  setTimeout(() => startProtoClosing(), 300);
 }
 
 function startProtoClosing() {
@@ -2692,10 +2693,11 @@ function startProtoClosing() {
   const wipeEl = document.getElementById('protoWipe');
   const endBtn = document.getElementById('protoEndBtn');
 
+  // iOS-Safe: Kette proto-01 → proto-02 → proto-03 ohne setTimeout dazwischen
   function showClosing(el, text, mp3key, cb) {
     el.textContent = text;
     el.classList.remove('hidden');
-    speak(text, () => setTimeout(cb, 800), null, mp3key || null);
+    speak(text, () => cb(), null, mp3key || null);
   }
 
   showClosing(c1El, s.proto_closing1_tts || '', s.proto_closing1_mp3 || null, () => {

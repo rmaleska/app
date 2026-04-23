@@ -2273,12 +2273,11 @@ function showCalibQ() {
   document.getElementById('calibText').textContent = q.text;
   speak(q.text, () => {
     if (!S.locked) return;
-    setTimeout(() => {
-      S.locked = false;
-      setOff(['calibYes','calibNo'], false);
-      S._calibStart = performance.now();
-
-    }, 250);
+    // Buttons sofort aktiv - schnelle Reaktion darf nicht verloren gehen.
+    S.locked = false;
+    setOff(['calibYes','calibNo'], false);
+    S._calibStart = performance.now();
+    cueSignal();
   }, null, q.mp3 || null);
 }
 
@@ -2347,11 +2346,11 @@ function showCalib2Q() {
   document.getElementById('calib2Text').textContent = q.text;
   speak(q.text, () => {
     if (!S.locked) return;
-    setTimeout(() => {
-      S.locked = false;
-      setOff(['calib2Yes','calib2No'], false);
-      S._calibStart = performance.now();
-    }, 250);
+    // Buttons sofort aktiv - schnelle Reaktion darf nicht verloren gehen.
+    S.locked = false;
+    setOff(['calib2Yes','calib2No'], false);
+    S._calibStart = performance.now();
+    cueSignal();
   }, null, q.mp3 || null);
 }
 
@@ -2442,7 +2441,7 @@ function startContact() {
     if (!S.locked) return;
     setTimeout(() => {
       S.locked=false; setOff(['contactBtn'],false);
-      vibrateSignal();
+      cueSignal();
       clearTimeout(S.asif_timer);
       S.asif_timer = setTimeout(() => toast(L.ui.toast_asif_btn,'soft'), 10000);
     }, 50);
@@ -2551,7 +2550,7 @@ function runStep(num) {
         document.getElementById('sessionNoCol').style.visibility = 'hidden';
         document.getElementById('sessionBtns').classList.add('active', 'large');
         setOff(['stepYes'], false);
-        vibrateSignal();
+        cueSignal();
       }, 50);
     }
   }, null, stepMp3);
@@ -2572,6 +2571,40 @@ function vibrateSignal() {
   if (navigator.vibrate) navigator.vibrate(100);
 }
 
+// Plattformübergreifendes Button-Ready-Signal.
+// - Auf Android: Vibration (wie bisher, erprobt als konditioniertes Signal)
+// - Auf iOS: kurzer, subtiler Sinus-Ton via Web Audio API (navigator.vibrate funktioniert dort nicht)
+// Der Ton wird nur ausgegeben, wenn vibrate nicht verfügbar/wirksam ist.
+function cueSignal() {
+  // Android-Zweig: echte Vibration
+  if (navigator.vibrate) {
+    try {
+      // Rückgabewert true bedeutet: Vibration wurde (vermutlich) ausgelöst.
+      // iOS-Safari/Chrome geben entweder false zurück oder ignorieren still.
+      const vibrated = navigator.vibrate(80);
+      if (vibrated) return;
+    } catch(e) {}
+  }
+  // Fallback (iOS): kurzer Sinus-Ton ~40ms bei 880Hz mit sanfter Hüllkurve
+  try {
+    if (!_audioCtx) ensureAudioCtx();
+    if (!_audioCtx) return;
+    if (_audioCtx.state === 'suspended') { _audioCtx.resume().catch(()=>{}); }
+    const now = _audioCtx.currentTime;
+    const osc = _audioCtx.createOscillator();
+    const gain = _audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    // Hüllkurve: sanftes Ein- und Ausblenden, vermeidet Klickgeräusche
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
+    osc.connect(gain).connect(_audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.06);
+  } catch(e) {}
+}
+
 // Step: show fixed bottom buttons
 function activateStepButtons(step) {
   const noCol = document.getElementById('sessionNoCol');
@@ -2587,7 +2620,7 @@ function activateStepButtons(step) {
     setOff(['stepYes'], false);
     if (step.type === 'both') setOff(['stepNo'], false);
     S._qStart = performance.now();
-    vibrateSignal();
+    cueSignal();
   }, 50);
 }
 

@@ -469,8 +469,8 @@ border-color: var(--gold); color: var(--gold);
 
 <!-- SPLASH -->
 <div class="screen active" id="screenSplash">
-  <div class="splash-brand">Influencial</div>
-  <div class="splash-sub">Silent Coaching</div>
+  <div class="splash-brand" data-i18n="splash_brand">Influencial</div>
+  <div class="splash-sub" data-i18n="splash_sub">Silent Coaching</div>
   <div class="lang-selector">
     <button class="lang-btn active" id="langBtn-de" onclick="setLang('de')">DE</button>
     <button class="lang-btn" id="langBtn-en" onclick="setLang('en')">EN</button>
@@ -481,157 +481,157 @@ border-color: var(--gold); color: var(--gold);
   <button class="splash-btn" onclick="splashStart()">
     <div class="splash-dot"></div>
   </button>
-  <div class="splash-hint">Tippe um zu beginnen</div>
+  <div class="splash-hint" data-i18n="splash_hint">Tippe um zu beginnen</div>
   <!-- DEV-ONLY – vor Veroeffentlichung entfernen -->
-  <button onclick="devMenuToggle()" style="position:fixed;top:1rem;right:1rem;background:#1a1d22;border:1px solid #c4a05a55;color:#c4a05a88;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Dev Skip &#9662;</button>
-  <button onclick="adminOpen()" style="position:fixed;top:1rem;right:7.5rem;background:#1a1d22;border:1px solid #4a7a9b88;color:#4a7a9b;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Admin</button>
+  <button onclick="devMenuToggle()" data-i18n="dev_skip" style="position:fixed;top:1rem;right:1rem;background:#1a1d22;border:1px solid #c4a05a55;color:#c4a05a88;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Dev Skip &#9662;</button>
+  <button onclick="adminOpen()" data-i18n="dev_admin" style="position:fixed;top:1rem;right:7.5rem;background:#1a1d22;border:1px solid #4a7a9b88;color:#4a7a9b;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Admin</button>
   <div id="devMenu" style="display:none;position:fixed;top:2.8rem;right:1rem;background:#0e1215;border:1px solid #c4a05a44;z-index:9999;min-width:180px;">
-    <div onclick="devJump('aha')"    style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; AHA-Sequenz</div>
-    <div onclick="devJump('problem')"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Kernsatz</div>
-    <div onclick="devJump('presud')"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Belastungsgrad</div>
-    <div onclick="devJump('calib1')"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Kalibrierung 1</div>
-    <div onclick="devJump('calib2')"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Kalibrierung 2</div>
-    <div onclick="devJump('prep')"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Einstimmung</div>
-    <div onclick="devJump('contact')"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Start Hauptteil</div>
-    <div onclick="devJump(1)"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S1 Untersuchung</div>
-    <div onclick="devJump(4)"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S4 Weitere Teile?</div>
-    <div onclick="devJump(10)" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S10 Kontrolle</div>
-    <div onclick="devJump(12)" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S12 Finale Reinigung</div>
-    <div onclick="devJump(13)" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S13 Bewusstsein</div>
-    <div onclick="devJump(16)" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S16 Verborgen OK</div>
-    <div onclick="devJump(17)" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S17 Abschluss</div>
-    <div onclick="devJump('postsud')" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;">&#8594; Post-SUD</div>
+    <div onclick="devJump('aha')"    data-i18n="dev_aha"     style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; AHA-Sequenz</div>
+    <div onclick="devJump('problem')"  data-i18n="dev_problem" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Kernsatz</div>
+    <div onclick="devJump('presud')"  data-i18n="dev_presud"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Belastungsgrad</div>
+    <div onclick="devJump('calib1')"  data-i18n="dev_calib1"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Kalibrierung 1</div>
+    <div onclick="devJump('calib2')"  data-i18n="dev_calib2"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Kalibrierung 2</div>
+    <div onclick="devJump('prep')"  data-i18n="dev_prep"      style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Einstimmung</div>
+    <div onclick="devJump('contact')"  data-i18n="dev_contact" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Start Hauptteil</div>
+    <div onclick="devJump(1)"  data-i18n="dev_s1"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S1 Untersuchung</div>
+    <div onclick="devJump(4)"  data-i18n="dev_s4"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S4 Weitere Teile?</div>
+    <div onclick="devJump(10)" data-i18n="dev_s10" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S10 Kontrolle</div>
+    <div onclick="devJump(12)" data-i18n="dev_s12" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S12 Finale Reinigung</div>
+    <div onclick="devJump(13)" data-i18n="dev_s13" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S13 Bewusstsein</div>
+    <div onclick="devJump(16)" data-i18n="dev_s16" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S16 Verborgen OK</div>
+    <div onclick="devJump(17)" data-i18n="dev_s17" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S17 Abschluss</div>
+    <div onclick="devJump('postsud')" data-i18n="dev_postsud" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;">&#8594; Post-SUD</div>
   </div>
   <!-- /DEV-ONLY -->
 </div>
 
 <!-- §SCREEN:INFO -->
 <div class="screen" id="screenInfo" style="padding-bottom: 5rem;">
-  <div class="label">Influencial · Silent Coaching</div>
+  <div class="label" data-i18n="info_label">Influencial · Silent Coaching</div>
   <div class="info-onboard-text" id="infoText">
-    <p>Du hast ein inneres Wissen, das klüger ist als dein Verstand. Manche nennen es Bauchgefühl, innere Stimme oder Intuition. Diese App gibt ihm Raum, <strong>alte Muster zu verändern</strong> – ohne dass du über dein Problem sprechen oder nachdenken musst.</p>
-    <p>Du drückst während der Sitzung nur zwei Buttons: <strong>Ja</strong> oder <strong>Nein</strong>. Mehr wird nicht von dir verlangt.</p>
-    <p class="warning"><strong>Wichtiger Hinweis</strong><br>
+    <p data-i18n="info_p1_html">Du hast ein inneres Wissen, das klüger ist als dein Verstand. Manche nennen es Bauchgefühl, innere Stimme oder Intuition. Diese App gibt ihm Raum, <strong>alte Muster zu verändern</strong> – ohne dass du über dein Problem sprechen oder nachdenken musst.</p>
+    <p data-i18n="info_p2_html">Du drückst während der Sitzung nur zwei Buttons: <strong>Ja</strong> oder <strong>Nein</strong>. Mehr wird nicht von dir verlangt.</p>
+    <p class="warning" data-i18n="info_warning_html"><strong>Wichtiger Hinweis</strong><br>
     Diese App ist ein Coaching-Angebot und kein medizinisches Produkt. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.</p>
   </div>
   <label class="info-checkbox-wrap">
     <input type="checkbox" id="infoCheckbox" onchange="infoCheckChanged()">
-    <span class="info-checkbox-label">Ich bestätige, dass keiner dieser Ausschlussgründe auf mich zutrifft, und nutze diese App eigenverantwortlich.</span>
+    <span class="info-checkbox-label" data-i18n="info_checkbox">Ich bestätige, dass keiner dieser Ausschlussgründe auf mich zutrifft, und nutze diese App eigenverantwortlich.</span>
   </label>
-  <button class="btn hidden-until-tts" id="infoBtn" onclick="infoNext()">Weiter</button>
+  <button class="btn hidden-until-tts" id="infoBtn" data-i18n="info_btn" onclick="infoNext()">Weiter</button>
 </div>
 
 <!-- §SCREEN:NAME -->
 <!-- §SCREEN:WELCOME -->
 <div class="screen" id="screenWelcome">
-  <div class="label">Coaching App</div>
-  <h1 class="headline">Willkommen<br>bei dir <em>selbst.</em></h1>
+  <div class="label" data-i18n="welcome_label">Coaching App</div>
+  <h1 class="headline" data-i18n="welcome_h1_html">Willkommen<br>bei dir <em>selbst.</em></h1>
   <ul class="body-list" id="welcomeText">
-    <li>Deine Aufmerksamkeit</li>
-    <li>Dein Bauchgefühl</li>
+    <li data-i18n="welcome_li1">Deine Aufmerksamkeit</li>
+    <li data-i18n="welcome_li2">Dein Bauchgefühl</li>
   </ul>
-  <button class="btn hidden-until-tts" id="welcomeBtn" onclick="welcomeNext()">Weiter</button>
+  <button class="btn hidden-until-tts" id="welcomeBtn" data-i18n="welcome_btn" onclick="welcomeNext()">Weiter</button>
 </div>
 
 <!-- §SCREEN:PROBLEM -->
 <div class="screen" id="screenProblem">
-  <div class="label">Dein Thema</div>
-  <h2 class="headline">Dein <em>Kernsatz.</em></h2>
+  <div class="label" data-i18n="problem_label">Dein Thema</div>
+  <h2 class="headline" data-i18n="problem_h2_html">Dein <em>Kernsatz.</em></h2>
   <div class="info-onboard-text" style="text-align:center;max-height:none;">
-    <p>Bevor du beginnst — nimm dir einen Moment.</p>
-    <p>Formuliere dein Thema als einen klaren Satz. Zum Beispiel: <strong>„Ich kann schlecht einschlafen."</strong> Oder: <strong>„Ich fühle mich in sozialen Situationen unwohl."</strong></p>
-    <p>Kein Erklären, kein Analysieren — nur ein Satz, so konkret wie möglich. Halte ihn innerlich bereit.</p>
+    <p data-i18n="problem_p1">Bevor du beginnst — nimm dir einen Moment.</p>
+    <p data-i18n="problem_p2_html">Formuliere dein Thema als einen klaren Satz. Zum Beispiel: <strong>„Ich kann schlecht einschlafen."</strong> Oder: <strong>„Ich fühle mich in sozialen Situationen unwohl."</strong></p>
+    <p data-i18n="problem_p3">Kein Erklären, kein Analysieren — nur ein Satz, so konkret wie möglich. Halte ihn innerlich bereit.</p>
   </div>
-  <button class="btn hidden-until-tts" id="problemBtn" onclick="problemNext()">Ich habe meinen Satz</button>
+  <button class="btn hidden-until-tts" id="problemBtn" data-i18n="problem_btn" onclick="problemNext()">Ich habe meinen Satz</button>
 </div>
 
 <!-- §SCREEN:INTRO -->
 <div class="screen" id="screenIntro">
-  <div class="label">Wie es funktioniert</div>
-  <h2 class="headline">Drei <em>Ebenen</em><br>in dir.</h2>
+  <div class="label" data-i18n="intro_label">Wie es funktioniert</div>
+  <h2 class="headline" data-i18n="intro_h2_html">Drei <em>Ebenen</em><br>in dir.</h2>
   <ul class="body-list" id="introText">
-    <li><strong>Dein Bauchgefühl</strong> – die weise Instanz, die diese Sitzung leitet.</li>
-    <li><strong>Dein Unbewusstes</strong> – ein System aus inneren Teilen, die alte Erfahrungen gespeichert haben.</li>
-    <li><strong>Du selbst</strong> – der beobachtet und die Buttons drückt.</li>
+    <li data-i18n="intro_li1_html"><strong>Dein Bauchgefühl</strong> – die weise Instanz, die diese Sitzung leitet.</li>
+    <li data-i18n="intro_li2_html"><strong>Dein Unbewusstes</strong> – ein System aus inneren Teilen, die alte Erfahrungen gespeichert haben.</li>
+    <li data-i18n="intro_li3_html"><strong>Du selbst</strong> – der beobachtet und die Buttons drückt.</li>
   </ul>
   <!-- B2 FIX: Button starts hidden, revealed after TTS -->
-  <button class="btn hidden-until-tts" id="introBtn" onclick="introNext()">Weiter</button>
+  <button class="btn hidden-until-tts" id="introBtn" data-i18n="intro_btn" onclick="introNext()">Weiter</button>
 </div>
 
 <!-- §SCREEN:PRACTICE -->
 <div class="screen" id="screenPractice">
-  <div class="label">Kurze Übung</div>
-  <h2 class="headline">Lern die<br><em>Buttons</em> kennen.</h2>
-  <p class="body-text" id="practiceText">Tippe einmal auf <strong>Rot</strong> – links unten.<br>Dann einmal auf <strong>Grün</strong> – rechts unten.<br>Augen können schon fast zu sein.</p>
+  <div class="label" data-i18n="practice_label">Kurze Übung</div>
+  <h2 class="headline" data-i18n="practice_h2_html">Lern die<br><em>Buttons</em> kennen.</h2>
+  <p class="body-text" id="practiceText" data-i18n="practice_body_html">Tippe einmal auf <strong>Rot</strong> – links unten.<br>Dann einmal auf <strong>Grün</strong> – rechts unten.<br>Augen können schon fast zu sein.</p>
   <div class="practice-hint" id="practiceHint"></div>
 </div>
 <div class="practice-btns" id="practiceBtns">
   <div class="practice-no-col">
     <button class="amp-btn amp-no off" id="practiceNo" onclick="practiceAnswer('no')">✗</button>
-    <span class="amp-label">Nein</span>
+    <span class="amp-label" data-i18n="practice_label_no">Nein</span>
   </div>
   <div class="practice-yes-col">
     <button class="amp-btn amp-yes off" id="practiceYes" onclick="practiceAnswer('yes')">✓</button>
-    <span class="amp-label">Ja</span>
+    <span class="amp-label" data-i18n="practice_label_yes">Ja</span>
   </div>
 </div>
 
 
 <!-- §SCREEN:AHA -->
 <div class="screen" id="screenAha">
-  <div class="label">Ein Moment für dich</div>
+  <div class="label" data-i18n="aha_label">Ein Moment für dich</div>
   <h2 class="headline" id="ahaHeadline">–</h2>
   <p class="body-text" id="ahaText" style="max-width:340px;text-align:center;line-height:1.9;"></p>
   <div class="practice-hint" id="ahaHint" style="margin-top:1.5rem;"></div>
-  <button class="btn hidden-until-tts" id="ahaBeginBtn" onclick="_ahaBegin()" style="margin-top:2rem;">Beginnen</button>
+  <button class="btn hidden-until-tts" id="ahaBeginBtn" data-i18n="aha_btn_begin" onclick="_ahaBegin()" style="margin-top:2rem;">Beginnen</button>
 </div>
 <div class="practice-btns" id="ahaBtns">
   <div class="practice-no-col">
     <button class="amp-btn amp-no off" id="ahaNo" onclick="ahaAnswer('no')">✗</button>
-    <span class="amp-label" id="ahaNoLabel">Nein</span>
+    <span class="amp-label" id="ahaNoLabel" data-i18n="aha_label_no">Nein</span>
   </div>
   <div class="practice-yes-col">
     <button class="amp-btn amp-yes off" id="ahaYes" onclick="ahaAnswer('yes')">✓</button>
-    <span class="amp-label">Ja</span>
+    <span class="amp-label" data-i18n="aha_label_yes">Ja</span>
   </div>
 </div>
 
 <!-- §SCREEN:CALIB2-INTRO -->
 <div class="screen" id="screenCalib2Intro">
-  <div class="label">Vorbereitung</div>
-  <h2 class="headline" style="font-size:1.6rem;">Schließe jetzt<br>die <em>Augen.</em></h2>
-  <p class="body-text">Die nächsten Fragen beantwortest du genauso spontan — ohne nachzudenken, ohne abzuwägen. Dein erster Impuls ist die richtige Antwort.<br><br>Warum? Weil bewusstes Nachdenken dich bisher nicht zu einer dauerhaften Lösung geführt hat. Das Unbewusste weiß mehr — und genau das werden wir jetzt nutzen.<br><br>Drücke einfach das, was du als erstes spürst.</p>
+  <div class="label" data-i18n="calib2intro_label">Vorbereitung</div>
+  <h2 class="headline" data-i18n="calib2intro_h2_html" style="font-size:1.6rem;">Schließe jetzt<br>die <em>Augen.</em></h2>
+  <p class="body-text" data-i18n="calib2intro_body_html">Die nächsten Fragen beantwortest du genauso spontan — ohne nachzudenken, ohne abzuwägen. Dein erster Impuls ist die richtige Antwort.<br><br>Warum? Weil bewusstes Nachdenken dich bisher nicht zu einer dauerhaften Lösung geführt hat. Das Unbewusste weiß mehr — und genau das werden wir jetzt nutzen.<br><br>Drücke einfach das, was du als erstes spürst.</p>
 </div>
 
 <!-- §SCREEN:CALIB2 -->
 <div class="screen" id="screenCalib2">
-  <div class="label">Kalibrierung · Augen zu</div>
+  <div class="label" data-i18n="calib2_label">Kalibrierung · Augen zu</div>
   <div class="step-text" id="calib2Text" style="height:40vh;font-size:clamp(1.1rem,3.5vw,1.5rem);display:flex;align-items:center;justify-content:center;">–</div>
 </div>
 
 <!-- §SCREEN:LANDSCAPE -->
 <div class="screen" id="screenLandscape">
-  <div class="label">Vorbereitung</div>
-  <h2 class="headline" style="font-size:1.6rem;">Drehe dein<br>Telefon <em>quer.</em></h2>
-  <p class="body-text">Halte es mit beiden Händen — Daumen links und rechts.<br><br>So kannst du die Buttons blind drücken, wenn deine Augen gleich geschlossen sind.</p>
-  <p class="body-text" id="landscapeWarning" style="display:none;color:var(--gold);margin-top:-0.5rem;">Bitte zuerst das Telefon drehen.</p>
-  <button class="btn go" onclick="screenLandscapeNext()">Bereit</button>
+  <div class="label" data-i18n="landscape_label">Vorbereitung</div>
+  <h2 class="headline" data-i18n="landscape_h2_html" style="font-size:1.6rem;">Drehe dein<br>Telefon <em>quer.</em></h2>
+  <p class="body-text" data-i18n="landscape_body_html">Halte es mit beiden Händen — Daumen links und rechts.<br><br>So kannst du die Buttons blind drücken, wenn deine Augen gleich geschlossen sind.</p>
+  <p class="body-text" id="landscapeWarning" data-i18n="landscape_warning" style="display:none;color:var(--gold);margin-top:-0.5rem;">Bitte zuerst das Telefon drehen.</p>
+  <button class="btn go" data-i18n="landscape_btn" onclick="screenLandscapeNext()">Bereit</button>
 </div>
 
 <!-- §SCREEN:CALIB -->
 <div class="screen" id="screenCalib">
-  <div class="label">Kalibrierung</div>
+  <div class="label" data-i18n="calib_label">Kalibrierung</div>
   <div class="step-text" id="calibText" style="height:40vh;font-size:clamp(1.1rem,3.5vw,1.5rem);display:flex;align-items:center;justify-content:center;">–</div>
 </div>
 <!-- Fixed bottom buttons for calibration -->
 <div class="session-btns" id="calibBtns">
   <div class="session-no-col">
     <button class="amp-btn amp-no off" id="calibNo" onclick="calibAnswer(false)">✗</button>
-    <span class="amp-label">Nein</span>
+    <span class="amp-label" data-i18n="calib_label_no">Nein</span>
   </div>
   <div class="session-yes-col">
     <button class="amp-btn amp-yes off" id="calibYes" onclick="calibAnswer(true)">✓</button>
-    <span class="amp-label">Ja</span>
+    <span class="amp-label" data-i18n="calib_label_yes">Ja</span>
   </div>
 </div>
 
@@ -639,20 +639,20 @@ border-color: var(--gold); color: var(--gold);
 <div class="session-btns" id="calib2Btns">
   <div class="session-no-col">
     <button class="amp-btn amp-no off" id="calib2No" onclick="calib2Answer(false)">✗</button>
-    <span class="amp-label">Nein</span>
+    <span class="amp-label" data-i18n="calib2_label_no">Nein</span>
   </div>
   <div class="session-yes-col">
     <button class="amp-btn amp-yes off" id="calib2Yes" onclick="calib2Answer(true)">✓</button>
-    <span class="amp-label">Ja</span>
+    <span class="amp-label" data-i18n="calib2_label_yes">Ja</span>
   </div>
 </div>
 
 
 <!-- §SCREEN:PRE-SUD -->
 <div class="screen" id="screenPreSUD">
-  <div class="label">Phase I · Einschätzung</div>
-  <h2 class="headline" style="font-size:1.5rem;">Wie stark spürst du<br>das Thema <em>gerade?</em></h2>
-  <p class="body-text" style="margin-bottom:1.2rem;">Tippe spontan auf eine Zahl von 1 bis 10.</p>
+  <div class="label" data-i18n="presud_label">Phase I · Einschätzung</div>
+  <h2 class="headline" data-i18n="presud_h2_html" style="font-size:1.5rem;">Wie stark spürst du<br>das Thema <em>gerade?</em></h2>
+  <p class="body-text" data-i18n="presud_body" style="margin-bottom:1.2rem;">Tippe spontan auf eine Zahl von 1 bis 10.</p>
   <div class="sud-grid" id="preSudGrid"></div>
 </div>
 
@@ -664,7 +664,7 @@ border-color: var(--gold); color: var(--gold);
 
 <!-- §SCREEN:CONTACT -->
 <div class="screen" id="screenContact">
-  <div class="label">Phase II · Kontakt</div>
+  <div class="label" data-i18n="contact_label">Phase II · Kontakt</div>
   <div class="phase-dots">
     <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
     <div class="dot"></div><div class="dot"></div>
@@ -675,7 +675,7 @@ border-color: var(--gold); color: var(--gold);
 <div class="session-btns" id="contactBtns">
   <div class="session-yes-col" style="flex:1;">
     <button class="amp-btn amp-yes off" id="contactBtn" onclick="contactGo()">✓</button>
-    <span class="amp-label">Ja</span>
+    <span class="amp-label" data-i18n="contact_label_yes">Ja</span>
   </div>
 </div>
 
@@ -696,7 +696,7 @@ border-color: var(--gold); color: var(--gold);
       <!-- Mund neutral -->
       <path d="M46 74 Q60 80 74 74" fill="none" stroke="#c4a05a66" stroke-width="1.5" stroke-linecap="round"/>
     </svg>
-    <div style="font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:#5a5750;margin-top:1rem;">Augen zu</div>
+    <div data-i18n="step_eyes_label" style="font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:#5a5750;margin-top:1rem;">Augen zu</div>
   </div>
   <div class="step-text" id="stepText" style="display:none">–</div>
   <!-- Spiral (rekon/both/green steps) -->
@@ -708,11 +708,11 @@ border-color: var(--gold); color: var(--gold);
 <div class="session-btns" id="sessionBtns">
   <div class="session-no-col" id="sessionNoCol">
     <button class="amp-btn amp-no off" id="stepNo" onclick="stepAnswer(false)">✗</button>
-    <span class="amp-label">Nein</span>
+    <span class="amp-label" data-i18n="step_label_no">Nein</span>
   </div>
   <div class="session-yes-col" id="sessionYesCol">
     <button class="amp-btn amp-yes off" id="stepYes" onclick="stepAnswer(true)">✓</button>
-    <span class="amp-label" id="stepYesLabel">Ja</span>
+    <span class="amp-label" id="stepYesLabel" data-i18n="step_label_yes">Ja</span>
   </div>
 </div>
 
@@ -720,28 +720,28 @@ border-color: var(--gold); color: var(--gold);
 
 <!-- §SCREEN:POST-SUD -->
 <div class="screen" id="screenPostSUD">
-  <div class="label">Abschluss · Einschätzung</div>
-  <h2 class="headline" style="font-size:1.5rem;">Wie stark spürst du<br>das Thema <em>jetzt?</em></h2>
-  <p class="body-text" style="margin-bottom:1.2rem;">Tippe spontan auf eine Zahl von 1 bis 10.</p>
+  <div class="label" data-i18n="postsud_label">Abschluss · Einschätzung</div>
+  <h2 class="headline" data-i18n="postsud_h2_html" style="font-size:1.5rem;">Wie stark spürst du<br>das Thema <em>jetzt?</em></h2>
+  <p class="body-text" data-i18n="postsud_body" style="margin-bottom:1.2rem;">Tippe spontan auf eine Zahl von 1 bis 10.</p>
   <div class="sud-grid" id="postSudGrid"></div>
 </div>
 
 <!-- §SCREEN:PROTOCOL -->
 <div class="screen" id="screenProtocol">
-  <div class="label">Sitzungsprotokoll</div>
-  <h2 class="headline">Sitzung <em>abgeschlossen.</em></h2>
+  <div class="label" data-i18n="proto_label">Sitzungsprotokoll</div>
+  <h2 class="headline" data-i18n="proto_h2_html">Sitzung <em>abgeschlossen.</em></h2>
   <div class="proto-grid">
     <div class="proto-cell">
       <div class="proto-val" id="protoPartsVal">–</div>
-      <div class="proto-lbl">Teile</div>
+      <div class="proto-lbl" data-i18n="proto_lbl_parts">Teile</div>
     </div>
     <div class="proto-cell">
       <div class="proto-val" id="protoPreVal">–</div>
-      <div class="proto-lbl">Vorher</div>
+      <div class="proto-lbl" data-i18n="proto_lbl_before">Vorher</div>
     </div>
     <div class="proto-cell">
       <div class="proto-val" id="protoPostVal">–</div>
-      <div class="proto-lbl">Nachher</div>
+      <div class="proto-lbl" data-i18n="proto_lbl_after">Nachher</div>
     </div>
   </div>
   <div class="proto-note" id="protoNote"></div>
@@ -749,8 +749,8 @@ border-color: var(--gold); color: var(--gold);
   <div class="proto-closing hidden" id="protoClosing1"></div>
   <div class="proto-closing hidden" id="protoClosing2"></div>
   <div class="proto-closing lofty hidden" id="protoClosing3"></div>
-  <div class="proto-wipe" id="protoWipe" style="display:none;">Alle Daten werden nach dem Schließen unwiderruflich gelöscht.</div>
-  <button class="btn-end hidden-until-tts" id="protoEndBtn" onclick="endSession()">Sitzung beenden</button>
+  <div class="proto-wipe" id="protoWipe" data-i18n="proto_wipe" style="display:none;">Alle Daten werden nach dem Schließen unwiderruflich gelöscht.</div>
+  <button class="btn-end hidden-until-tts" id="protoEndBtn" data-i18n="proto_btn_end" onclick="endSession()">Sitzung beenden</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -888,6 +888,131 @@ const LANG = {
       badge_plural:    (n) => `${n} Teile bearbeitet`,
       augen_zu:        'Augen zu',
       abgeschlossen:   'Sitzung abgeschlossen.',
+    },
+
+    // §I18N:DE  – sichtbare UI-Texte für applyUITexts()
+    // Schlüssel werden im HTML als data-i18n='key' referenziert.
+    // _html-Suffix → innerHTML, sonst → textContent.
+    tx: {
+      // Splash
+      splash_brand:        'Influencial',
+      splash_sub:          'Silent Coaching',
+      splash_hint:         'Tippe um zu beginnen',
+      // Info-Screen
+      info_label:          'Influencial · Silent Coaching',
+      info_p1_html:        'Du hast ein inneres Wissen, das klüger ist als dein Verstand. Manche nennen es Bauchgefühl, innere Stimme oder Intuition. Diese App gibt ihm Raum, <strong>alte Muster zu verändern</strong> – ohne dass du über dein Problem sprechen oder nachdenken musst.',
+      info_p2_html:        'Du drückst während der Sitzung nur zwei Buttons: <strong>Ja</strong> oder <strong>Nein</strong>. Mehr wird nicht von dir verlangt.',
+      info_warning_html:   '<strong>Wichtiger Hinweis</strong><br>Diese App ist ein Coaching-Angebot und kein medizinisches Produkt. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.',
+      info_checkbox:       'Ich bestätige, dass keiner dieser Ausschlussgründe auf mich zutrifft, und nutze diese App eigenverantwortlich.',
+      info_btn:            'Weiter',
+      // Welcome
+      welcome_label:       'Coaching App',
+      welcome_h1_html:     'Willkommen<br>bei dir <em>selbst.</em>',
+      welcome_li1:         'Deine Aufmerksamkeit',
+      welcome_li2:         'Dein Bauchgefühl',
+      welcome_btn:         'Weiter',
+      // Problem (Kernsatz)
+      problem_label:       'Dein Thema',
+      problem_h2_html:     'Dein <em>Kernsatz.</em>',
+      problem_p1:          'Bevor du beginnst — nimm dir einen Moment.',
+      problem_p2_html:     'Formuliere dein Thema als einen klaren Satz. Zum Beispiel: <strong>„Ich kann schlecht einschlafen."</strong> Oder: <strong>„Ich fühle mich in sozialen Situationen unwohl."</strong>',
+      problem_p3:          'Kein Erklären, kein Analysieren — nur ein Satz, so konkret wie möglich. Halte ihn innerlich bereit.',
+      problem_btn:         'Ich habe meinen Satz',
+      // Intro (Drei Ebenen)
+      intro_label:         'Wie es funktioniert',
+      intro_h2_html:       'Drei <em>Ebenen</em><br>in dir.',
+      intro_li1_html:      '<strong>Dein Bauchgefühl</strong> – die weise Instanz, die diese Sitzung leitet.',
+      intro_li2_html:      '<strong>Dein Unbewusstes</strong> – ein System aus inneren Teilen, die alte Erfahrungen gespeichert haben.',
+      intro_li3_html:      '<strong>Du selbst</strong> – der beobachtet und die Buttons drückt.',
+      intro_btn:           'Weiter',
+      // Practice
+      practice_label:      'Kurze Übung',
+      practice_h2_html:    'Lern die<br><em>Buttons</em> kennen.',
+      practice_body_html:  'Tippe einmal auf <strong>Rot</strong> – links unten.<br>Dann einmal auf <strong>Grün</strong> – rechts unten.<br>Augen können schon fast zu sein.',
+      practice_label_no:   'Nein',
+      practice_label_yes:  'Ja',
+      // AHA
+      aha_label:           'Ein Moment für dich',
+      aha_btn_begin:       'Beginnen',
+      aha_label_no:        'Nein',
+      aha_label_yes:       'Ja',
+      aha_hint_yesno:      '← Nein   Ja →',
+      aha_hint_later_yes:  '← Später   Trotzdem →',
+      aha_hint_later:      '← Später',
+      aha_label_later:     'Später',
+      // Calib2-Intro
+      calib2intro_label:   'Vorbereitung',
+      calib2intro_h2_html: 'Schließe jetzt<br>die <em>Augen.</em>',
+      calib2intro_body_html: 'Die nächsten Fragen beantwortest du genauso spontan — ohne nachzudenken, ohne abzuwägen. Dein erster Impuls ist die richtige Antwort.<br><br>Warum? Weil bewusstes Nachdenken dich bisher nicht zu einer dauerhaften Lösung geführt hat. Das Unbewusste weiß mehr — und genau das werden wir jetzt nutzen.<br><br>Drücke einfach das, was du als erstes spürst.',
+      // Calib2 Screen
+      calib2_label:        'Kalibrierung · Augen zu',
+      calib2_label_no:     'Nein',
+      calib2_label_yes:    'Ja',
+      // Landscape
+      landscape_label:     'Vorbereitung',
+      landscape_h2_html:   'Drehe dein<br>Telefon <em>quer.</em>',
+      landscape_body_html: 'Halte es mit beiden Händen — Daumen links und rechts.<br><br>So kannst du die Buttons blind drücken, wenn deine Augen gleich geschlossen sind.',
+      landscape_warning:   'Bitte zuerst das Telefon drehen.',
+      landscape_btn:       'Bereit',
+      // Calib1
+      calib_label:         'Kalibrierung',
+      calib_label_no:      'Nein',
+      calib_label_yes:     'Ja',
+      // Pre-SUD
+      presud_label:        'Phase I · Einschätzung',
+      presud_h2_html:      'Wie stark spürst du<br>das Thema <em>gerade?</em>',
+      presud_body:         'Tippe spontan auf eine Zahl von 1 bis 10.',
+      // Contact
+      contact_label:       'Phase II · Kontakt',
+      contact_label_yes:   'Ja',
+      // Step (Protokoll)
+      step_eyes_label:     'Augen zu',
+      step_label_no:       'Nein',
+      step_label_yes:      'Ja',
+      // Post-SUD
+      postsud_label:       'Abschluss · Einschätzung',
+      postsud_h2_html:     'Wie stark spürst du<br>das Thema <em>jetzt?</em>',
+      postsud_body:        'Tippe spontan auf eine Zahl von 1 bis 10.',
+      // Protokoll-Abschluss
+      proto_label:         'Sitzungsprotokoll',
+      proto_h2_html:       'Sitzung <em>abgeschlossen.</em>',
+      proto_lbl_parts:     'Teile',
+      proto_lbl_before:    'Vorher',
+      proto_lbl_after:     'Nachher',
+      proto_wipe:          'Alle Daten werden nach dem Schließen unwiderruflich gelöscht.',
+      proto_btn_end:       'Sitzung beenden',
+      // Dev-Menü (interner Einsatz, aber Ralf nutzt EN beim Pitch ggf.)
+      dev_skip:            'Dev Skip ▾',
+      dev_admin:           'Admin',
+      dev_aha:             '→ AHA-Sequenz',
+      dev_problem:         '→ Kernsatz',
+      dev_presud:          '→ Belastungsgrad',
+      dev_calib1:          '→ Kalibrierung 1',
+      dev_calib2:          '→ Kalibrierung 2',
+      dev_prep:            '→ Einstimmung',
+      dev_contact:         '→ Start Hauptteil',
+      dev_s1:              '→ S1 Untersuchung',
+      dev_s4:              '→ S4 Weitere Teile?',
+      dev_s10:             '→ S10 Kontrolle',
+      dev_s12:             '→ S12 Finale Reinigung',
+      dev_s13:             '→ S13 Bewusstsein',
+      dev_s16:             '→ S16 Verborgen OK',
+      dev_s17:             '→ S17 Abschluss',
+      dev_postsud:         '→ Post-SUD',
+    },
+
+    // §I18N:DE-AHA  – Headlines, Texte, Brücken, Closing der AHA-Sequenz
+    aha: {
+      q1_headline: 'Eine kurze Frage.',
+      q1_text:     'Gibt es etwas in deinem Leben, das dich gerade beschäftigt — auch wenn du es noch nicht genau benennen kannst?',
+      q2_headline: 'Spür einmal nach.',
+      q2_text:     'Ist da irgendwie etwas spürbar — egal wo, egal wie schwach?',
+      q3_headline: 'Letzte Frage.',
+      q3_text:     'Wäre es gut, wenn das leichter werden könnte?',
+      bridge_no1:  'Das ist vollkommen in Ordnung. Manchmal ist es nur ein diffuses Gefühl, eine leichte Unruhe — etwas, das einfach da ist, ohne einen Namen zu haben.',
+      bridge_no2:  'Manchmal zeigt es sich erst, wenn man genauer hinhört. Das ist völlig normal. Und wenn dies gerade nicht der richtige Moment für dich ist — du kannst jederzeit zurückkommen.',
+      bridge_no3:  'Dann ist jetzt vielleicht nicht der richtige Moment — du kannst jederzeit zurückkommen.',
+      closing:     'Genau dafür ist diese Session. Lass uns beginnen.',
     },
 
     screens: {
@@ -1073,6 +1198,129 @@ const LANG = {
       badge_plural:    (n) => `${n} Parts processed`,
       augen_zu:        'Eyes closed',
       abgeschlossen:   'Session complete.',
+    },
+
+    // §I18N:EN  – sichtbare UI-Texte für applyUITexts()
+    tx: {
+      // Splash
+      splash_brand:        'Influencial',
+      splash_sub:          'Silent Coaching',
+      splash_hint:         'Tap to begin',
+      // Info-Screen
+      info_label:          'Influencial · Silent Coaching',
+      info_p1_html:        'You have an inner wisdom that is smarter than your conscious mind. Some call it gut feeling, inner voice, or intuition. This app gives it space to <strong>change old patterns</strong> – without you having to talk or think about your problem.',
+      info_p2_html:        'During the session you press only two buttons: <strong>Yes</strong> or <strong>No</strong>. Nothing more is required of you.',
+      info_warning_html:   '<strong>Important notice</strong><br>This app is a coaching offering and not a medical product. It is not suitable for acute mental illness, mental crises, or suicidal thoughts. Please contact a doctor or psychiatric emergency service in those cases.',
+      info_checkbox:       'I confirm that none of these exclusion criteria apply to me, and I use this app on my own responsibility.',
+      info_btn:            'Continue',
+      // Welcome
+      welcome_label:       'Coaching App',
+      welcome_h1_html:     'Welcome<br>to <em>yourself.</em>',
+      welcome_li1:         'Your attention',
+      welcome_li2:         'Your gut feeling',
+      welcome_btn:         'Continue',
+      // Problem (Core Sentence)
+      problem_label:       'Your topic',
+      problem_h2_html:     'Your <em>core sentence.</em>',
+      problem_p1:          'Before you begin — take a moment.',
+      problem_p2_html:     'Formulate your topic as one clear sentence. For example: <strong>„I sleep poorly."</strong> Or: <strong>„I feel uncomfortable in social situations."</strong>',
+      problem_p3:          'No explaining, no analyzing — just one sentence, as concrete as possible. Hold it ready inside you.',
+      problem_btn:         'I have my sentence',
+      // Intro (Three Levels)
+      intro_label:         'How it works',
+      intro_h2_html:       'Three <em>levels</em><br>inside you.',
+      intro_li1_html:      '<strong>Your gut feeling</strong> – the wise instance that guides this session.',
+      intro_li2_html:      '<strong>Your unconscious</strong> – a system of inner parts that have stored old experiences.',
+      intro_li3_html:      '<strong>You yourself</strong> – who observes and presses the buttons.',
+      intro_btn:           'Continue',
+      // Practice
+      practice_label:      'Brief exercise',
+      practice_h2_html:    'Get to know<br>the <em>buttons.</em>',
+      practice_body_html:  'Tap <strong>Red</strong> once – bottom left.<br>Then <strong>Green</strong> once – bottom right.<br>Your eyes can already be almost closed.',
+      practice_label_no:   'No',
+      practice_label_yes:  'Yes',
+      // AHA
+      aha_label:           'A moment for you',
+      aha_btn_begin:       'Begin',
+      aha_label_no:        'No',
+      aha_label_yes:       'Yes',
+      aha_hint_yesno:      '← No   Yes →',
+      aha_hint_later_yes:  '← Later   Continue →',
+      aha_hint_later:      '← Later',
+      aha_label_later:     'Later',
+      // Calib2-Intro
+      calib2intro_label:   'Preparation',
+      calib2intro_h2_html: 'Close your<br><em>eyes</em> now.',
+      calib2intro_body_html: 'You will answer the next questions just as spontaneously — without thinking, without weighing. Your first impulse is the right answer.<br><br>Why? Because conscious thinking has not led you to a lasting solution so far. Your unconscious knows more — and that is exactly what we are going to use now.<br><br>Just press what you feel first.',
+      // Calib2 Screen
+      calib2_label:        'Calibration · Eyes closed',
+      calib2_label_no:     'No',
+      calib2_label_yes:    'Yes',
+      // Landscape
+      landscape_label:     'Preparation',
+      landscape_h2_html:   'Turn your phone<br><em>sideways.</em>',
+      landscape_body_html: 'Hold it with both hands — thumbs left and right.<br><br>This way you can press the buttons blind once your eyes are closed.',
+      landscape_warning:   'Please turn your phone first.',
+      landscape_btn:       'Ready',
+      // Calib1
+      calib_label:         'Calibration',
+      calib_label_no:      'No',
+      calib_label_yes:     'Yes',
+      // Pre-SUD
+      presud_label:        'Phase I · Assessment',
+      presud_h2_html:      'How strongly do you feel<br>the topic <em>right now?</em>',
+      presud_body:         'Tap a number from 1 to 10 spontaneously.',
+      // Contact
+      contact_label:       'Phase II · Contact',
+      contact_label_yes:   'Yes',
+      // Step (Protocol)
+      step_eyes_label:     'Eyes closed',
+      step_label_no:       'No',
+      step_label_yes:      'Yes',
+      // Post-SUD
+      postsud_label:       'Closing · Assessment',
+      postsud_h2_html:     'How strongly do you feel<br>the topic <em>now?</em>',
+      postsud_body:        'Tap a number from 1 to 10 spontaneously.',
+      // Protocol Closing
+      proto_label:         'Session report',
+      proto_h2_html:       'Session <em>complete.</em>',
+      proto_lbl_parts:     'Parts',
+      proto_lbl_before:    'Before',
+      proto_lbl_after:     'After',
+      proto_wipe:          'All data is permanently deleted after closing.',
+      proto_btn_end:       'End Session',
+      // Dev menu
+      dev_skip:            'Dev Skip ▾',
+      dev_admin:           'Admin',
+      dev_aha:             '→ AHA Sequence',
+      dev_problem:         '→ Core Sentence',
+      dev_presud:          '→ Burden Level',
+      dev_calib1:          '→ Calibration 1',
+      dev_calib2:          '→ Calibration 2',
+      dev_prep:            '→ Preparation',
+      dev_contact:         '→ Start Main',
+      dev_s1:              '→ S1 Investigation',
+      dev_s4:              '→ S4 More Parts?',
+      dev_s10:             '→ S10 Check',
+      dev_s12:             '→ S12 Final Clearing',
+      dev_s13:             '→ S13 Awareness',
+      dev_s16:             '→ S16 Hidden OK',
+      dev_s17:             '→ S17 Closing',
+      dev_postsud:         '→ Post-SUD',
+    },
+
+    // §I18N:EN-AHA  – Studio-Wortlaute aus mp3-recording-list-en-v6
+    aha: {
+      q1_headline: 'A brief question.',
+      q1_text:     'Is there something in your life that is on your mind right now — even if you cannot quite name it yet?',
+      q2_headline: 'Sense into it.',
+      q2_text:     'Is there something that can be felt somehow — no matter where, no matter how faintly?',
+      q3_headline: 'One last question.',
+      q3_text:     'Would it be good if that could become lighter?',
+      bridge_no1:  'That is completely fine. Sometimes it is just a diffuse feeling, a slight unease — something that is simply there, without having a name.',
+      bridge_no2:  'Sometimes it only shows itself when you listen more closely. That is completely normal. And if this is not the right moment for you right now — you can always come back.',
+      bridge_no3:  'Then perhaps now is not the right moment — you can always come back.',
+      closing:     'That is exactly what this session is for. Let us begin.',
     },
 
     screens: {
@@ -1612,13 +1860,34 @@ function setLang(code) {
   STEPS = buildSteps();
   STEPS.forEach(s => STEP_MAP[s.num] = s);
   CALIB_Q = buildCalibPool();
+  // AHA-Sequenz neu aufbauen (Headlines, Texte, MP3-Mapping bleiben gleich – aber Texte aus L.aha)
+  rebuildAhaSteps();
   // Button-Highlighting
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
   const btn = document.getElementById('langBtn-' + code);
   if (btn) btn.classList.add('active');
-  // Splash-Hint aktualisieren
-  const hint = document.querySelector('.splash-hint');
-  if (hint) hint.textContent = L.ui.hint;
+  // Alle sichtbaren UI-Texte aktualisieren (data-i18n-Attribute)
+  applyUITexts();
+}
+
+// §I18N:APPLY  – schreibt alle Texte mit data-i18n='key' aus L.tx ins DOM.
+// Pfad-Syntax: data-i18n='info_btn'  -> L.tx.info_btn
+// _html-Suffix im Schlüssel -> innerHTML, sonst -> textContent.
+// Fallback: Wenn der Schlüssel in der aktuellen Sprache fehlt, nimm DE.
+function applyUITexts() {
+  const tx = (L && L.tx) ? L.tx : {};
+  const fallback = LANG.de.tx || {};
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    let val = tx[key];
+    if (val == null || val === '') val = fallback[key];
+    if (val == null) return; // kein Eintrag – Originaltext im HTML stehen lassen
+    if (key.endsWith('_html')) {
+      el.innerHTML = val;
+    } else {
+      el.textContent = val;
+    }
+  });
 }
 
 // TTS-Stimme für aktive Sprache
@@ -1925,29 +2194,20 @@ function practiceAnswer(which) {
 // ══════════════════════════════════════════════════
 // §JS:AHA-SEQUENZ
 // ══════════════════════════════════════════════════
-const AHA_STEPS = [
-  {
-    headline: 'Eine kurze Frage.',
-    text: 'Gibt es etwas in deinem Leben, das dich gerade beschäftigt — auch wenn du es noch nicht genau benennen kannst?',
-    mp3: 'aha-01',
-    onYes: 2,
-    onNo: 'no1',
-  },
-  {
-    headline: 'Spür einmal nach.',
-    text: 'Ist da irgendwie etwas spürbar — egal wo, egal wie schwach?',
-    mp3: 'aha-02',
-    onYes: 3,
-    onNo: 'no2',
-  },
-  {
-    headline: 'Letzte Frage.',
-    text: 'Wäre es gut, wenn das leichter werden könnte?',
-    mp3: 'aha-03',
-    onYes: 'done',
-    onNo: 'no3',
-  },
-];
+// AHA_STEPS wird aus L.aha aufgebaut, damit Sprachwechsel die Texte aktualisiert.
+// Struktur und Routing (onYes/onNo, mp3-Schlüssel) bleiben sprachneutral.
+let AHA_STEPS = [];
+
+function rebuildAhaSteps() {
+  const a = (L && L.aha) ? L.aha : (LANG.de.aha || {});
+  AHA_STEPS = [
+    { headline: a.q1_headline, text: a.q1_text, mp3: 'aha-01', onYes: 2, onNo: 'no1' },
+    { headline: a.q2_headline, text: a.q2_text, mp3: 'aha-02', onYes: 3, onNo: 'no2' },
+    { headline: a.q3_headline, text: a.q3_text, mp3: 'aha-03', onYes: 'done', onNo: 'no3' },
+  ];
+}
+// Initial-Aufbau in DE; setLang() ruft rebuildAhaSteps() bei jedem Wechsel.
+rebuildAhaSteps();
 
 let _ahaStep = 0;
 let _ahaShowingNoBridge = false;
@@ -1971,7 +2231,7 @@ function _ahaShowStep() {
     speak(s.text, () => {
       document.getElementById('ahaText').textContent = s.text;
       setOff(['ahaYes', 'ahaNo'], false);
-      document.getElementById('ahaHint').textContent = '← Nein   Ja →';
+      document.getElementById('ahaHint').textContent = (L.tx && L.tx.aha_hint_yesno) || '← Nein   Ja →';
     }, null, s.mp3 || null);
   }, 400);
 }
@@ -1995,9 +2255,11 @@ function ahaAnswer(which) {
     // Nein-Pfad
     _ahaShowingNoBridge = true;
     const action = s.onNo;
+    const a = (L && L.aha) ? L.aha : (LANG.de.aha || {});
+    const tx = (L && L.tx) ? L.tx : (LANG.de.tx || {});
 
     if (action === 'no1') {
-      const bridgeText = 'Das ist vollkommen in Ordnung. Manchmal ist es nur ein diffuses Gefühl, eine leichte Unruhe — etwas, das einfach da ist, ohne einen Namen zu haben.';
+      const bridgeText = a.bridge_no1;
       speak(bridgeText, () => {
         document.getElementById('ahaText').textContent = bridgeText;
         _ahaShowingNoBridge = false;
@@ -2005,26 +2267,26 @@ function ahaAnswer(which) {
         setTimeout(() => _ahaShowStep(), 800);
       }, null, 'aha-no1');
     } else if (action === 'no2') {
-      const bridgeText = 'Manchmal zeigt es sich erst, wenn man genauer hinhört. Das ist völlig normal. Und wenn dies gerade nicht der richtige Moment für dich ist — du kannst jederzeit zurückkommen.';
+      const bridgeText = a.bridge_no2;
       speak(bridgeText, () => {
         document.getElementById('ahaText').textContent = bridgeText;
         document.getElementById('ahaHeadline').textContent = '';
         // Zwei Buttons: Rot = Abbruch, Grün = Trotzdem weiter
-        document.getElementById('ahaNoLabel').textContent = 'Später';
+        document.getElementById('ahaNoLabel').textContent = tx.aha_label_later || 'Später';
         setOff(['ahaNo'], false);
         setOff(['ahaYes'], false);
-        document.getElementById('ahaHint').textContent = '← Später   Trotzdem →';
+        document.getElementById('ahaHint').textContent = tx.aha_hint_later_yes || '← Später   Trotzdem →';
         _ahaShowingNoBridge = false;
         // Überschreibe onYes/onNo temporär per Flag
         _ahaStep = 99; // Sonderfall
       }, null, 'aha-no2');
     } else if (action === 'no3') {
-      const bridgeText = 'Dann ist jetzt vielleicht nicht der richtige Moment — du kannst jederzeit zurückkommen.';
+      const bridgeText = a.bridge_no3;
       speak(bridgeText, () => {
         document.getElementById('ahaText').textContent = bridgeText;
-        document.getElementById('ahaNoLabel').textContent = 'Später';
+        document.getElementById('ahaNoLabel').textContent = tx.aha_label_later || 'Später';
         setOff(['ahaNo'], false);
-        document.getElementById('ahaHint').textContent = '← Später';
+        document.getElementById('ahaHint').textContent = tx.aha_hint_later || '← Später';
         _ahaShowingNoBridge = false;
         _ahaStep = 98; // Sonderfall Abbruch
       }, null, 'aha-no3');
@@ -2042,7 +2304,7 @@ const _ahaAnswerOrig = ahaAnswer;
       // Nach Frage 2 Nein: Grün = Frage 3, Rot = Abbruch
       setOff(['ahaYes','ahaNo'], true);
       document.getElementById('ahaHint').textContent = '';
-      document.getElementById('ahaNoLabel').textContent = 'Nein';
+      document.getElementById('ahaNoLabel').textContent = (L.tx && L.tx.aha_label_no) || 'Nein';
       if (which === 'yes') {
         _ahaStep = 2;
         setTimeout(() => _ahaShowStep(), 400);
@@ -3009,6 +3271,12 @@ function adminSave(silent) {
     setTimeout(() => { msg.textContent = ''; }, 3000);
   }
 }
+
+// §I18N:INIT  – einmaliger Initial-Sync der UI-Texte beim App-Start.
+// Greift auch dann, wenn der DOM die statischen Texte schon zeigt:
+// stellt sicher, dass nichts „versehentlich richtig" wirkt, wenn L.tx
+// nachträglich erweitert wird.
+applyUITexts();
 
 </script>
 

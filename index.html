@@ -241,6 +241,33 @@ font-size: 2.4rem; font-weight: 300; line-height: 1; color: #1a1810;
 .proto-note { font-size: 0.82rem; color: #6a6458; text-align: center; max-width: 300px; line-height: 1.7; margin-bottom: 1rem; flex-shrink: 0; }
 .proto-wipe { font-size: 0.7rem; color: #aaa49a; text-align: center; margin-bottom: 2rem; flex-shrink: 0; }
 
+/* ── PROTOCOL STAGE (v24 Punkt 3) ──
+   Stats und Closings teilen sich denselben Platz via Grid-Stack.
+   Beide Container liegen übereinander und faden wechselseitig. */
+.proto-stage {
+display: grid;
+grid-template-columns: 1fr;
+grid-template-rows: 1fr;
+width: 100%;
+align-items: center;
+justify-items: center;
+flex-shrink: 0;
+margin: 0.5rem 0 1rem;
+}
+.proto-stats, .proto-closings-box {
+grid-column: 1 / 2;
+grid-row: 1 / 2;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+width: 100%;
+transition: opacity 0.9s ease;
+}
+.proto-stats.fade-out { opacity: 0; pointer-events: none; }
+.proto-closings-box { opacity: 0; pointer-events: none; }
+.proto-closings-box.fade-in { opacity: 1; pointer-events: auto; }
+
 /* ── PROTOCOL CLOSING (Lofty Question) ── */
 .proto-closing {
 font-family: 'Cormorant Garamond', serif;
@@ -730,25 +757,35 @@ border-color: var(--gold); color: var(--gold);
 <div class="screen" id="screenProtocol">
   <div class="label" data-i18n="proto_label">Sitzungsprotokoll</div>
   <h2 class="headline" data-i18n="proto_h2_html">Sitzung <em>abgeschlossen.</em></h2>
-  <div class="proto-grid">
-    <div class="proto-cell">
-      <div class="proto-val" id="protoPartsVal">–</div>
-      <div class="proto-lbl" data-i18n="proto_lbl_parts">Teile</div>
+
+  <!-- FIX v24 Punkt 3: Variante B – Stats und Closings teilen sich denselben Platz.
+       Stats faden raus, Closings faden an gleicher Stelle ein. -->
+  <div class="proto-stage" id="protoStage">
+    <div class="proto-stats" id="protoStats">
+      <div class="proto-grid">
+        <div class="proto-cell">
+          <div class="proto-val" id="protoPartsVal">–</div>
+          <div class="proto-lbl" data-i18n="proto_lbl_parts">Teile</div>
+        </div>
+        <div class="proto-cell">
+          <div class="proto-val" id="protoPreVal">–</div>
+          <div class="proto-lbl" data-i18n="proto_lbl_before">Vorher</div>
+        </div>
+        <div class="proto-cell">
+          <div class="proto-val" id="protoPostVal">–</div>
+          <div class="proto-lbl" data-i18n="proto_lbl_after">Nachher</div>
+        </div>
+      </div>
+      <div class="proto-note" id="protoNote"></div>
     </div>
-    <div class="proto-cell">
-      <div class="proto-val" id="protoPreVal">–</div>
-      <div class="proto-lbl" data-i18n="proto_lbl_before">Vorher</div>
-    </div>
-    <div class="proto-cell">
-      <div class="proto-val" id="protoPostVal">–</div>
-      <div class="proto-lbl" data-i18n="proto_lbl_after">Nachher</div>
+
+    <div class="proto-closings-box" id="protoClosingsBox">
+      <div class="proto-closing hidden" id="protoClosing1"></div>
+      <div class="proto-closing hidden" id="protoClosing2"></div>
+      <div class="proto-closing lofty hidden" id="protoClosing3"></div>
     </div>
   </div>
-  <div class="proto-note" id="protoNote"></div>
-  <!-- Closing-Texte (Lofty Question Sequenz) -->
-  <div class="proto-closing hidden" id="protoClosing1"></div>
-  <div class="proto-closing hidden" id="protoClosing2"></div>
-  <div class="proto-closing lofty hidden" id="protoClosing3"></div>
+
   <div class="proto-wipe" id="protoWipe" data-i18n="proto_wipe" style="display:none;">Alle Daten werden nach dem Schließen unwiderruflich gelöscht.</div>
   <button class="btn-end hidden-until-tts" id="protoEndBtn" data-i18n="proto_btn_end" onclick="endSession()">Sitzung beenden</button>
 </div>
@@ -2710,6 +2747,10 @@ function finishCalib2() {
   if (_calib2Done) return;
   _calib2Done = true;
   document.getElementById('calib2Btns').classList.remove('active', 'large');
+  // FIX v24 Punkt 1: Restlichen Kalibrierungstext ('Ich bin jünger als 1 Jahr.') leeren,
+  // damit während der Atem-/Vorbereitungsphase nur die Spirale sichtbar bleibt.
+  const calib2TextEl = document.getElementById('calib2Text');
+  if (calib2TextEl) calib2TextEl.textContent = '';
   // iOS-Safe: direkt in die Einstimmung – Audio-Kette bleibt aktiv,
   // prep_intro_tts kann nahtlos starten.
   startPreparation();
@@ -2959,15 +3000,27 @@ function runStep(num) {
     } else if (step.type === 'green' || step.type === 'both') {
       setTimeout(() => activateStepButtons(step), 300);
     } else if (step.type === 'info') {
-      setTimeout(() => {
-        S.locked = false;
-        const yesLabel = document.getElementById('stepYesLabel');
-        if (yesLabel) yesLabel.textContent = L.ui.ja;
-        document.getElementById('sessionNoCol').style.visibility = 'hidden';
-        document.getElementById('sessionBtns').classList.add('active', 'large');
-        setOff(['stepYes'], false);
-        cueSignal();
-      }, 50);
+      // FIX v24 Punkt 2: Schritte 17/18/19 laufen ohne Button durch.
+      // Der Nutzer hat die Augen zu, der nächste Schritt folgt nahtlos
+      // mit einer kurzen Atempause. Erster echter Tap kommt erst beim
+      // PostSUD-Screen ("Augen öffnen").
+      const autoAdvance = [17, 18, 19].includes(step.num);
+      if (autoAdvance) {
+        setTimeout(() => {
+          S.locked = false;
+          stepInfoNext();
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          S.locked = false;
+          const yesLabel = document.getElementById('stepYesLabel');
+          if (yesLabel) yesLabel.textContent = L.ui.ja;
+          document.getElementById('sessionNoCol').style.visibility = 'hidden';
+          document.getElementById('sessionBtns').classList.add('active', 'large');
+          setOff(['stepYes'], false);
+          cueSignal();
+        }, 50);
+      }
     }
   }, null, stepMp3);
 }
@@ -3120,6 +3173,14 @@ function showProtocol() {
     const el = document.getElementById(id);
     if (el) { el.textContent = ''; el.classList.add('hidden'); }
   });
+  // FIX v24 Punkt 3: Stats/Closings-Stage in Anfangszustand zurücksetzen.
+  // Stats sichtbar, Closings-Box unsichtbar – beim Beginn der Closing-Sequenz
+  // werden die Klassen dann gewechselt.
+  const statsEl = document.getElementById('protoStats');
+  const closingsBoxEl = document.getElementById('protoClosingsBox');
+  if (statsEl) statsEl.classList.remove('fade-out');
+  if (closingsBoxEl) closingsBoxEl.classList.remove('fade-in');
+
   const wipeEl = document.getElementById('protoWipe');
   if (wipeEl) wipeEl.style.display = 'none';
   const endBtn = document.getElementById('protoEndBtn');
@@ -3136,6 +3197,16 @@ function startProtoClosing() {
   const c3El = document.getElementById('protoClosing3');
   const wipeEl = document.getElementById('protoWipe');
   const endBtn = document.getElementById('protoEndBtn');
+  const statsEl = document.getElementById('protoStats');
+  const closingsBoxEl = document.getElementById('protoClosingsBox');
+
+  // FIX v24 Punkt 3 (Variante B):
+  // Erst die Kennzahlen wegfaden, dann die Closings-Box einfaden,
+  // dann erst die Audio-Kette starten. Die CSS-Transition dauert 0.9s,
+  // wir warten 1000ms, damit der Übergang sichtbar abgeschlossen ist
+  // bevor der erste Closing-Satz gesprochen wird.
+  if (statsEl) statsEl.classList.add('fade-out');
+  if (closingsBoxEl) closingsBoxEl.classList.add('fade-in');
 
   // iOS-Safe: Kette proto-01 → proto-02 → proto-03 ohne setTimeout dazwischen
   function showClosing(el, text, mp3key, cb) {
@@ -3144,15 +3215,17 @@ function startProtoClosing() {
     speak(text, () => cb(), null, mp3key || null);
   }
 
-  showClosing(c1El, s.proto_closing1_tts || '', s.proto_closing1_mp3 || null, () => {
-    showClosing(c2El, s.proto_closing2_tts || '', s.proto_closing2_mp3 || null, () => {
-      showClosing(c3El, s.proto_closing3_tts || '', s.proto_closing3_mp3 || null, () => {
-        // Reveal wipe text and end button
-        if (wipeEl) wipeEl.style.display = 'block';
-        if (endBtn) endBtn.classList.remove('hidden-until-tts');
+  setTimeout(() => {
+    showClosing(c1El, s.proto_closing1_tts || '', s.proto_closing1_mp3 || null, () => {
+      showClosing(c2El, s.proto_closing2_tts || '', s.proto_closing2_mp3 || null, () => {
+        showClosing(c3El, s.proto_closing3_tts || '', s.proto_closing3_mp3 || null, () => {
+          // Reveal wipe text and end button
+          if (wipeEl) wipeEl.style.display = 'block';
+          if (endBtn) endBtn.classList.remove('hidden-until-tts');
+        });
       });
     });
-  });
+  }, 1000);
 }
 
 function endSession() {

@@ -634,6 +634,10 @@ border-color: var(--gold); color: var(--gold);
 <div class="screen" id="screenCalib2">
   <div class="label" data-i18n="calib2_label">Kalibrierung · Augen zu</div>
   <div class="step-text" id="calib2Text" style="height:40vh;font-size:clamp(1.1rem,3.5vw,1.5rem);display:flex;align-items:center;justify-content:center;">–</div>
+  <!-- FIX v25 Punkt 1: Eigene Spirale für Preparation-Phase (Augen geschlossen, Step-Screen noch nicht aktiv) -->
+  <div id="calib2SpiralWrap" class="spiral-wrap" style="display:none;">
+    <canvas class="spiral-canvas" id="calib2SpiralCanvas" width="200" height="200"></canvas>
+  </div>
 </div>
 
 <!-- §SCREEN:LANDSCAPE -->
@@ -1947,6 +1951,8 @@ let ttsVoice = null;
 
 // AudioContext initialisieren (iOS benoetigt Nutzer-Geste)
 let _audioCtx = null;
+// v25 FIX 2: Globaler Reminder-Timer-Handle (oben deklariert wegen TDZ-Sicherheit).
+let _reminderTimer = null;
 function ensureAudioCtx() {
   if (_audioCtx) return;
   try {
@@ -2492,7 +2498,15 @@ function freshSession() {
 }
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    S = freshSession();
+    // FIX v25 Punkt 4: State NICHT zurücksetzen während laufender Session.
+    // Vorher wurde S = freshSession() bei jedem Tab-Wechsel oder kurzen Bildschirmdimmen
+    // aufgerufen. Das führte zu null-Reference-Crashes in stepInfoNext, weil
+    // S.current_step null wurde, während ein noch ausstehender setTimeout feuerte.
+    // Reset jetzt nur, wenn KEINE Session aktiv ist.
+    if (!S.current_step && S.sud_pre === null) {
+      S = freshSession();
+    }
+    // Während aktiver Session: nichts tun. App soll beim Zurückkommen weiterlaufen.
   } else {
     if ('wakeLock' in navigator && !window._wakeLock) {
       navigator.wakeLock.request('screen').then(lock => {
@@ -2511,6 +2525,10 @@ document.addEventListener('visibilitychange', () => {
 // ══════════════════════════════════════════════════
 function goTo(id) {
   cancelTTS();
+  // v25 FIX 2: Reminder-Timer beim Screenwechsel immer stoppen.
+  // Wird in activateStepButtons / startStepTapMode neu gestartet, wenn Buttons aktiv werden.
+  // Verhindert dass der Ton z.B. in Landscape-Screen oder POST_SUD weiterläuft.
+  stopReminderTimer();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   // Hide all fixed overlays – each screen activates only what it needs
@@ -2548,33 +2566,43 @@ const CIRC = 2 * Math.PI * 95;
 let spiralRAF = null;
 let spiralAngle = 0;
 
+// FIX v25 Punkt 1: Spirale unterstützt jetzt mehrere Canvases.
+// Ein Canvas für die Session-Steps (#spiralCanvas), ein zweiter für die Preparation-Phase
+// nach Calib2 (#calib2SpiralCanvas). spiralStart() zeichnet auf alle existierenden;
+// sichtbar ist nur der Canvas, dessen Wrapper-Container gerade angezeigt wird.
+const SPIRAL_CANVAS_IDS = ['spiralCanvas', 'calib2SpiralCanvas'];
+
 function spiralStart() {
-  const canvas = document.getElementById('spiralCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const cx = W / 2, cy = H / 2;
+  const canvases = SPIRAL_CANVAS_IDS
+    .map(id => document.getElementById(id))
+    .filter(c => c !== null);
+  if (canvases.length === 0) return;
 
   function draw() {
-    ctx.clearRect(0, 0, W, H);
     spiralAngle += 0.012;
-    const turns = 5;
-    const maxR = 88;
-    ctx.beginPath();
-    for (let i = 0; i <= 360 * turns; i++) {
-      const a = (i * Math.PI / 180) + spiralAngle;
-      const r = (i / (360 * turns)) * maxR;
-      const x = cx + r * Math.cos(a);
-      const y = cy + r * Math.sin(a);
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    }
-    const grad = ctx.createLinearGradient(cx - maxR, cy, cx + maxR, cy);
-    grad.addColorStop(0, '#c4a05a22');
-    grad.addColorStop(0.5, '#c4a05a88');
-    grad.addColorStop(1, '#c4a05a22');
-    ctx.strokeStyle = grad;
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
+    canvases.forEach(canvas => {
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      const cx = W / 2, cy = H / 2;
+      ctx.clearRect(0, 0, W, H);
+      const turns = 5;
+      const maxR = 88;
+      ctx.beginPath();
+      for (let i = 0; i <= 360 * turns; i++) {
+        const a = (i * Math.PI / 180) + spiralAngle;
+        const r = (i / (360 * turns)) * maxR;
+        const x = cx + r * Math.cos(a);
+        const y = cy + r * Math.sin(a);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      const grad = ctx.createLinearGradient(cx - maxR, cy, cx + maxR, cy);
+      grad.addColorStop(0, '#c4a05a22');
+      grad.addColorStop(0.5, '#c4a05a88');
+      grad.addColorStop(1, '#c4a05a22');
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+    });
     spiralRAF = requestAnimationFrame(draw);
   }
   spiralRAF = requestAnimationFrame(draw);
@@ -2582,8 +2610,11 @@ function spiralStart() {
 
 function spiralStop() {
   if (spiralRAF) { cancelAnimationFrame(spiralRAF); spiralRAF = null; }
-  const canvas = document.getElementById('spiralCanvas');
-  if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  // FIX v25 Punkt 1: Alle Spiral-Canvases leeren, nicht nur den Session-Canvas.
+  SPIRAL_CANVAS_IDS.forEach(id => {
+    const canvas = document.getElementById(id);
+    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  });
 }
 
 
@@ -2708,6 +2739,10 @@ function startCalib2() {
   CALIB2_Q = buildCalibPoolB();
   S.calib_index = 0; S.calib_errors = 0;
   goTo('screenCalib2');
+  // FIX v25 Punkt 1: Spirale-Wrap defensiv ausblenden, falls er von vorherigem Lauf
+  // noch sichtbar ist (devJump zurück, Reset etc.). Wird in finishCalib2() aktiviert.
+  const calib2Spiral = document.getElementById('calib2SpiralWrap');
+  if (calib2Spiral) calib2Spiral.style.display = 'none';
   document.getElementById('calib2Btns').classList.add('active', 'large');
   // iOS-Safe: nahtlos zu showCalib2Q (startet cb-01.mp3), kein setTimeout dazwischen
   speak(L.screens.calib2_start_tts, () => showCalib2Q(), null, L.screens.calib2_start_mp3 || null);
@@ -2751,6 +2786,12 @@ function finishCalib2() {
   // damit während der Atem-/Vorbereitungsphase nur die Spirale sichtbar bleibt.
   const calib2TextEl = document.getElementById('calib2Text');
   if (calib2TextEl) calib2TextEl.textContent = '';
+  // FIX v25 Punkt 1: Spirale für Preparation-Phase einblenden und starten.
+  // Vorher war der Spiral-Container nur in screenSession – auf screenCalib2 blieb der
+  // Bildschirm während der gesamten Vorbereitungsphase schwarz. Jetzt eigener Container.
+  const calib2Spiral = document.getElementById('calib2SpiralWrap');
+  if (calib2Spiral) calib2Spiral.style.display = 'flex';
+  spiralStart();
   // iOS-Safe: direkt in die Einstimmung – Audio-Kette bleibt aktiv,
   // prep_intro_tts kann nahtlos starten.
   startPreparation();
@@ -2994,17 +3035,26 @@ function runStep(num) {
   }
 
   // No headline TTS – go straight to text
+  // v25 FIX 3: S18 und S19 NICHT mehr auto-advance.
+  // iOS blockiert audio.play() bei Auto-Start (kein User-Gesture-Kontext mehr nach
+  // 1500ms Pause). Lösung: Bei S18/S19 zeigen wir den Screen ohne Audio, geben einen
+  // Reminder-Ton nach 1s und einen "Weiter"-Button. Der Button-Tap ist die
+  // User-Gesture, die das jeweilige Step-Audio iOS-konform startet.
+  const tapMode = step.type === 'info' && [18, 19].includes(step.num);
+  if (tapMode) {
+    setTimeout(() => startStepTapMode(step, displayText, stepMp3), 1000);
+    return;
+  }
   speak(displayText, () => {
     if (step.type === 'rekon') {
       setTimeout(() => startStepRekon(step), 300);
     } else if (step.type === 'green' || step.type === 'both') {
       setTimeout(() => activateStepButtons(step), 300);
     } else if (step.type === 'info') {
-      // FIX v24 Punkt 2: Schritte 17/18/19 laufen ohne Button durch.
-      // Der Nutzer hat die Augen zu, der nächste Schritt folgt nahtlos
-      // mit einer kurzen Atempause. Erster echter Tap kommt erst beim
-      // PostSUD-Screen ("Augen öffnen").
-      const autoAdvance = [17, 18, 19].includes(step.num);
+      // FIX v24 Punkt 2: Schritt 17 läuft weiterhin ohne Button durch.
+      // Bei S17 ist die Audio-Kette noch frisch (kommt direkt aus letztem Tap),
+      // iOS hat noch keine Probleme. S18/S19 hingegen sind tapMode (siehe oben).
+      const autoAdvance = [17].includes(step.num);
       if (autoAdvance) {
         setTimeout(() => {
           S.locked = false;
@@ -3023,6 +3073,43 @@ function runStep(num) {
       }
     }
   }, null, stepMp3);
+}
+
+// v25 FIX 3: Tap-Modus für S18/S19.
+// Reminder-Ton spielt, "Weiter"-Button erscheint, User tippt → jetzt erst Audio abspielen.
+// Dadurch ist audio.play() innerhalb einer User-Gesture und iOS lässt es zu.
+function startStepTapMode(step, displayText, stepMp3) {
+  // Reminder-Ton (gleicher Ton wie cueSignal, hilft bei geschlossenen Augen zu orientieren)
+  cueSignal();
+  // "Weiter"-Button vorbereiten: nur grün, kein Rot
+  const yesLabel = document.getElementById('stepYesLabel');
+  if (yesLabel) yesLabel.textContent = L.ui.weiter;
+  document.getElementById('sessionNoCol').style.visibility = 'hidden';
+  document.getElementById('sessionBtns').classList.add('active', 'large');
+  setOff(['stepYes'], false);
+  S.locked = false;
+  // Wir markieren am Step, dass der nächste Tap zuerst das Audio starten soll.
+  // stepAnswer prüft dieses Flag und ruft startStepTapAudio auf statt direkt weiterzuleiten.
+  step._pendingAudio = { text: displayText, mp3: stepMp3 };
+  // v25 FIX 2: Auch hier Reminder-Timer - erinnert daran, dass ein Tap erwartet wird.
+  startReminderTimer();
+}
+
+// v25 FIX 3: Wird nach User-Tap aufgerufen, spielt das pending Audio ab,
+// danach geht es nahtlos zum nächsten Step.
+function startStepTapAudio(step) {
+  const pending = step._pendingAudio;
+  delete step._pendingAudio;
+  S.locked = true;
+  // Buttons sofort verstecken während Audio läuft
+  document.getElementById('sessionBtns').classList.remove('active', 'large');
+  setOff(['stepYes','stepNo'], true);
+  speak(pending.text, () => {
+    setTimeout(() => {
+      S.locked = false;
+      stepInfoNext();
+    }, 800);
+  }, null, pending.mp3);
 }
 
 // Step: rekon – spiral already running, buttons erscheinen sofort
@@ -3063,6 +3150,49 @@ function cueSignal() {
   } catch(e) {}
 }
 
+// v25 FIX 2: Leisere Variante (~70% Lautstärke) für den Reminder-Ton.
+// Soll an aktive Buttons erinnern ohne als neue Anweisung wahrgenommen zu werden.
+function cueSignalSoft() {
+  try {
+    if (!_audioCtx) ensureAudioCtx();
+    if (!_audioCtx) return;
+    if (_audioCtx.state === 'suspended') { _audioCtx.resume().catch(()=>{}); }
+    const now = _audioCtx.currentTime;
+    const osc = _audioCtx.createOscillator();
+    const gain = _audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.084, now + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
+    osc.connect(gain).connect(_audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.06);
+  } catch(e) {}
+}
+
+// v25 FIX 2: Reminder-Timer.
+// Erinnert während aktiver Session-Buttons alle 30 Sekunden mit einem leisen Ton.
+// Hält außerdem das Audio-System wach, was hilft das Telefon vor Standby zu schützen.
+// Variable _reminderTimer ist oben global deklariert.
+
+function startReminderTimer() {
+  stopReminderTimer();
+  _reminderTimer = setInterval(() => {
+    // Sicherheit: Nur tönen wenn Buttons tatsächlich aktiv sind.
+    const sessionBtns = document.getElementById('sessionBtns');
+    if (sessionBtns && sessionBtns.classList.contains('active')) {
+      cueSignalSoft();
+    } else {
+      stopReminderTimer();
+    }
+  }, 30000);
+}
+
+function stopReminderTimer() {
+  if (_reminderTimer) { clearInterval(_reminderTimer); _reminderTimer = null; }
+}
+
 // Step: show fixed bottom buttons
 function activateStepButtons(step) {
   const noCol = document.getElementById('sessionNoCol');
@@ -3079,12 +3209,20 @@ function activateStepButtons(step) {
     if (step.type === 'both') setOff(['stepNo'], false);
     S._qStart = performance.now();
     cueSignal();
+    // v25 FIX 2: Reminder-Timer starten, sobald Buttons aktiv sind.
+    // Erinnerungston alle 30s, hilft auch das Telefon vor Standby zu schützen.
+    startReminderTimer();
   }, 50);
 }
 
 function stepAnswer(response) {
   ensureWakeLock();
   if (S.locked) return;
+  // FIX v25 Punkt 5: Defensiv-Check – wenn State zwischenzeitlich verloren ging
+  // (z.B. durch Tab-Wechsel kurz vor Tap), nicht crashen, sondern still abbrechen.
+  if (!S.current_step) return;
+  // v25 FIX 2: Reminder-Timer stoppen – User hat reagiert.
+  stopReminderTimer();
   // Sofort ausblenden beim Drücken
   const yesEl = document.getElementById('stepYes');
   const noEl = document.getElementById('stepNo');
@@ -3094,7 +3232,17 @@ function stepAnswer(response) {
   const step = S.current_step;
 
   // Info steps use the green button as "Weiter" – route to stepInfoNext
-  if (step.type === 'info') { stepInfoNext(); return; }
+  if (step.type === 'info') {
+    // v25 FIX 3: Bei S18/S19 im Tap-Modus zuerst das pending Audio abspielen,
+    // dann erst zum nächsten Step weiterleiten. Der Tap selbst ist die User-Gesture
+    // die iOS für audio.play() braucht.
+    if (step._pendingAudio) {
+      startStepTapAudio(step);
+      return;
+    }
+    stepInfoNext();
+    return;
+  }
 
   cancelTTS();
   S.locked=true;
@@ -3114,6 +3262,10 @@ function stepAnswer(response) {
 // Info screen next button
 function stepInfoNext() {
   const step = S.current_step;
+  // v25 FIX 5: Sicherheitsnetz – wenn State zwischenzeitlich verloren ging
+  // (z.B. durch alten visibilitychange-Reset oder ungewöhnliche Race-Condition),
+  // einfach abbrechen statt mit null.on_yes zu crashen.
+  if (!step) return;
   const next = step.on_yes;
   if (next === 'POST_SUD')      startPostSUD();
   else if (next === 'PROTOCOL') showProtocol();
@@ -3355,3 +3507,4 @@ applyUITexts();
 
 </body>
 </html>
+<!-- --- Erstellt: 2026-05-07 · 11:35 Uhr -->

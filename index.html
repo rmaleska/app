@@ -3276,27 +3276,55 @@ function stepInfoNext() {
 // §JS:POST-SUD  (startPostSUD)
 // ══════════════════════════════════════════════════
 function startPostSUD() {
+  // v26 FIX 1: Zahlen 1-10 sofort sichtbar machen, statt erst nach kompletter
+  // Audio-Kette (vorher ~9 Sek Stille bis Skala da war). Der User kann jetzt
+  // tippen, sobald er bereit ist - die Audio-Kette läuft parallel und gibt
+  // den begleitenden Hinweistext.
+  // - Skala wird sofort gebaut (Tap akzeptiert ab dem ersten Moment)
+  // - Pause vor cueSignal nur noch 300ms (vorher 700ms)
+  // - Pause vor erstem TTS-Satz nur noch 200ms (vorher 350ms)
   goTo('screenPostSUD');
-  // Etwas längere Pause als sonst (700ms statt 400ms), um Überlagerung
-  // mit dem Echo des letzten Protokoll-Satzes zu vermeiden.
-  // cueSignal() vorher als akustischer Impuls "die Augen dürfen sich öffnen".
+  buildSUD('postSudGrid', val => { S.sud_post = val; postSudTapped(); });
   setTimeout(() => {
     cueSignal();
     setTimeout(() => {
       // iOS-Safe: postsud1 → postsud2 nahtlos, kein setTimeout dazwischen
       speak(L.screens.postsud1_tts, () => {
         speak(L.screens.postsud2_tts, () => {
-          buildSUD('postSudGrid', val => { S.sud_post = val; showProtocol(); });
+          // Audio-Kette beendet - falls User noch nicht getippt hat, einfach
+          // warten; falls schon getippt, ist postSudTapped längst gelaufen.
         }, null, L.screens.postsud2_mp3 || null);
       }, null, L.screens.postsud1_mp3 || null);
-    }, 350);
-  }, 700);
+    }, 200);
+  }, 300);
+}
+
+// v26 FIX 2: Wird aufgerufen, sobald der User auf eine Skalenzahl getippt hat.
+// Kritischer iOS-Pfad: audio.play() für proto-01 muss synchron innerhalb des
+// User-Gesture-Kontexts starten, sonst blockiert iOS den Audio-Start.
+// Vorher waren 1800ms Verzögerung zwischen Tap und audio.play() → iOS hat den
+// Gesture-Kontext verloren → MP3 wurde nicht abgespielt, TTS-Fallback war stumm.
+// Jetzt: TTS-Aufruf läuft im selben Tick wie der Tap (über cancelTTS+speak),
+// und showProtocol() läuft parallel als rein visuelle Aktion.
+function postSudTapped() {
+  // 1. Vorherige Audio-Kette stoppen (falls postsud1/postsud2 noch läuft)
+  cancelTTS();
+  // 2. Visueller Screen-Wechsel und Stats vorbereiten (synchron, kein await)
+  showProtocol({ skipAutoClosingStart: true });
+  // 3. Closing-Audio-Kette sofort starten - noch im User-Gesture-Fenster.
+  //    Visuelles Fade läuft parallel zur ersten gesprochenen Zeile.
+  startProtoClosing();
 }
 
 // ══════════════════════════════════════════════════
 // §JS:PROTOCOL  (showProtocol, endSession)
 // ══════════════════════════════════════════════════
-function showProtocol() {
+function showProtocol(opts) {
+  // v26 FIX 2: opts.skipAutoClosingStart erlaubt, dass der Aufrufer (postSudTapped)
+  // die Closing-Audio-Kette bereits selbst startet, um im User-Gesture-Fenster
+  // zu bleiben. Default-Verhalten (ohne opts) bleibt wie vorher: kurze Pause,
+  // dann startProtoClosing() automatisch.
+  const skipAutoStart = !!(opts && opts.skipAutoClosingStart);
   goTo('screenProtocol');
   const pre  = S.sud_pre  ?? '–';
   const post = S.sud_post ?? '–';
@@ -3338,8 +3366,12 @@ function showProtocol() {
   const endBtn = document.getElementById('protoEndBtn');
   if (endBtn) { endBtn.textContent = L.ui.sitzung_beenden; endBtn.classList.add('hidden-until-tts'); }
 
-  // iOS-Safe: kurze Pause für Screen-Render, dann Audio-Kette starten
-  setTimeout(() => startProtoClosing(), 300);
+  // v26 FIX 2: Bei Aufruf aus postSudTapped (skipAutoStart=true) startet der
+  // Aufrufer die Closing-Kette selbst, um die User-Gesture für iOS zu erhalten.
+  // Bei direktem Aufruf (z.B. Dev-Jump) bleibt das alte Auto-Start-Verhalten.
+  if (!skipAutoStart) {
+    setTimeout(() => startProtoClosing(), 300);
+  }
 }
 
 function startProtoClosing() {
@@ -3352,11 +3384,12 @@ function startProtoClosing() {
   const statsEl = document.getElementById('protoStats');
   const closingsBoxEl = document.getElementById('protoClosingsBox');
 
-  // FIX v24 Punkt 3 (Variante B):
-  // Erst die Kennzahlen wegfaden, dann die Closings-Box einfaden,
-  // dann erst die Audio-Kette starten. Die CSS-Transition dauert 0.9s,
-  // wir warten 1000ms, damit der Übergang sichtbar abgeschlossen ist
-  // bevor der erste Closing-Satz gesprochen wird.
+  // v26 FIX 3: Fade UND Audio starten gleichzeitig.
+  // Vorher: 1000ms Pause für Fade, DANN audio.play() → iOS hat den
+  // User-Gesture-Kontext längst verloren → MP3 wurde nicht abgespielt.
+  // Jetzt: Fade-Klassen werden gesetzt (CSS-Transition läuft visuell ab),
+  // und im selben Tick wird die Audio-Kette gestartet. Der erste gesprochene
+  // Satz hört man, während die Closings-Box optisch einfadet.
   if (statsEl) statsEl.classList.add('fade-out');
   if (closingsBoxEl) closingsBoxEl.classList.add('fade-in');
 
@@ -3367,17 +3400,15 @@ function startProtoClosing() {
     speak(text, () => cb(), null, mp3key || null);
   }
 
-  setTimeout(() => {
-    showClosing(c1El, s.proto_closing1_tts || '', s.proto_closing1_mp3 || null, () => {
-      showClosing(c2El, s.proto_closing2_tts || '', s.proto_closing2_mp3 || null, () => {
-        showClosing(c3El, s.proto_closing3_tts || '', s.proto_closing3_mp3 || null, () => {
-          // Reveal wipe text and end button
-          if (wipeEl) wipeEl.style.display = 'block';
-          if (endBtn) endBtn.classList.remove('hidden-until-tts');
-        });
+  showClosing(c1El, s.proto_closing1_tts || '', s.proto_closing1_mp3 || null, () => {
+    showClosing(c2El, s.proto_closing2_tts || '', s.proto_closing2_mp3 || null, () => {
+      showClosing(c3El, s.proto_closing3_tts || '', s.proto_closing3_mp3 || null, () => {
+        // Reveal wipe text and end button
+        if (wipeEl) wipeEl.style.display = 'block';
+        if (endBtn) endBtn.classList.remove('hidden-until-tts');
       });
     });
-  }, 1000);
+  });
 }
 
 function endSession() {

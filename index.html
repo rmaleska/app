@@ -194,6 +194,10 @@ transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 .sud-btn:hover, .sud-btn:active { border-color: var(--gold); color: var(--gold); background: #1a1510; }
 .sud-btn.selected { border-color: var(--gold); color: var(--bg); background: var(--gold); }
+/* v26 FIX 4: Skala sichtbar aber nicht klickbar während Hinweistext gesprochen wird.
+   Verhindert Race-Condition zwischen postsud-Audio-Kette und Closing-Audio-Kette. */
+.sud-btn.locked { opacity: 0.35; pointer-events: none; cursor: not-allowed; }
+.sud-btn.locked:hover { border-color: #ffffff0f; color: var(--muted); background: var(--surface); }
 
 /* ── PHASE DOTS ── */
 .phase-dots { display: flex; gap: 6px; margin-bottom: 1rem; flex-shrink: 0; }
@@ -527,7 +531,8 @@ border-color: var(--gold); color: var(--gold);
     <div onclick="devJump(13)" data-i18n="dev_s13" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S13 Bewusstsein</div>
     <div onclick="devJump(16)" data-i18n="dev_s16" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S16 Verborgen OK</div>
     <div onclick="devJump(17)" data-i18n="dev_s17" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; S17 Abschluss</div>
-    <div onclick="devJump('postsud')" data-i18n="dev_postsud" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;">&#8594; Post-SUD</div>
+    <div onclick="devJump('postsud')" data-i18n="dev_postsud" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Post-SUD</div>
+    <div onclick="devJump('closing')" data-i18n="dev_closing" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;">&#8594; Abschluss</div>
   </div>
   <!-- /DEV-ONLY -->
 </div>
@@ -1040,6 +1045,7 @@ const LANG = {
       dev_s16:             '→ S16 Verborgen OK',
       dev_s17:             '→ S17 Abschluss',
       dev_postsud:         '→ Post-SUD',
+      dev_closing:         '→ Abschluss',
     },
 
     // §I18N:DE-AHA  – Headlines, Texte, Brücken, Closing der AHA-Sequenz
@@ -1348,6 +1354,7 @@ const LANG = {
       dev_s16:             '→ S16 Hidden OK',
       dev_s17:             '→ S17 Closing',
       dev_postsud:         '→ Post-SUD',
+      dev_closing:         '→ Closing',
     },
 
     // §I18N:EN-AHA  – Studio-Wortlaute aus mp3-recording-list-en-v6
@@ -2087,6 +2094,13 @@ function devJump(target) {
     startContact();
   } else if (target === 'postsud') {
     startPostSUD();
+  } else if (target === 'closing') {
+    // v26 FIX 5: Direkt zum Abschluss-Screen springen, mit fingierten
+    // Pre/Post-SUD-Werten, damit Stats und Lofty-Sequenz testbar sind.
+    S.sud_pre = 7;
+    S.sud_post = 3;
+    S.parts_counter = 5;
+    showProtocol();
   } else {
     // Direkt zu einem Schritt springen
     document.getElementById('sessionBtns').classList.add('active', 'large');
@@ -2912,12 +2926,16 @@ function goToIntro() {
   }, null, L.screens.intro1_mp3 || null);
 }
 
-function buildSUD(gridId, cb) {
+function buildSUD(gridId, cb, locked) {
+  // v26 FIX 4: Optionales locked-Flag. Wenn true, werden die Buttons sichtbar
+  // aber nicht klickbar gerendert. unlockSUD(gridId) entfernt die Sperre, sobald
+  // der Hinweistext fertig gesprochen ist.
   const grid = document.getElementById(gridId);
   grid.innerHTML = '';
   for (let i=1; i<=10; i++) {
     const btn = document.createElement('button');
     btn.className='sud-btn'; btn.textContent=i;
+    if (locked) btn.classList.add('locked');
     btn.onclick = () => {
       grid.querySelectorAll('.sud-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
@@ -2925,6 +2943,13 @@ function buildSUD(gridId, cb) {
     };
     grid.appendChild(btn);
   }
+}
+
+// v26 FIX 4: Skala-Buttons freischalten (entfernt .locked-Klasse).
+function unlockSUD(gridId) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  grid.querySelectorAll('.sud-btn').forEach(b => b.classList.remove('locked'));
 }
 
 // ══════════════════════════════════════════════════
@@ -3276,23 +3301,23 @@ function stepInfoNext() {
 // §JS:POST-SUD  (startPostSUD)
 // ══════════════════════════════════════════════════
 function startPostSUD() {
-  // v26 FIX 1: Zahlen 1-10 sofort sichtbar machen, statt erst nach kompletter
-  // Audio-Kette (vorher ~9 Sek Stille bis Skala da war). Der User kann jetzt
-  // tippen, sobald er bereit ist - die Audio-Kette läuft parallel und gibt
-  // den begleitenden Hinweistext.
-  // - Skala wird sofort gebaut (Tap akzeptiert ab dem ersten Moment)
-  // - Pause vor cueSignal nur noch 300ms (vorher 700ms)
-  // - Pause vor erstem TTS-Satz nur noch 200ms (vorher 350ms)
+  // v26 FIX 1+4: Skala 1-10 wird sofort sichtbar gebaut, aber zunächst GESPERRT
+  // (.locked-Klasse → reduzierte Opacity, pointer-events: none).
+  // Erst nach Ende der Hinweistext-Kette (postsud1 + postsud2) wird die Skala
+  // entsperrt und ein Reminder-Ton signalisiert "jetzt kannst du tippen".
+  // Der User sieht also sofort, was kommt - kann aber nicht zu früh tippen
+  // und die Audio-Kette in eine Race-Condition zwingen.
   goTo('screenPostSUD');
-  buildSUD('postSudGrid', val => { S.sud_post = val; postSudTapped(); });
+  buildSUD('postSudGrid', val => { S.sud_post = val; postSudTapped(); }, true);
   setTimeout(() => {
     cueSignal();
     setTimeout(() => {
       // iOS-Safe: postsud1 → postsud2 nahtlos, kein setTimeout dazwischen
       speak(L.screens.postsud1_tts, () => {
         speak(L.screens.postsud2_tts, () => {
-          // Audio-Kette beendet - falls User noch nicht getippt hat, einfach
-          // warten; falls schon getippt, ist postSudTapped längst gelaufen.
+          // Audio-Kette beendet → Skala freischalten + Reminder-Ton
+          unlockSUD('postSudGrid');
+          cueSignal();
         }, null, L.screens.postsud2_mp3 || null);
       }, null, L.screens.postsud1_mp3 || null);
     }, 200);
@@ -3300,19 +3325,14 @@ function startPostSUD() {
 }
 
 // v26 FIX 2: Wird aufgerufen, sobald der User auf eine Skalenzahl getippt hat.
+// Da die Skala erst NACH Ende der Hinweistext-Kette entsperrt wurde (siehe
+// startPostSUD), gibt es hier keine Race-Condition mehr mit pending Audio.
+// Trotzdem rufen wir cancelTTS() auf, um sauber zu starten.
 // Kritischer iOS-Pfad: audio.play() für proto-01 muss synchron innerhalb des
 // User-Gesture-Kontexts starten, sonst blockiert iOS den Audio-Start.
-// Vorher waren 1800ms Verzögerung zwischen Tap und audio.play() → iOS hat den
-// Gesture-Kontext verloren → MP3 wurde nicht abgespielt, TTS-Fallback war stumm.
-// Jetzt: TTS-Aufruf läuft im selben Tick wie der Tap (über cancelTTS+speak),
-// und showProtocol() läuft parallel als rein visuelle Aktion.
 function postSudTapped() {
-  // 1. Vorherige Audio-Kette stoppen (falls postsud1/postsud2 noch läuft)
   cancelTTS();
-  // 2. Visueller Screen-Wechsel und Stats vorbereiten (synchron, kein await)
   showProtocol({ skipAutoClosingStart: true });
-  // 3. Closing-Audio-Kette sofort starten - noch im User-Gesture-Fenster.
-  //    Visuelles Fade läuft parallel zur ersten gesprochenen Zeile.
   startProtoClosing();
 }
 

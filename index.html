@@ -518,6 +518,9 @@ border-color: var(--gold); color: var(--gold);
 </head>
 <body>
 
+<!-- DEBUG-PANEL v27 - zeigt Live-Status für Diagnose -->
+<div id="debugPanel" style="position:fixed;top:0;left:0;background:#000;color:#0f0;font-family:monospace;font-size:11px;padding:6px 10px;z-index:99999;max-width:60vw;line-height:1.35;border-bottom:1px solid #0f0;border-right:1px solid #0f0;pointer-events:none;white-space:pre-wrap;">DEBUG bereit</div>
+
 <!-- v27: Versteckte Trigger-Zone für Dev-Modus.
      5 Taps innerhalb von 3 s blendet Dev Skip + Admin ein/aus. -->
 <div id="devTriggerZone" onclick="devTriggerTap()"></div>
@@ -906,6 +909,31 @@ border-color: var(--gold); color: var(--gold);
 
 <script>
 'use strict';
+
+// ══════════════════════════════════════════════════
+// DEBUG-LOGGING (v27-debug)
+// Schreibt Live-Status auf das Debug-Panel oben links.
+// ══════════════════════════════════════════════════
+const _debugLog = [];
+function dbg(msg) {
+  const ts = new Date().toISOString().substr(14, 8); // mm:ss.fff
+  const line = ts + ' ' + msg;
+  _debugLog.push(line);
+  // Letzte 12 Zeilen behalten, ältere wegwerfen
+  if (_debugLog.length > 12) _debugLog.shift();
+  const panel = document.getElementById('debugPanel');
+  if (panel) panel.textContent = _debugLog.join('\n');
+  // Zusätzlich in Console (für Desktop-DevTools)
+  try { console.log('[DBG]', msg); } catch(e) {}
+}
+// Globaler Error-Handler - jeder unhandled Error landet im Panel
+window.addEventListener('error', (e) => {
+  dbg('!ERR ' + (e.message || 'unknown') + ' @' + (e.filename || '?') + ':' + (e.lineno || '?'));
+});
+window.addEventListener('unhandledrejection', (e) => {
+  dbg('!REJ ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
+});
+dbg('Script gestartet');
 
 // ══════════════════════════════════════════════════
 // §JS:LANG  – Zentrales Textobjekt & Sprache
@@ -2687,7 +2715,15 @@ function spiralStart() {
   const canvases = SPIRAL_CANVAS_IDS
     .map(id => document.getElementById(id))
     .filter(c => c !== null);
-  if (canvases.length === 0) return;
+  dbg('  spiralStart: ' + canvases.length + ' canvas(es) gefunden');
+  if (canvases.length === 0) { dbg('  !spiralStart: keine canvases!'); return; }
+  // Welche sind sichtbar?
+  canvases.forEach(c => {
+    const cs = window.getComputedStyle(c);
+    const wrap = c.parentElement;
+    const ws = wrap ? window.getComputedStyle(wrap) : null;
+    dbg('    ' + c.id + ' display=' + cs.display + ' wrap.display=' + (ws?ws.display:'?'));
+  });
 
   function draw() {
     spiralAngle += 0.012;
@@ -2890,24 +2926,47 @@ function calib2Answer(response) {
 
 let _calib2Done = false;
 function finishCalib2() {
-  if (_calib2Done) return;
+  dbg('finishCalib2 START done=' + _calib2Done);
+  if (_calib2Done) { dbg('  -> skip (bereits done)'); return; }
   _calib2Done = true;
   document.getElementById('calib2Btns').classList.remove('active', 'large');
   // FIX v24 Punkt 1: Restlichen Kalibrierungstext ('Ich bin jünger als 1 Jahr.') leeren,
   // damit während der Atem-/Vorbereitungsphase nur die Spirale sichtbar bleibt.
   const calib2TextEl = document.getElementById('calib2Text');
-  if (calib2TextEl) calib2TextEl.textContent = '';
+  if (calib2TextEl) {
+    dbg('  calib2Text VOR=' + JSON.stringify(calib2TextEl.textContent.substr(0,30)));
+    calib2TextEl.textContent = '';
+    dbg('  calib2Text NACH=' + JSON.stringify(calib2TextEl.textContent));
+  } else {
+    dbg('  !calib2TextEl NICHT GEFUNDEN');
+  }
   // FIX v25 Punkt 1: Spirale für Preparation-Phase einblenden und starten.
   // Vorher war der Spiral-Container nur in screenSession – auf screenCalib2 blieb der
   // Bildschirm während der gesamten Vorbereitungsphase schwarz. Jetzt eigener Container.
   const calib2Spiral = document.getElementById('calib2SpiralWrap');
-  if (calib2Spiral) calib2Spiral.style.display = 'flex';
-  spiralStart();
+  if (calib2Spiral) {
+    calib2Spiral.style.display = 'flex';
+    dbg('  calib2SpiralWrap display=flex gesetzt');
+  } else {
+    dbg('  !calib2SpiralWrap NICHT GEFUNDEN');
+  }
+  try {
+    spiralStart();
+    dbg('  spiralStart() OK, RAF=' + spiralRAF);
+  } catch(e) {
+    dbg('  !spiralStart FEHLER: ' + e.message);
+  }
   // v27 FIX: AudioContext warm halten, solange lange MP3-Phasen laufen.
   // Verhindert, dass cueSignal() später ins Leere fällt, weil der Context suspended ist.
-  startAudioKeepalive();
+  try {
+    startAudioKeepalive();
+    dbg('  startAudioKeepalive OK ctx=' + (_audioCtx ? _audioCtx.state : 'null'));
+  } catch(e) {
+    dbg('  !keepalive FEHLER: ' + e.message);
+  }
   // iOS-Safe: direkt in die Einstimmung – Audio-Kette bleibt aktiv,
   // prep_intro_tts kann nahtlos starten.
+  dbg('  -> startPreparation()');
   startPreparation();
 }
 
@@ -2934,8 +2993,10 @@ const PREP_PAUSE = {
 };
 
 function startPreparation() {
+  dbg('startPreparation lang=' + currentLang);
   // Wir bleiben auf screenCalib2 (die Spirale läuft dort, Augen sind zu).
   const s = L.screens;
+  dbg('  prep_all_mp3=' + (s.prep_all_mp3 || 'LEER'));
 
   // Modus 1: Einzige MP3-Datei mit allen Phasen + eingebauten Pausen.
   // Wenn prep_all_mp3 gesetzt ist UND wir nicht im Pure-TTS-Modus sind,
@@ -3056,17 +3117,20 @@ function unlockSUD(gridId) {
 // §JS:CONTACT  (startContact, contactGo)
 // ══════════════════════════════════════════════════
 function startContact() {
+  dbg('startContact');
   goTo('screenContact');
   document.getElementById('contactBtns').classList.add('active', 'large');
   S.locked=true; setOff(['contactBtn'],true);
   document.getElementById('contactText').textContent = L.screens.contact_tts;
   speak(L.screens.contact_tts, () => {
+    dbg('  contact_tts ENDE');
     if (!S.locked) return;
     setTimeout(() => {
       S.locked=false; setOff(['contactBtn'],false);
+      dbg('  contact: cueSignal #1');
       cueSignal();
       // v27 FIX: Sicherheits-Wiederholung nach 220 ms (siehe activateStepButtons).
-      setTimeout(() => { cueSignal(); }, 220);
+      setTimeout(() => { dbg('  contact: cueSignal #2'); cueSignal(); }, 220);
       clearTimeout(S.asif_timer);
       S.asif_timer = setTimeout(() => toast(L.ui.toast_asif_btn,'soft'), 10000);
     }, 50);
@@ -3074,6 +3138,7 @@ function startContact() {
 }
 
 function contactGo() {
+  dbg('contactGo (Button-Tap)');
   ensureWakeLock();
   if (S.locked) return;
   clearTimeout(S.asif_timer);
@@ -3089,7 +3154,9 @@ function contactGo() {
   document.getElementById('stepEyesWrap').style.display = 'flex';
   // iOS-Safe: nahtlose Kette eyes → ready → S1, keine setTimeouts zwischen Audios
   speak(L.screens.eyes_tts, () => {
+    dbg('  eyes_tts ENDE');
     speak(L.screens.ready_tts, () => {
+      dbg('  ready_tts ENDE -> runStep(1)');
       runStep(1);
     }, null, L.screens.ready_mp3 || null);
   }, null, L.screens.eyes_mp3 || null);
@@ -3271,7 +3338,7 @@ function vibrateSignal() {
 // stumm bleibt (z.B. weil resume() länger dauert als erwartet).
 function _emitCueTone(volume) {
   try {
-    if (!_audioCtx) return;
+    if (!_audioCtx) { dbg('  !_emitCueTone: kein _audioCtx'); return; }
     const now = _audioCtx.currentTime;
     const osc = _audioCtx.createOscillator();
     const gain = _audioCtx.createGain();
@@ -3284,25 +3351,29 @@ function _emitCueTone(volume) {
     osc.connect(gain).connect(_audioCtx.destination);
     osc.start(now);
     osc.stop(now + 0.06);
-  } catch(e) {}
+    dbg('  _emitCueTone OK vol=' + volume + ' state=' + _audioCtx.state);
+  } catch(e) { dbg('  !_emitCueTone FEHLER: ' + e.message); }
 }
 
 function cueSignal() {
+  dbg('cueSignal() ctx=' + (_audioCtx ? _audioCtx.state : 'null'));
   try {
     if (!_audioCtx) ensureAudioCtx();
-    if (!_audioCtx) return;
+    if (!_audioCtx) { dbg('  !cueSignal: ensureAudioCtx fehlgeschlagen'); return; }
     if (_audioCtx.state === 'suspended' || _audioCtx.state === 'interrupted') {
       // Erst resume abwarten, dann Ton spielen.
+      dbg('  cueSignal: resume() gestartet');
       _audioCtx.resume().then(() => {
+        dbg('  resume OK -> state=' + _audioCtx.state);
         _emitCueTone(0.12);
-      }).catch(() => {
-        // Resume fehlgeschlagen - trotzdem versuchen, manche Browser spielen ab.
+      }).catch((e) => {
+        dbg('  resume FEHLER: ' + (e.message||e));
         _emitCueTone(0.12);
       });
     } else {
       _emitCueTone(0.12);
     }
-  } catch(e) {}
+  } catch(e) { dbg('  !cueSignal FEHLER: ' + e.message); }
 }
 
 // v25 FIX 2: Leisere Variante (~70% Lautstärke) für den Reminder-Ton.
@@ -3348,6 +3419,7 @@ function stopReminderTimer() {
 
 // Step: show fixed bottom buttons
 function activateStepButtons(step) {
+  dbg('activateStepButtons S' + step.num + ' type=' + step.type);
   const noCol = document.getElementById('sessionNoCol');
   noCol.style.visibility = (step.type === 'both') ? 'visible' : 'hidden';
 
@@ -3361,13 +3433,14 @@ function activateStepButtons(step) {
     setOff(['stepYes'], false);
     if (step.type === 'both') setOff(['stepNo'], false);
     S._qStart = performance.now();
+    dbg('  S' + step.num + ': cueSignal #1');
     cueSignal();
     // v27 FIX: Sicherheits-Wiederholung nach 220 ms.
     // Falls der erste Ton durch einen race mit AudioContext-resume() stumm blieb,
     // ist der Context spätestens jetzt 'running' und der zweite Ton kommt zuverlässig.
     // Auf Geräten ohne Suspend-Problem ist es schlicht ein zweiter sehr leiser Tick,
     // der akustisch im ersten verschwindet.
-    setTimeout(() => { cueSignal(); }, 220);
+    setTimeout(() => { dbg('  S' + step.num + ': cueSignal #2'); cueSignal(); }, 220);
     // v27 FIX: Keepalive ist ab hier nicht mehr nötig - der Reminder-Timer
     // (alle 30 s) hält den Context von jetzt an wach.
     stopAudioKeepalive();

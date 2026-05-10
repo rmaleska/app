@@ -493,10 +493,34 @@ cursor: pointer; transition: border-color 0.3s, color 0.3s;
 border-color: var(--gold); color: var(--gold);
 }
 .lang-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+
+/* v27: Versteckter Dev-Modus.
+   Dev Skip + Admin sind standardmäßig unsichtbar.
+   Werden durch 5 schnelle Taps in die obere rechte Ecke (innerhalb 3 s) eingeblendet.
+   Erneutes 5-Tap blendet sie wieder aus.
+   Die Trigger-Zone ist transparent, ohne visuelle Spuren.
+   Z-Index 9997: liegt unter den Dev-Buttons (z-index:9998), damit diese bei
+   Sichtbarkeit normal klickbar bleiben. Dev-Buttons sitzen 'rechts oben' an
+   gleicher Position wie die Trigger-Zone und decken sie dann ab. */
+.dev-hidden { display: none !important; }
+#devTriggerZone {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 60px;
+  height: 60px;
+  z-index: 9997;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
 </style>
 
 </head>
 <body>
+
+<!-- v27: Versteckte Trigger-Zone für Dev-Modus.
+     5 Taps innerhalb von 3 s blendet Dev Skip + Admin ein/aus. -->
+<div id="devTriggerZone" onclick="devTriggerTap()"></div>
 
 <!-- SPLASH -->
 <div class="screen active" id="screenSplash">
@@ -513,10 +537,10 @@ border-color: var(--gold); color: var(--gold);
     <div class="splash-dot"></div>
   </button>
   <div class="splash-hint" data-i18n="splash_hint">Tippe um zu beginnen</div>
-  <!-- DEV-ONLY – vor Veroeffentlichung entfernen -->
-  <button onclick="devMenuToggle()" data-i18n="dev_skip" style="position:fixed;top:1rem;right:1rem;background:#1a1d22;border:1px solid #c4a05a55;color:#c4a05a88;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Dev Skip &#9662;</button>
-  <button onclick="adminOpen()" data-i18n="dev_admin" style="position:fixed;top:1rem;right:7.5rem;background:#1a1d22;border:1px solid #4a7a9b88;color:#4a7a9b;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Admin</button>
-  <div id="devMenu" style="display:none;position:fixed;top:2.8rem;right:1rem;background:#0e1215;border:1px solid #c4a05a44;z-index:9999;min-width:180px;">
+  <!-- DEV-ONLY – versteckt, einblendbar via 5-Tap-Trigger oben rechts -->
+  <button id="devSkipBtn" class="dev-hidden" onclick="devMenuToggle()" data-i18n="dev_skip" style="position:fixed;top:1rem;right:1rem;background:#1a1d22;border:1px solid #c4a05a55;color:#c4a05a88;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Dev Skip &#9662;</button>
+  <button id="adminBtn" class="dev-hidden" onclick="adminOpen()" data-i18n="dev_admin" style="position:fixed;top:1rem;right:7.5rem;background:#1a1d22;border:1px solid #4a7a9b88;color:#4a7a9b;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Admin</button>
+  <div id="devMenu" class="dev-hidden" style="display:none;position:fixed;top:2.8rem;right:1rem;background:#0e1215;border:1px solid #c4a05a44;z-index:9999;min-width:180px;">
     <div onclick="devJump('aha')"    data-i18n="dev_aha"     style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; AHA-Sequenz</div>
     <div onclick="devJump('problem')"  data-i18n="dev_problem" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Kernsatz</div>
     <div onclick="devJump('presud')"  data-i18n="dev_presud"  style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;border-bottom:1px solid #1e2a34;">&#8594; Belastungsgrad</div>
@@ -1960,11 +1984,47 @@ let ttsVoice = null;
 let _audioCtx = null;
 // v25 FIX 2: Globaler Reminder-Timer-Handle (oben deklariert wegen TDZ-Sicherheit).
 let _reminderTimer = null;
+// v27 FIX: Keepalive-Timer für AudioContext.
+// Spielt alle 8 Sekunden einen unhörbar leisen Tick, damit der AudioContext
+// während langer reiner MP3-Phasen nicht in 'suspended' wechselt.
+let _audioKeepalive = null;
 function ensureAudioCtx() {
   if (_audioCtx) return;
   try {
     _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   } catch(e) {}
+}
+
+// v27 FIX: AudioContext warm halten.
+// Wird während Preparation- und Contact-Phase aktiviert, also genau in den
+// Phasen, in denen lange reine MP3s laufen und der AudioContext sonst einschläft.
+// Der Tick ist mit Volume 0.0001 praktisch unhörbar, hält aber das Audio-System aktiv.
+function startAudioKeepalive() {
+  stopAudioKeepalive();
+  if (!_audioCtx) ensureAudioCtx();
+  if (!_audioCtx) return;
+  _audioKeepalive = setInterval(() => {
+    try {
+      if (!_audioCtx) return;
+      if (_audioCtx.state === 'suspended' || _audioCtx.state === 'interrupted') {
+        _audioCtx.resume().catch(() => {});
+      }
+      // Stiller Tick - hält den Context aktiv ohne hörbar zu sein.
+      const now = _audioCtx.currentTime;
+      const osc = _audioCtx.createOscillator();
+      const gain = _audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 440;
+      gain.gain.setValueAtTime(0.0001, now);
+      osc.connect(gain).connect(_audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.005);
+    } catch(e) {}
+  }, 8000);
+}
+
+function stopAudioKeepalive() {
+  if (_audioKeepalive) { clearInterval(_audioKeepalive); _audioKeepalive = null; }
 }
 
 // Haupt-Speak-Funktion: MP3 wenn vorhanden, sonst TTS
@@ -2064,6 +2124,43 @@ function showBtn(id) {
 // ══════════════════════════════════════════════════
 
 // DEV-ONLY – vor Veroeffentlichung entfernen
+
+// v27: 5-Tap-Trigger zum Ein-/Ausblenden von Dev Skip und Admin.
+// Standard: beide Buttons via 'dev-hidden'-Klasse unsichtbar.
+// 5 Taps innerhalb 3 s in obere rechte Ecke (#devTriggerZone) → einblenden.
+// Erneutes 5-Tap → wieder ausblenden.
+let _devTapCount = 0;
+let _devTapTimer = null;
+function devTriggerTap() {
+  _devTapCount++;
+  if (_devTapTimer) clearTimeout(_devTapTimer);
+  _devTapTimer = setTimeout(() => { _devTapCount = 0; }, 3000);
+  if (_devTapCount >= 5) {
+    _devTapCount = 0;
+    clearTimeout(_devTapTimer);
+    devModeToggle();
+  }
+}
+function devModeToggle() {
+  const skipBtn = document.getElementById('devSkipBtn');
+  const adminBtn = document.getElementById('adminBtn');
+  const devMenu = document.getElementById('devMenu');
+  const isHidden = skipBtn && skipBtn.classList.contains('dev-hidden');
+  if (isHidden) {
+    if (skipBtn) skipBtn.classList.remove('dev-hidden');
+    if (adminBtn) adminBtn.classList.remove('dev-hidden');
+    if (devMenu) devMenu.classList.remove('dev-hidden');
+    // devMenu bleibt zugeklappt durch sein inline style="display:none"
+  } else {
+    if (skipBtn) skipBtn.classList.add('dev-hidden');
+    if (adminBtn) adminBtn.classList.add('dev-hidden');
+    if (devMenu) {
+      devMenu.classList.add('dev-hidden');
+      devMenu.style.display = 'none'; // falls Dropdown gerade offen war: schliessen
+    }
+  }
+}
+
 function devMenuToggle() {
   const m = document.getElementById('devMenu');
   m.style.display = m.style.display === 'none' ? 'block' : 'none';
@@ -2806,6 +2903,9 @@ function finishCalib2() {
   const calib2Spiral = document.getElementById('calib2SpiralWrap');
   if (calib2Spiral) calib2Spiral.style.display = 'flex';
   spiralStart();
+  // v27 FIX: AudioContext warm halten, solange lange MP3-Phasen laufen.
+  // Verhindert, dass cueSignal() später ins Leere fällt, weil der Context suspended ist.
+  startAudioKeepalive();
   // iOS-Safe: direkt in die Einstimmung – Audio-Kette bleibt aktiv,
   // prep_intro_tts kann nahtlos starten.
   startPreparation();
@@ -2965,6 +3065,8 @@ function startContact() {
     setTimeout(() => {
       S.locked=false; setOff(['contactBtn'],false);
       cueSignal();
+      // v27 FIX: Sicherheits-Wiederholung nach 220 ms (siehe activateStepButtons).
+      setTimeout(() => { cueSignal(); }, 220);
       clearTimeout(S.asif_timer);
       S.asif_timer = setTimeout(() => toast(L.ui.toast_asif_btn,'soft'), 10000);
     }, 50);
@@ -2978,6 +3080,11 @@ function contactGo() {
   S.locked = true;
   setOff(['contactBtn'], true);
   document.getElementById('contactBtns').classList.remove('active', 'large');
+  // v27 FIX: stepLabel-Platzhalter ('–') leeren, damit während der Augen-zu-Phase
+  // (eyes_tts → ready_tts → S1) kein einsamer Bindestrich auf dunklem Bildschirm steht.
+  // runStep(1) füllt das Label später korrekt.
+  const stepLabelEl = document.getElementById('stepLabel');
+  if (stepLabelEl) stepLabelEl.textContent = '';
   goTo('screenStep');
   document.getElementById('stepEyesWrap').style.display = 'flex';
   // iOS-Safe: nahtlose Kette eyes → ready → S1, keine setTimeouts zwischen Audios
@@ -3155,11 +3262,16 @@ function vibrateSignal() {
 // Plattformübergreifendes Button-Ready-Signal.
 // Konsistent über alle Geräte: kurzer, subtiler Sinus-Ton via Web Audio API.
 // Keine Vibration - Ton ist die einheitliche Sprache der App.
-function cueSignal() {
+//
+// v27 FIX: AudioContext-Suspend-Behandlung.
+// Auf iOS Safari und Android Chrome kann der AudioContext nach längeren reinen
+// MP3-Phasen in 'suspended' wechseln. resume() ist asynchron - wir starten den
+// Oszillator deshalb erst NACH dem resume-Promise, damit der Ton nicht ins Leere fällt.
+// Zusätzlich: Sicherheits-Wiederholung nach 220 ms, falls der erste Ton trotzdem
+// stumm bleibt (z.B. weil resume() länger dauert als erwartet).
+function _emitCueTone(volume) {
   try {
-    if (!_audioCtx) ensureAudioCtx();
     if (!_audioCtx) return;
-    if (_audioCtx.state === 'suspended') { _audioCtx.resume().catch(()=>{}); }
     const now = _audioCtx.currentTime;
     const osc = _audioCtx.createOscillator();
     const gain = _audioCtx.createGain();
@@ -3167,7 +3279,7 @@ function cueSignal() {
     osc.frequency.value = 880;
     // Hüllkurve: sanftes Ein- und Ausblenden, vermeidet Klickgeräusche
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.008);
+    gain.gain.exponentialRampToValueAtTime(volume, now + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
     osc.connect(gain).connect(_audioCtx.destination);
     osc.start(now);
@@ -3175,24 +3287,40 @@ function cueSignal() {
   } catch(e) {}
 }
 
+function cueSignal() {
+  try {
+    if (!_audioCtx) ensureAudioCtx();
+    if (!_audioCtx) return;
+    if (_audioCtx.state === 'suspended' || _audioCtx.state === 'interrupted') {
+      // Erst resume abwarten, dann Ton spielen.
+      _audioCtx.resume().then(() => {
+        _emitCueTone(0.12);
+      }).catch(() => {
+        // Resume fehlgeschlagen - trotzdem versuchen, manche Browser spielen ab.
+        _emitCueTone(0.12);
+      });
+    } else {
+      _emitCueTone(0.12);
+    }
+  } catch(e) {}
+}
+
 // v25 FIX 2: Leisere Variante (~70% Lautstärke) für den Reminder-Ton.
 // Soll an aktive Buttons erinnern ohne als neue Anweisung wahrgenommen zu werden.
+// v27 FIX: Gleiche Suspend-Behandlung wie cueSignal.
 function cueSignalSoft() {
   try {
     if (!_audioCtx) ensureAudioCtx();
     if (!_audioCtx) return;
-    if (_audioCtx.state === 'suspended') { _audioCtx.resume().catch(()=>{}); }
-    const now = _audioCtx.currentTime;
-    const osc = _audioCtx.createOscillator();
-    const gain = _audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.084, now + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
-    osc.connect(gain).connect(_audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + 0.06);
+    if (_audioCtx.state === 'suspended' || _audioCtx.state === 'interrupted') {
+      _audioCtx.resume().then(() => {
+        _emitCueTone(0.084);
+      }).catch(() => {
+        _emitCueTone(0.084);
+      });
+    } else {
+      _emitCueTone(0.084);
+    }
   } catch(e) {}
 }
 
@@ -3234,6 +3362,15 @@ function activateStepButtons(step) {
     if (step.type === 'both') setOff(['stepNo'], false);
     S._qStart = performance.now();
     cueSignal();
+    // v27 FIX: Sicherheits-Wiederholung nach 220 ms.
+    // Falls der erste Ton durch einen race mit AudioContext-resume() stumm blieb,
+    // ist der Context spätestens jetzt 'running' und der zweite Ton kommt zuverlässig.
+    // Auf Geräten ohne Suspend-Problem ist es schlicht ein zweiter sehr leiser Tick,
+    // der akustisch im ersten verschwindet.
+    setTimeout(() => { cueSignal(); }, 220);
+    // v27 FIX: Keepalive ist ab hier nicht mehr nötig - der Reminder-Timer
+    // (alle 30 s) hält den Context von jetzt an wach.
+    stopAudioKeepalive();
     // v25 FIX 2: Reminder-Timer starten, sobald Buttons aktiv sind.
     // Erinnerungston alle 30s, hilft auch das Telefon vor Standby zu schützen.
     startReminderTimer();

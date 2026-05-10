@@ -518,9 +518,6 @@ border-color: var(--gold); color: var(--gold);
 </head>
 <body>
 
-<!-- DEBUG-PANEL v27 - zeigt Live-Status für Diagnose -->
-<div id="debugPanel" style="position:fixed;top:0;left:0;background:#000;color:#0f0;font-family:monospace;font-size:11px;padding:6px 10px;z-index:99999;max-width:60vw;line-height:1.35;border-bottom:1px solid #0f0;border-right:1px solid #0f0;pointer-events:none;white-space:pre-wrap;">DEBUG bereit</div>
-
 <!-- v27: Versteckte Trigger-Zone für Dev-Modus.
      5 Taps innerhalb von 3 s blendet Dev Skip + Admin ein/aus. -->
 <div id="devTriggerZone" onclick="devTriggerTap()"></div>
@@ -911,31 +908,6 @@ border-color: var(--gold); color: var(--gold);
 'use strict';
 
 // ══════════════════════════════════════════════════
-// DEBUG-LOGGING (v27-debug)
-// Schreibt Live-Status auf das Debug-Panel oben links.
-// ══════════════════════════════════════════════════
-const _debugLog = [];
-function dbg(msg) {
-  const ts = new Date().toISOString().substr(14, 8); // mm:ss.fff
-  const line = ts + ' ' + msg;
-  _debugLog.push(line);
-  // Letzte 12 Zeilen behalten, ältere wegwerfen
-  if (_debugLog.length > 12) _debugLog.shift();
-  const panel = document.getElementById('debugPanel');
-  if (panel) panel.textContent = _debugLog.join('\n');
-  // Zusätzlich in Console (für Desktop-DevTools)
-  try { console.log('[DBG]', msg); } catch(e) {}
-}
-// Globaler Error-Handler - jeder unhandled Error landet im Panel
-window.addEventListener('error', (e) => {
-  dbg('!ERR ' + (e.message || 'unknown') + ' @' + (e.filename || '?') + ':' + (e.lineno || '?'));
-});
-window.addEventListener('unhandledrejection', (e) => {
-  dbg('!REJ ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
-});
-dbg('Script gestartet');
-
-// ══════════════════════════════════════════════════
 // §JS:LANG  – Zentrales Textobjekt & Sprache
 // ══════════════════════════════════════════════════
 // Struktur pro Sprache:
@@ -1199,12 +1171,17 @@ const LANG = {
       lofty_tts: 'Dein Unterbewusstsein beginnt jetzt zu arbeiten.',
       lofty_mp3: 'ui-19',
       // Protokoll-Screen Closing (Lofty Question Sequenz)
+      // v28: Vorgelagerter Augen-öffnen-/Telefon-drehen-Hinweis. Wird VOR den Closings abgespielt.
+      eyes_open_tts: 'Du kannst die Augen jetzt wieder öffnen. Drehe das Telefon wieder hochkant.',
+      eyes_open_mp3: 'proto-00',
       proto_closing1_tts: 'Was heute begonnen hat, setzt sich weiter in dir fort.',
       proto_closing1_mp3: 'proto-01',
       proto_closing2_tts: 'Lass die folgende Frage einfach in dir nachklingen.',
       proto_closing2_mp3: 'proto-02',
       proto_closing3_tts: 'Warum findet gerade etwas in mir seinen Weg?',
       proto_closing3_mp3: 'proto-03',
+      // v28: Hinweiston (sprachunabhängiger Sinus, in beiden Audio-Ordnern als cue.mp3 abgelegt)
+      cue_mp3: 'cue',
       // Landscape
       landscape_tts: 'Drehe jetzt dein Telefon quer – und halte es mit beiden Händen, Daumen links und rechts. So kannst du die Buttons blind drücken, wenn deine Augen gleich geschlossen sind.',
       landscape_mp3: 'ui-quer',
@@ -1486,12 +1463,17 @@ const LANG = {
       lofty_tts: 'Your unconscious mind is beginning to work now.',
       lofty_mp3: 'ui-19',
       // Protocol screen closing (Lofty Question sequence)
+      // v28: Pre-closing hint to open eyes / turn phone upright. Plays BEFORE closings.
+      eyes_open_tts: 'You can open your eyes now. Turn the phone back upright.',
+      eyes_open_mp3: 'proto-00',
       proto_closing1_tts: 'What has begun today continues to unfold within you.',
       proto_closing1_mp3: 'proto-01',
       proto_closing2_tts: 'Let the following question simply resonate within you.',
       proto_closing2_mp3: 'proto-02',
       proto_closing3_tts: 'Why is something finding its way in me right now?',
       proto_closing3_mp3: 'proto-03',
+      // v28: Cue tone (language-independent sinus, placed as cue.mp3 in both audio folders)
+      cue_mp3: 'cue',
       // Landscape
       landscape_tts: 'Turn your phone sideways now – and hold it with both hands, thumbs left and right. This way you can press the buttons without looking, once your eyes are closed.',
       landscape_mp3: 'ui-quer',
@@ -2715,15 +2697,7 @@ function spiralStart() {
   const canvases = SPIRAL_CANVAS_IDS
     .map(id => document.getElementById(id))
     .filter(c => c !== null);
-  dbg('  spiralStart: ' + canvases.length + ' canvas(es) gefunden');
-  if (canvases.length === 0) { dbg('  !spiralStart: keine canvases!'); return; }
-  // Welche sind sichtbar?
-  canvases.forEach(c => {
-    const cs = window.getComputedStyle(c);
-    const wrap = c.parentElement;
-    const ws = wrap ? window.getComputedStyle(wrap) : null;
-    dbg('    ' + c.id + ' display=' + cs.display + ' wrap.display=' + (ws?ws.display:'?'));
-  });
+  if (canvases.length === 0) return;
 
   function draw() {
     spiralAngle += 0.012;
@@ -2926,47 +2900,24 @@ function calib2Answer(response) {
 
 let _calib2Done = false;
 function finishCalib2() {
-  dbg('finishCalib2 START done=' + _calib2Done);
-  if (_calib2Done) { dbg('  -> skip (bereits done)'); return; }
+  if (_calib2Done) return;
   _calib2Done = true;
   document.getElementById('calib2Btns').classList.remove('active', 'large');
   // FIX v24 Punkt 1: Restlichen Kalibrierungstext ('Ich bin jünger als 1 Jahr.') leeren,
   // damit während der Atem-/Vorbereitungsphase nur die Spirale sichtbar bleibt.
   const calib2TextEl = document.getElementById('calib2Text');
-  if (calib2TextEl) {
-    dbg('  calib2Text VOR=' + JSON.stringify(calib2TextEl.textContent.substr(0,30)));
-    calib2TextEl.textContent = '';
-    dbg('  calib2Text NACH=' + JSON.stringify(calib2TextEl.textContent));
-  } else {
-    dbg('  !calib2TextEl NICHT GEFUNDEN');
-  }
+  if (calib2TextEl) calib2TextEl.textContent = '';
   // FIX v25 Punkt 1: Spirale für Preparation-Phase einblenden und starten.
   // Vorher war der Spiral-Container nur in screenSession – auf screenCalib2 blieb der
   // Bildschirm während der gesamten Vorbereitungsphase schwarz. Jetzt eigener Container.
   const calib2Spiral = document.getElementById('calib2SpiralWrap');
-  if (calib2Spiral) {
-    calib2Spiral.style.display = 'flex';
-    dbg('  calib2SpiralWrap display=flex gesetzt');
-  } else {
-    dbg('  !calib2SpiralWrap NICHT GEFUNDEN');
-  }
-  try {
-    spiralStart();
-    dbg('  spiralStart() OK, RAF=' + spiralRAF);
-  } catch(e) {
-    dbg('  !spiralStart FEHLER: ' + e.message);
-  }
+  if (calib2Spiral) calib2Spiral.style.display = 'flex';
+  spiralStart();
   // v27 FIX: AudioContext warm halten, solange lange MP3-Phasen laufen.
   // Verhindert, dass cueSignal() später ins Leere fällt, weil der Context suspended ist.
-  try {
-    startAudioKeepalive();
-    dbg('  startAudioKeepalive OK ctx=' + (_audioCtx ? _audioCtx.state : 'null'));
-  } catch(e) {
-    dbg('  !keepalive FEHLER: ' + e.message);
-  }
+  startAudioKeepalive();
   // iOS-Safe: direkt in die Einstimmung – Audio-Kette bleibt aktiv,
   // prep_intro_tts kann nahtlos starten.
-  dbg('  -> startPreparation()');
   startPreparation();
 }
 
@@ -2993,10 +2944,8 @@ const PREP_PAUSE = {
 };
 
 function startPreparation() {
-  dbg('startPreparation lang=' + currentLang);
   // Wir bleiben auf screenCalib2 (die Spirale läuft dort, Augen sind zu).
   const s = L.screens;
-  dbg('  prep_all_mp3=' + (s.prep_all_mp3 || 'LEER'));
 
   // Modus 1: Einzige MP3-Datei mit allen Phasen + eingebauten Pausen.
   // Wenn prep_all_mp3 gesetzt ist UND wir nicht im Pure-TTS-Modus sind,
@@ -3117,20 +3066,16 @@ function unlockSUD(gridId) {
 // §JS:CONTACT  (startContact, contactGo)
 // ══════════════════════════════════════════════════
 function startContact() {
-  dbg('startContact');
   goTo('screenContact');
   document.getElementById('contactBtns').classList.add('active', 'large');
   S.locked=true; setOff(['contactBtn'],true);
   document.getElementById('contactText').textContent = L.screens.contact_tts;
   speak(L.screens.contact_tts, () => {
-    dbg('  contact_tts ENDE');
     if (!S.locked) return;
     setTimeout(() => {
       S.locked=false; setOff(['contactBtn'],false);
-      dbg('  contact: cueSignal #1');
       cueSignal();
-      // v27 FIX: Sicherheits-Wiederholung nach 220 ms (siehe activateStepButtons).
-      setTimeout(() => { dbg('  contact: cueSignal #2'); cueSignal(); }, 220);
+      // v28: Sicherheits-Wiederholung entfernt - mit MP3-Lösung nicht mehr nötig.
       clearTimeout(S.asif_timer);
       S.asif_timer = setTimeout(() => toast(L.ui.toast_asif_btn,'soft'), 10000);
     }, 50);
@@ -3138,7 +3083,6 @@ function startContact() {
 }
 
 function contactGo() {
-  dbg('contactGo (Button-Tap)');
   ensureWakeLock();
   if (S.locked) return;
   clearTimeout(S.asif_timer);
@@ -3154,9 +3098,7 @@ function contactGo() {
   document.getElementById('stepEyesWrap').style.display = 'flex';
   // iOS-Safe: nahtlose Kette eyes → ready → S1, keine setTimeouts zwischen Audios
   speak(L.screens.eyes_tts, () => {
-    dbg('  eyes_tts ENDE');
     speak(L.screens.ready_tts, () => {
-      dbg('  ready_tts ENDE -> runStep(1)');
       runStep(1);
     }, null, L.screens.ready_mp3 || null);
   }, null, L.screens.eyes_mp3 || null);
@@ -3327,72 +3269,71 @@ function vibrateSignal() {
 }
 
 // Plattformübergreifendes Button-Ready-Signal.
-// Konsistent über alle Geräte: kurzer, subtiler Sinus-Ton via Web Audio API.
-// Keine Vibration - Ton ist die einheitliche Sprache der App.
 //
-// v27 FIX: AudioContext-Suspend-Behandlung.
-// Auf iOS Safari und Android Chrome kann der AudioContext nach längeren reinen
-// MP3-Phasen in 'suspended' wechseln. resume() ist asynchron - wir starten den
-// Oszillator deshalb erst NACH dem resume-Promise, damit der Ton nicht ins Leere fällt.
-// Zusätzlich: Sicherheits-Wiederholung nach 220 ms, falls der erste Ton trotzdem
-// stumm bleibt (z.B. weil resume() länger dauert als erwartet).
+// v28 FIX: MP3-basierter Hinweiston statt Web Audio API.
+// Grund: iOS schaltet Web-Audio-Töne mit dem Hardware-Stummschalter ab,
+// während <audio>-Elemente (MP3) als "Media Playback" trotz Stummschalter spielen.
+// Damit hört der User den Hinweis zuverlässig, unabhängig vom Stummschalter-Zustand.
+//
+// Web Audio bleibt als reiner Fallback drin, falls die MP3 nicht lädt.
+// Sicherheits-Wiederholung (Doppelton aus v27) ist mit MP3-Lösung nicht mehr nötig.
+let _cueAudio = null;
+function _playCueMp3(volume) {
+  try {
+    const file = (L.screens && L.screens.cue_mp3) ? L.screens.cue_mp3 : 'cue';
+    const path = L.mp3_base + file + '.mp3';
+    // Eigene Audio-Instanz, nicht über _currentAudio gehen, damit der Hinweiston
+    // keine laufende Sprach-MP3 unterbricht (was er nie tut, weil cueSignal erst
+    // NACH speak-onended aufgerufen wird, aber zur Sicherheit sauber getrennt).
+    const audio = new Audio(path);
+    audio.volume = volume;
+    _cueAudio = audio;
+    audio.onended = () => { if (_cueAudio === audio) _cueAudio = null; };
+    audio.onerror = () => {
+      if (_cueAudio === audio) _cueAudio = null;
+      // MP3 fehlgeschlagen -> Fallback Web Audio
+      _emitCueTone(volume * 0.27); // Web-Audio ist subjektiv lauter, daher reduzieren
+    };
+    audio.play().catch(() => {
+      if (_cueAudio === audio) _cueAudio = null;
+      _emitCueTone(volume * 0.27);
+    });
+  } catch(e) {
+    _emitCueTone(volume * 0.27);
+  }
+}
+
+// Web-Audio-Fallback (wird nur noch verwendet, wenn die Cue-MP3 fehlschlägt).
 function _emitCueTone(volume) {
   try {
-    if (!_audioCtx) { dbg('  !_emitCueTone: kein _audioCtx'); return; }
+    if (!_audioCtx) ensureAudioCtx();
+    if (!_audioCtx) return;
+    if (_audioCtx.state === 'suspended' || _audioCtx.state === 'interrupted') {
+      _audioCtx.resume().catch(() => {});
+    }
     const now = _audioCtx.currentTime;
     const osc = _audioCtx.createOscillator();
     const gain = _audioCtx.createGain();
     osc.type = 'sine';
     osc.frequency.value = 880;
-    // Hüllkurve: sanftes Ein- und Ausblenden, vermeidet Klickgeräusche
     gain.gain.setValueAtTime(0.0001, now);
     gain.gain.exponentialRampToValueAtTime(volume, now + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
     osc.connect(gain).connect(_audioCtx.destination);
     osc.start(now);
     osc.stop(now + 0.06);
-    dbg('  _emitCueTone OK vol=' + volume + ' state=' + _audioCtx.state);
-  } catch(e) { dbg('  !_emitCueTone FEHLER: ' + e.message); }
+  } catch(e) {}
 }
 
 function cueSignal() {
-  dbg('cueSignal() ctx=' + (_audioCtx ? _audioCtx.state : 'null'));
-  try {
-    if (!_audioCtx) ensureAudioCtx();
-    if (!_audioCtx) { dbg('  !cueSignal: ensureAudioCtx fehlgeschlagen'); return; }
-    if (_audioCtx.state === 'suspended' || _audioCtx.state === 'interrupted') {
-      // Erst resume abwarten, dann Ton spielen.
-      dbg('  cueSignal: resume() gestartet');
-      _audioCtx.resume().then(() => {
-        dbg('  resume OK -> state=' + _audioCtx.state);
-        _emitCueTone(0.12);
-      }).catch((e) => {
-        dbg('  resume FEHLER: ' + (e.message||e));
-        _emitCueTone(0.12);
-      });
-    } else {
-      _emitCueTone(0.12);
-    }
-  } catch(e) { dbg('  !cueSignal FEHLER: ' + e.message); }
+  // Lautstärke 0.85 - kräftiger als Sprach-MP3, weil der Cue ein kurzes Signal ist
+  // und nicht im Klangraum verschwinden soll.
+  _playCueMp3(0.85);
 }
 
-// v25 FIX 2: Leisere Variante (~70% Lautstärke) für den Reminder-Ton.
-// Soll an aktive Buttons erinnern ohne als neue Anweisung wahrgenommen zu werden.
-// v27 FIX: Gleiche Suspend-Behandlung wie cueSignal.
 function cueSignalSoft() {
-  try {
-    if (!_audioCtx) ensureAudioCtx();
-    if (!_audioCtx) return;
-    if (_audioCtx.state === 'suspended' || _audioCtx.state === 'interrupted') {
-      _audioCtx.resume().then(() => {
-        _emitCueTone(0.084);
-      }).catch(() => {
-        _emitCueTone(0.084);
-      });
-    } else {
-      _emitCueTone(0.084);
-    }
-  } catch(e) {}
+  // Reminder-Variante: ~70% der Hauptlautstärke
+  _playCueMp3(0.6);
 }
 
 // v25 FIX 2: Reminder-Timer.
@@ -3419,7 +3360,6 @@ function stopReminderTimer() {
 
 // Step: show fixed bottom buttons
 function activateStepButtons(step) {
-  dbg('activateStepButtons S' + step.num + ' type=' + step.type);
   const noCol = document.getElementById('sessionNoCol');
   noCol.style.visibility = (step.type === 'both') ? 'visible' : 'hidden';
 
@@ -3433,14 +3373,8 @@ function activateStepButtons(step) {
     setOff(['stepYes'], false);
     if (step.type === 'both') setOff(['stepNo'], false);
     S._qStart = performance.now();
-    dbg('  S' + step.num + ': cueSignal #1');
     cueSignal();
-    // v27 FIX: Sicherheits-Wiederholung nach 220 ms.
-    // Falls der erste Ton durch einen race mit AudioContext-resume() stumm blieb,
-    // ist der Context spätestens jetzt 'running' und der zweite Ton kommt zuverlässig.
-    // Auf Geräten ohne Suspend-Problem ist es schlicht ein zweiter sehr leiser Tick,
-    // der akustisch im ersten verschwindet.
-    setTimeout(() => { dbg('  S' + step.num + ': cueSignal #2'); cueSignal(); }, 220);
+    // v28: Sicherheits-Wiederholung entfernt - mit MP3-Lösung nicht mehr nötig.
     // v27 FIX: Keepalive ist ab hier nicht mehr nötig - der Reminder-Timer
     // (alle 30 s) hält den Context von jetzt an wach.
     stopAudioKeepalive();
@@ -3489,7 +3423,7 @@ function stepAnswer(response) {
 
   const next = response ? step.on_yes : (step.on_no || step.on_yes);
 
-  if (next === 'POST_SUD')   { setTimeout(startPostSUD, 400); }
+  if (next === 'POST_SUD')   { setTimeout(startPostSUDWithEyesOpen, 400); }
   else if (next === 'PROTOCOL') { setTimeout(showProtocol, 400); }
   else                       { setTimeout(() => runStep(next), 400); }
 }
@@ -3502,7 +3436,7 @@ function stepInfoNext() {
   // einfach abbrechen statt mit null.on_yes zu crashen.
   if (!step) return;
   const next = step.on_yes;
-  if (next === 'POST_SUD')      startPostSUD();
+  if (next === 'POST_SUD')      startPostSUDWithEyesOpen();
   else if (next === 'PROTOCOL') showProtocol();
   else                          runStep(next);
 }
@@ -3510,6 +3444,26 @@ function stepInfoNext() {
 // ══════════════════════════════════════════════════
 // §JS:POST-SUD  (startPostSUD)
 // ══════════════════════════════════════════════════
+
+// v28: Wrapper, der vor dem PostSUD-Screen den Augen-öffnen-/Telefon-drehen-Hinweis
+// abspielt. Wird von stepAnswer und stepInfoNext aufgerufen, wenn der nächste Schritt
+// 'POST_SUD' ist. Audio-Kette bleibt nahtlos im User-Gesture-Kontext (iOS-Safe).
+function startPostSUDWithEyesOpen() {
+  const s = L.screens;
+  const txt = s.eyes_open_tts || '';
+  const mp3 = s.eyes_open_mp3 || null;
+  if (!txt && !mp3) {
+    // Kein Hinweis konfiguriert -> direkt zu PostSUD (Notfall-Pfad)
+    startPostSUD();
+    return;
+  }
+  // Hinweis abspielen, dann PostSUD starten.
+  // Wir bleiben auf dem aktuellen Screen (typischerweise screenStep nach S19),
+  // damit die Augen noch zu bleiben können bis der Hinweis fertig ist.
+  speak(txt, () => {
+    startPostSUD();
+  }, null, mp3);
+}
 function startPostSUD() {
   // v26 FIX 1+4: Skala 1-10 wird sofort sichtbar gebaut, aber zunächst GESPERRT
   // (.locked-Klasse → reduzierte Opacity, pointer-events: none).

@@ -680,7 +680,7 @@ border-color: var(--gold); color: var(--gold);
   <div class="label" data-i18n="landscape_label">Vorbereitung</div>
   <h2 class="headline" data-i18n="landscape_h2_html" style="font-size:1.6rem;">Drehe dein<br>Telefon <em>quer.</em></h2>
   <p class="body-text" data-i18n="landscape_body_html">Halte es mit beiden Händen — Daumen links und rechts.<br><br>So kannst du die Buttons blind drücken, wenn deine Augen gleich geschlossen sind.</p>
-  <p class="body-text" id="landscapeWarning" data-i18n="landscape_warning" style="display:none;color:var(--gold);margin-top:-0.5rem;">Bitte zuerst das Telefon drehen.</p>
+  <p class="body-text" id="landscapeWarning" data-i18n="landscape_warning" style="display:none;color:var(--gold);margin-top:-0.5rem;">Bitte zuerst das Telefon drehen. Falls sich das Bild nicht dreht: Schalte die Hochformat-Sperre deines Telefons aus.</p>
   <button class="btn go" data-i18n="landscape_btn" onclick="screenLandscapeNext()">Bereit</button>
 </div>
 
@@ -1028,7 +1028,7 @@ const LANG = {
       landscape_label:     'Vorbereitung',
       landscape_h2_html:   'Drehe dein<br>Telefon <em>quer.</em>',
       landscape_body_html: 'Halte es mit beiden Händen — Daumen links und rechts.<br><br>So kannst du die Buttons blind drücken, wenn deine Augen gleich geschlossen sind.',
-      landscape_warning:   'Bitte zuerst das Telefon drehen.',
+      landscape_warning:   'Bitte zuerst das Telefon drehen. Falls sich das Bild nicht dreht: Schalte die Hochformat-Sperre deines Telefons aus.',
       landscape_btn:       'Bereit',
       // Calib1
       calib_label:         'Kalibrierung',
@@ -1342,7 +1342,7 @@ const LANG = {
       landscape_label:     'Preparation',
       landscape_h2_html:   'Turn your phone<br><em>sideways.</em>',
       landscape_body_html: 'Hold it with both hands — thumbs left and right.<br><br>This way you can press the buttons blind once your eyes are closed.',
-      landscape_warning:   'Please turn your phone first.',
+      landscape_warning:   'Please turn your phone first. If the screen does not rotate: turn off your phone\'s portrait orientation lock.',
       landscape_btn:       'Ready',
       // Calib1
       calib_label:         'Calibration',
@@ -2271,6 +2271,8 @@ function ensureWakeLock() {
 
 function splashStart() {
   ensureAudioCtx();
+  // v30 F2: Cue-Elemente innerhalb dieser User-Geste freischalten (iOS).
+  primeCueAudio();
   _infoTimerDone = false; _infoTtsDone = false; _infoChecked = false;
   ensureWakeLock();
   goTo('screenInfo');
@@ -2814,13 +2816,7 @@ function showCalibQ() {
   }, null, q.mp3 || null);
 }
 
-function calibTimeout() {
-  if (S.locked) return;
-  S.locked=true; setOff(['calibYes','calibNo'],true);
-  toast(L.ui.toast_asif,'soft');
-  S.calib_index++;
-  setTimeout(() => { S.locked=false; showCalibQ(); }, 1800);
-}
+// v30 Aufräumen: calibTimeout() entfernt – wurde nirgends mehr aufgerufen (Legacy).
 
 function calibAnswer(response) {
   ensureWakeLock();
@@ -2832,7 +2828,11 @@ function calibAnswer(response) {
   if (!ok) {
     S.calib_errors++;
     toast(L.ui.toast_spontaner);
-    setTimeout(() => { S.locked=false; showCalibQ(); }, 1800);
+    // v30 F3: Fehlerton (tiefer Doppelton), danach dieselbe Frage erneut.
+    // Wiederholung hängt per onended am Ton – iOS-sicher. Der frühere
+    // 1800ms-setTimeout lag außerhalb des Gesture-Fensters, die
+    // Wiederholungs-MP3 blieb auf iPhones deshalb oft stumm.
+    cueError(() => { S.locked=false; showCalibQ(); });
   } else {
     S.rt_samples.push(rt); S.calib_index++;
     // iOS-Safe: kurze 50ms-Pause, User-Tap-Kontext bleibt für nächstes Audio erhalten.
@@ -2852,8 +2852,13 @@ function finishCalib() {
         startCalib2();
       }, null, L.screens.calib2_intro_mp3 || null);
     }, null, L.screens.calib_gut_mp3 || null);
-  } else if (score >= 65) { toast(L.ui.toast_spontaner); setTimeout(startCalib, 2000); }
-  else                    { toast(L.ui.toast_spontaner); setTimeout(startCalib, 2000); }
+  } else {
+    // v30 Aufräumen: Die früheren Zweige >=65 und else waren identisch – zusammengefasst.
+    // v30 F3: Restart hängt am Fehlerton (onended-Kette) statt an einem 2000ms-Timeout,
+    // damit die anschließende Landscape-Ansage (startCalib) auf iOS hörbar startet.
+    toast(L.ui.toast_spontaner);
+    cueError(() => startCalib());
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -2898,10 +2903,17 @@ function calib2Answer(response) {
   S.locked = true;
   setOff(['calib2Yes','calib2No'], true);
   const ok = (response === CALIB2_Q[S.calib_index].correct);
-  if (!ok) S.calib_errors++;
-  S.calib_index++;
-  // iOS-Safe: kurze 50ms-Pause reicht - User-Tap-Kontext bleibt für nächstes Audio erhalten.
-  setTimeout(() => { S.locked = false; showCalib2Q(); }, 50);
+  if (!ok) {
+    // v30 F4: Verhalten wie in Runde 1 – Fehlerton, danach dieselbe Frage erneut
+    // (Index bleibt stehen). Kein Toast: die Augen sind hier geschlossen,
+    // der Ton ist das Feedback. Wiederholung per onended-Kette (iOS-sicher).
+    S.calib_errors++;
+    cueError(() => { S.locked = false; showCalib2Q(); });
+  } else {
+    S.calib_index++;
+    // iOS-Safe: kurze 50ms-Pause reicht - User-Tap-Kontext bleibt für nächstes Audio erhalten.
+    setTimeout(() => { S.locked = false; showCalib2Q(); }, 50);
+  }
 }
 
 let _calib2Done = false;
@@ -2909,6 +2921,15 @@ function finishCalib2() {
   if (_calib2Done) return;
   _calib2Done = true;
   document.getElementById('calib2Btns').classList.remove('active', 'large');
+  // v30 F4: Score-Auswertung wie in Runde 1. Unter 80% wird Runde 2 wiederholt.
+  // Restart hängt am Fehlerton (onended-Kette), damit die Ansage von
+  // startCalib2 (cb-start) auf iOS hörbar startet. startCalib2 setzt
+  // _calib2Done selbst wieder auf false.
+  const score = Math.round((CALIB2_Q.length - S.calib_errors) / CALIB2_Q.length * 100);
+  if (score < 80) {
+    cueError(() => startCalib2());
+    return;
+  }
   // FIX v24 Punkt 1: Restlichen Kalibrierungstext ('Ich bin jünger als 1 Jahr.') leeren,
   // damit während der Atem-/Vorbereitungsphase nur die Spirale sichtbar bleibt.
   const calib2TextEl = document.getElementById('calib2Text');
@@ -3283,30 +3304,92 @@ function vibrateSignal() {
 //
 // Web Audio bleibt als reiner Fallback drin, falls die MP3 nicht lädt.
 // Sicherheits-Wiederholung (Doppelton aus v27) ist mit MP3-Lösung nicht mehr nötig.
-let _cueAudio = null;
+// v30 F2: Persistente, geprimte Cue-Elemente statt Wegwerf-Audio().
+// Problem vorher: cueSignal() erzeugte bei jedem Aufruf ein neues Audio().
+// iOS erlaubt play() auf einem NEUEN Element nur innerhalb einer User-Geste.
+// Die Tap-Modus-Cues (S18/S19) und der 30s-Reminder laufen aber aus setTimeout/
+// setInterval → iOS blockierte die MP3, der Web-Audio-Fallback wurde vom
+// Hardware-Stummschalter verschluckt → kein hörbarer Ton.
+// Lösung: Zwei feste Elemente (Bestätigungston + Fehlerton), die beim Splash-Tap
+// einmal lautlos angespielt werden (primeCueAudio). Ein so freigeschaltetes
+// Element darf iOS auch später ohne Geste erneut abspielen.
+let _cueEl = null;     // Bestätigungs-/Hinweiston (cue.mp3)
+let _cueErrEl = null;  // Fehlerton Kalibrierung (cue-err.mp3)
+
+function _cuePath() {
+  const file = (L.screens && L.screens.cue_mp3) ? L.screens.cue_mp3 : 'cue';
+  return L.mp3_base + file + '.mp3';
+}
+function _cueErrPath() {
+  return L.mp3_base + 'cue-err.mp3';
+}
+
+// Muss innerhalb einer User-Geste laufen (Aufruf: splashStart).
+// Die Sprache steht zu diesem Zeitpunkt bereits fest (Wahl passiert auf dem Splash).
+function primeCueAudio() {
+  try {
+    _cueEl = new Audio(_cuePath());
+    _cueEl.volume = 0;
+    _cueEl.play().then(() => { _cueEl.pause(); _cueEl.currentTime = 0; }).catch(() => {});
+    _cueErrEl = new Audio(_cueErrPath());
+    _cueErrEl.volume = 0;
+    _cueErrEl.play().then(() => { _cueErrEl.pause(); _cueErrEl.currentTime = 0; }).catch(() => {});
+  } catch(e) {}
+}
+
 function _playCueMp3(volume) {
   try {
-    const file = (L.screens && L.screens.cue_mp3) ? L.screens.cue_mp3 : 'cue';
-    const path = L.mp3_base + file + '.mp3';
-    // Eigene Audio-Instanz, nicht über _currentAudio gehen, damit der Hinweiston
-    // keine laufende Sprach-MP3 unterbricht (was er nie tut, weil cueSignal erst
-    // NACH speak-onended aufgerufen wird, aber zur Sicherheit sauber getrennt).
-    const audio = new Audio(path);
-    audio.volume = volume;
-    _cueAudio = audio;
-    audio.onended = () => { if (_cueAudio === audio) _cueAudio = null; };
-    audio.onerror = () => {
-      if (_cueAudio === audio) _cueAudio = null;
-      // MP3 fehlgeschlagen -> Fallback Web Audio
+    if (!_cueEl) _cueEl = new Audio(_cuePath());
+    _cueEl.volume = volume;
+    _cueEl.currentTime = 0;
+    _cueEl.play().catch(() => {
       _emitCueTone(volume * 0.27); // Web-Audio ist subjektiv lauter, daher reduzieren
-    };
-    audio.play().catch(() => {
-      if (_cueAudio === audio) _cueAudio = null;
-      _emitCueTone(volume * 0.27);
     });
   } catch(e) {
     _emitCueTone(volume * 0.27);
   }
+}
+
+// v30 F3: Fehlerton für die Kalibrierung (tiefer Doppelton, cue-err.mp3).
+// onDone feuert nach Tonende – daran wird die Wiederholung der Kalibrierungsfrage
+// gekettet (onended-Kette = iOS-sicher, ersetzt die früheren setTimeouts).
+// Die Nachpause fürs Pacing ist in der MP3 enthalten.
+function cueError(onDone) {
+  const cb = onDone || function(){};
+  try {
+    if (!_cueErrEl) _cueErrEl = new Audio(_cueErrPath());
+    _cueErrEl.volume = 0.85;
+    _cueErrEl.currentTime = 0;
+    _cueErrEl.onended = () => { _cueErrEl.onended = null; cb(); };
+    _cueErrEl.play().catch(() => { _emitErrTone(); setTimeout(cb, 1200); });
+  } catch(e) {
+    _emitErrTone(); setTimeout(cb, 1200);
+  }
+}
+
+// Web-Audio-Fallback für den Fehlerton (nur wenn die MP3 fehlschlägt).
+function _emitErrTone() {
+  try {
+    if (!_audioCtx) ensureAudioCtx();
+    if (!_audioCtx) return;
+    if (_audioCtx.state === 'suspended' || _audioCtx.state === 'interrupted') {
+      _audioCtx.resume().catch(() => {});
+    }
+    // Zwei kurze, tiefe Töne (absteigend) – klar vom hellen 880Hz-Cue unterscheidbar.
+    [[0, 330], [0.18, 250]].forEach(([offset, freq]) => {
+      const now = _audioCtx.currentTime + offset;
+      const osc = _audioCtx.createOscillator();
+      const gain = _audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.2, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+      osc.connect(gain).connect(_audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.15);
+    });
+  } catch(e) {}
 }
 
 // Web-Audio-Fallback (wird nur noch verwendet, wenn die Cue-MP3 fehlschlägt).
@@ -3467,10 +3550,12 @@ function startPostSUDWithEyesOpen() {
   // Wir bleiben auf dem aktuellen Screen (typischerweise screenStep nach S19),
   // damit die Augen noch zu bleiben können bis der Hinweis fertig ist.
   speak(txt, () => {
-    startPostSUD();
+    // v30 F1: true = Augen-öffnen-Hinweis wurde bereits gespielt (proto-00).
+    // startPostSUD überspringt dann ui-17, sonst würde der Satz doppelt kommen.
+    startPostSUD(true);
   }, null, mp3);
 }
-function startPostSUD() {
+function startPostSUD(eyesHintPlayed) {
   // v26 FIX 1+4: Skala 1-10 wird sofort sichtbar gebaut, aber zunächst GESPERRT
   // (.locked-Klasse → reduzierte Opacity, pointer-events: none).
   // Erst nach Ende der Hinweistext-Kette (postsud1 + postsud2) wird die Skala
@@ -3482,14 +3567,23 @@ function startPostSUD() {
   setTimeout(() => {
     cueSignal();
     setTimeout(() => {
-      // iOS-Safe: postsud1 → postsud2 nahtlos, kein setTimeout dazwischen
-      speak(L.screens.postsud1_tts, () => {
-        speak(L.screens.postsud2_tts, () => {
-          // Audio-Kette beendet → Skala freischalten + Reminder-Ton
-          unlockSUD('postSudGrid');
-          cueSignal();
-        }, null, L.screens.postsud2_mp3 || null);
-      }, null, L.screens.postsud1_mp3 || null);
+      // v30 F1: Wenn der Augen-öffnen-Hinweis schon als proto-00 gespielt wurde,
+      // ui-17 ('Du kannst jetzt die Augen wieder öffnen.') überspringen –
+      // sonst hört der Nutzer den Satz zweimal. Notfall-Pfad (ohne proto-00)
+      // behält die volle Kette postsud1 → postsud2.
+      const afterHints = () => {
+        // Audio-Kette beendet → Skala freischalten + Reminder-Ton
+        unlockSUD('postSudGrid');
+        cueSignal();
+      };
+      if (eyesHintPlayed) {
+        speak(L.screens.postsud2_tts, afterHints, null, L.screens.postsud2_mp3 || null);
+      } else {
+        // iOS-Safe: postsud1 → postsud2 nahtlos, kein setTimeout dazwischen
+        speak(L.screens.postsud1_tts, () => {
+          speak(L.screens.postsud2_tts, afterHints, null, L.screens.postsud2_mp3 || null);
+        }, null, L.screens.postsud1_mp3 || null);
+      }
     }, 200);
   }, 300);
 }

@@ -2184,6 +2184,11 @@ function devMenuToggle() {
 function devJump(target) {
   document.getElementById('devMenu').style.display = 'none';
   ensureAudioCtx();
+  // v32 F2: Cue-Töne auch beim Dev-Sprung primen. Bisher lief primeCueAudio nur
+  // in splashStart – beim Dev-Sprung blieben _cueEl/_cueErrEl ungeprimte Elemente,
+  // iOS blockierte spätere play()-Aufrufe außerhalb einer Geste (z.B. S18/S19-
+  // Hinweiston aus setTimeout) → komplett stumm. Der devJump-Tap ist die Geste.
+  primeCueAudio();
   ensureWakeLock();
   S = freshSession();
   S.client_name = 'Ralf';
@@ -2854,10 +2859,13 @@ function finishCalib() {
     }, null, L.screens.calib_gut_mp3 || null);
   } else {
     // v30 Aufräumen: Die früheren Zweige >=65 und else waren identisch – zusammengefasst.
-    // v30 F3: Restart hängt am Fehlerton (onended-Kette) statt an einem 2000ms-Timeout,
-    // damit die anschließende Landscape-Ansage (startCalib) auf iOS hörbar startet.
+    // v32 F1: Kein Fehlerton mehr vor dem Neustart. finishCalib wird immer nach einer
+    // RICHTIGEN letzten Antwort erreicht (falsche Antworten wiederholen die Frage, der
+    // Index rückt nur bei richtig weiter). Der Fehlerton direkt nach einer richtigen
+    // Antwort war irreführend. Die Landscape-Ansage (startCalib) ist selbst das
+    // hörbare Signal für die Wiederholung. Audio-Kette bleibt am Tap (50ms-Pfad).
     toast(L.ui.toast_spontaner);
-    cueError(() => startCalib());
+    startCalib();
   }
 }
 
@@ -2922,12 +2930,14 @@ function finishCalib2() {
   _calib2Done = true;
   document.getElementById('calib2Btns').classList.remove('active', 'large');
   // v30 F4: Score-Auswertung wie in Runde 1. Unter 80% wird Runde 2 wiederholt.
-  // Restart hängt am Fehlerton (onended-Kette), damit die Ansage von
-  // startCalib2 (cb-start) auf iOS hörbar startet. startCalib2 setzt
-  // _calib2Done selbst wieder auf false.
+  // v32 F1: Kein Fehlerton mehr vor dem Neustart (Begründung siehe finishCalib):
+  // finishCalib2 wird immer nach einer richtigen letzten Antwort erreicht, der
+  // Fehlerton dort war irreführend. Die cb-start-Ansage (startCalib2) ist selbst
+  // das hörbare Signal für die Wiederholung – wichtig, da die Augen zu sind.
+  // startCalib2 setzt _calib2Done selbst wieder auf false.
   const score = Math.round((CALIB2_Q.length - S.calib_errors) / CALIB2_Q.length * 100);
   if (score < 80) {
-    cueError(() => startCalib2());
+    startCalib2();
     return;
   }
   // FIX v24 Punkt 1: Restlichen Kalibrierungstext ('Ich bin jünger als 1 Jahr.') leeren,

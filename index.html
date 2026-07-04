@@ -957,6 +957,8 @@ const LANG = {
       prozess_weiter:  'Der Prozess arbeitet weiter – auch nach der Sitzung.',
       daten_loeschen:  'Alle Daten werden nach dem Schließen unwiderruflich gelöscht.',
       toast_spontaner: 'Bitte antworte spontaner – vertrau deinem ersten Impuls.',
+      calib_retry:     'Das war noch nicht spontan genug. Wir wiederholen die Kalibrierung – vertraue deinem ersten Impuls.', // v33 F1: Ansage vor Kalibrierungs-Neustart (calib-retry.mp3, TTS-Fallback)
+      tap_hint:        'Drücke den grünen Button rechts unten für weiter.', // v33 F2: Hinweis-Ansage im Tap-Modus S18/S19 (tap-weiter.mp3, TTS-Fallback)
       toast_asif:      'Wenn du unsicher bist – tu einfach so als ob.',
       toast_asif_btn:  'Wenn du unsicher bist, drücke einfach den Button.',
       toast_screen:    'Tipp: Stelle sicher, dass dein Bildschirm nicht automatisch ausgeht.',
@@ -1273,6 +1275,8 @@ const LANG = {
       prozess_weiter:  'The process continues – even after the session.',
       daten_loeschen:  'All data is permanently deleted after closing.',
       toast_spontaner: 'Please answer more spontaneously – trust your first impulse.',
+      calib_retry:     'That wasn\'t quite spontaneous enough. Let\'s repeat the calibration – trust your first impulse.', // v33 F1: Ansage vor Kalibrierungs-Neustart (calib-retry.mp3, TTS-Fallback)
+      tap_hint:        'Press the green button at the bottom right to continue.', // v33 F2: Hinweis-Ansage im Tap-Modus S18/S19 (tap-weiter.mp3, TTS-Fallback)
       toast_asif:      'If you are unsure – just act as if.',
       toast_asif_btn:  'If you are unsure, just press the button.',
       toast_screen:    'Tip: Make sure your screen does not turn off automatically.',
@@ -1596,6 +1600,8 @@ const LANG = {
       prozess_weiter:  'Գործընթացը շարունակվում է – նույնիսկ նիստից հետո։',
       daten_loeschen:  'Բոլոր տվյալները ոչնչացվում են փակելուց հետո։',
       toast_spontaner: 'Խնդրում ենք պատասխանել ավելի ինքնաբուխ – վստահեք ձեր առաջին ազդակին։',
+      calib_retry:     'Դա դեռ բավականաչափ ինքնաբուխ չէր։ Կրկնում ենք չափաբերումը – վստահեք ձեր առաջին ազդակին։', // v33 F1: Ansage vor Kalibrierungs-Neustart (calib-retry.mp3, TTS-Fallback)
+      tap_hint:        'Սեղմեք կանաչ կոճակը ներքևում՝ աջ կողմում, շարունակելու համար։', // v33 F2: Hinweis-Ansage im Tap-Modus S18/S19 (tap-weiter.mp3, TTS-Fallback)
       toast_asif:      'Եթե վստահ չեք – պարզապես վարվեք կարծես թե։',
       toast_asif_btn:  'Եթե վստահ չեք, պարզապես սեղմեք կոճակը։',
       toast_screen:    'Խորհուրդ. համոզվեք, որ ձեր էկրանը ավտոմատ չի անջատվում։',
@@ -1710,6 +1716,8 @@ const LANG = {
       prozess_weiter:  'Процесс продолжается – даже после сессии.',
       daten_loeschen:  'Все данные безвозвратно удаляются после закрытия.',
       toast_spontaner: 'Пожалуйста, отвечайте более спонтанно – доверяйте первому импульсу.',
+      calib_retry:     'Это было ещё недостаточно спонтанно. Повторим калибровку – доверяйте первому импульсу.', // v33 F1: Ansage vor Kalibrierungs-Neustart (calib-retry.mp3, TTS-Fallback)
+      tap_hint:        'Нажмите зелёную кнопку внизу справа, чтобы продолжить.', // v33 F2: Hinweis-Ansage im Tap-Modus S18/S19 (tap-weiter.mp3, TTS-Fallback)
       toast_asif:      'Если сомневаетесь – просто делайте вид, что знаете.',
       toast_asif_btn:  'Если сомневаетесь, просто нажмите кнопку.',
       toast_screen:    'Совет: убедитесь, что экран не выключается автоматически.',
@@ -1824,6 +1832,8 @@ const LANG = {
       prozess_weiter:  'El proceso continúa – también después de la sesión.',
       daten_loeschen:  'Todos los datos se eliminan permanentemente al cerrar.',
       toast_spontaner: 'Por favor responde más espontáneamente – confía en tu primer impulso.',
+      calib_retry:     'Eso aún no fue lo bastante espontáneo. Repetiremos la calibración – confía en tu primer impulso.', // v33 F1: Ansage vor Kalibrierungs-Neustart (calib-retry.mp3, TTS-Fallback)
+      tap_hint:        'Pulsa el botón verde abajo a la derecha para continuar.', // v33 F2: Hinweis-Ansage im Tap-Modus S18/S19 (tap-weiter.mp3, TTS-Fallback)
       toast_asif:      'Si no estás seguro – actúa como si lo supieras.',
       toast_asif_btn:  'Si no estás seguro, simplemente presiona el botón.',
       toast_screen:    'Consejo: asegúrate de que tu pantalla no se apague automáticamente.',
@@ -2859,13 +2869,14 @@ function finishCalib() {
     }, null, L.screens.calib_gut_mp3 || null);
   } else {
     // v30 Aufräumen: Die früheren Zweige >=65 und else waren identisch – zusammengefasst.
-    // v32 F1: Kein Fehlerton mehr vor dem Neustart. finishCalib wird immer nach einer
-    // RICHTIGEN letzten Antwort erreicht (falsche Antworten wiederholen die Frage, der
-    // Index rückt nur bei richtig weiter). Der Fehlerton direkt nach einer richtigen
-    // Antwort war irreführend. Die Landscape-Ansage (startCalib) ist selbst das
-    // hörbare Signal für die Wiederholung. Audio-Kette bleibt am Tap (50ms-Pfad).
+    // v32 F1: Kein Fehlerton mehr vor dem Neustart (finishCalib wird immer nach
+    // einer richtigen letzten Antwort erreicht, der Fehlerton dort war irreführend).
+    // v33 F1: Vor dem Neustart die Erklär-Ansage abspielen (calib-retry.mp3,
+    // TTS-Fallback über L.ui.calib_retry). Nimmt dem Rücksprung auf den
+    // Querformat-Screen das Abrupte. speak() läuft hier in derselben Kette
+    // wie die Fragen-Ansagen (Tap → 50ms → showCalibQ) und ist iOS-sicher.
     toast(L.ui.toast_spontaner);
-    startCalib();
+    speak(L.ui.calib_retry, () => startCalib(), null, 'calib-retry');
   }
 }
 
@@ -2930,14 +2941,14 @@ function finishCalib2() {
   _calib2Done = true;
   document.getElementById('calib2Btns').classList.remove('active', 'large');
   // v30 F4: Score-Auswertung wie in Runde 1. Unter 80% wird Runde 2 wiederholt.
-  // v32 F1: Kein Fehlerton mehr vor dem Neustart (Begründung siehe finishCalib):
-  // finishCalib2 wird immer nach einer richtigen letzten Antwort erreicht, der
-  // Fehlerton dort war irreführend. Die cb-start-Ansage (startCalib2) ist selbst
-  // das hörbare Signal für die Wiederholung – wichtig, da die Augen zu sind.
+  // v32 F1: Kein Fehlerton mehr vor dem Neustart (Begründung siehe finishCalib).
+  // v33 F1: Vor dem Neustart die Erklär-Ansage abspielen (calib-retry.mp3,
+  // TTS-Fallback über L.ui.calib_retry) – wichtig, da die Augen zu sind.
+  // Danach folgt die cb-start-Ansage aus startCalib2 wie gehabt.
   // startCalib2 setzt _calib2Done selbst wieder auf false.
   const score = Math.round((CALIB2_Q.length - S.calib_errors) / CALIB2_Q.length * 100);
   if (score < 80) {
-    startCalib2();
+    speak(L.ui.calib_retry, () => startCalib2(), null, 'calib-retry');
     return;
   }
   // FIX v24 Punkt 1: Restlichen Kalibrierungstext ('Ich bin jünger als 1 Jahr.') leeren,
@@ -3257,20 +3268,25 @@ function runStep(num) {
 // Reminder-Ton spielt, "Weiter"-Button erscheint, User tippt → jetzt erst Audio abspielen.
 // Dadurch ist audio.play() innerhalb einer User-Gesture und iOS lässt es zu.
 function startStepTapMode(step, displayText, stepMp3) {
-  // Reminder-Ton (gleicher Ton wie cueSignal, hilft bei geschlossenen Augen zu orientieren)
-  cueSignal();
-  // "Weiter"-Button vorbereiten: nur grün, kein Rot
+  // v33 F2: Neue Reihenfolge: erst die Hinweis-Ansage („Drücke den grünen
+  // Button rechts unten für weiter"), dann der Hinweiston, dann erst wird der
+  // Button aktiv. Vorher kam nur der Ton – Nutzer mit geschlossenen Augen
+  // wussten nicht, was zu tun ist (Testbefund v32). Der Button bleibt während
+  // der Ansage gesperrt (S.locked), damit ein früher Tap nichts auslöst.
   const yesLabel = document.getElementById('stepYesLabel');
   if (yesLabel) yesLabel.textContent = L.ui.weiter;
   document.getElementById('sessionNoCol').style.visibility = 'hidden';
-  document.getElementById('sessionBtns').classList.add('active', 'large');
-  setOff(['stepYes'], false);
-  S.locked = false;
   // Wir markieren am Step, dass der nächste Tap zuerst das Audio starten soll.
   // stepAnswer prüft dieses Flag und ruft startStepTapAudio auf statt direkt weiterzuleiten.
   step._pendingAudio = { text: displayText, mp3: stepMp3 };
-  // v25 FIX 2: Auch hier Reminder-Timer - erinnert daran, dass ein Tap erwartet wird.
-  startReminderTimer();
+  playTapHint(() => {
+    cueSignal();
+    document.getElementById('sessionBtns').classList.add('active', 'large');
+    setOff(['stepYes'], false);
+    S.locked = false;
+    // v25 FIX 2: Auch hier Reminder-Timer - erinnert daran, dass ein Tap erwartet wird.
+    startReminderTimer();
+  });
 }
 
 // v25 FIX 3: Wird nach User-Tap aufgerufen, spielt das pending Audio ab,
@@ -3325,10 +3341,14 @@ function vibrateSignal() {
 // Element darf iOS auch später ohne Geste erneut abspielen.
 let _cueEl = null;     // Bestätigungs-/Hinweiston (cue.mp3)
 let _cueErrEl = null;  // Fehlerton Kalibrierung (cue-err.mp3)
+let _tapHintEl = null; // v33 F2: Hinweis-Ansage Tap-Modus S18/S19 (tap-weiter.mp3)
 
 function _cuePath() {
   const file = (L.screens && L.screens.cue_mp3) ? L.screens.cue_mp3 : 'cue';
   return L.mp3_base + file + '.mp3';
+}
+function _tapHintPath() {
+  return L.mp3_base + 'tap-weiter.mp3'; // v33 F2: sprachabhängiger Ordner (audio/de/, audio/en/, …)
 }
 function _cueErrPath() {
   return L.mp3_base + 'cue-err.mp3';
@@ -3350,7 +3370,34 @@ function primeCueAudio() {
     _cueErrEl.muted = true;
     _cueErrEl.volume = 0;
     _cueErrEl.play().then(() => { _cueErrEl.pause(); _cueErrEl.currentTime = 0; }).catch(() => {});
+    // v33 F2: Drittes geprimtes Element für die Tap-Modus-Hinweisansage.
+    // Gleiche Mechanik wie oben – der Splash-/devJump-Tap schaltet es frei,
+    // damit es später aus setTimeout (startStepTapMode) abspielbar ist.
+    _tapHintEl = new Audio(_tapHintPath());
+    _tapHintEl.muted = true;
+    _tapHintEl.volume = 0;
+    _tapHintEl.play().then(() => { _tapHintEl.pause(); _tapHintEl.currentTime = 0; }).catch(() => {});
   } catch(e) {}
+}
+
+// v33 F2: Hinweis-Ansage im Tap-Modus („Drücke den grünen Button …").
+// Spielt tap-weiter.mp3 über das geprimte Element; wenn die Datei fehlt oder
+// das Abspielen scheitert, greift der TTS-Fallback mit L.ui.tap_hint.
+// onDone feuert genau einmal, danach folgt der Hinweiston (Aufrufer).
+function playTapHint(onDone) {
+  let fired = false;
+  const cb = () => { if (fired) return; fired = true; (onDone || function(){})(); };
+  const ttsFallback = () => { try { _speakTTS(L.ui.tap_hint, cb); } catch(e) { cb(); } };
+  try {
+    if (!_tapHintEl) { ttsFallback(); return; }
+    _tapHintEl.muted = false;
+    _tapHintEl.volume = 1.0;
+    _tapHintEl.currentTime = 0;
+    _tapHintEl.onended = () => { _tapHintEl.onended = null; cb(); };
+    _tapHintEl.play().catch(() => { _tapHintEl.onended = null; ttsFallback(); });
+  } catch(e) {
+    ttsFallback();
+  }
 }
 
 function _playCueMp3(volume) {

@@ -530,12 +530,13 @@ border-color: var(--gold); color: var(--gold);
     <button class="lang-btn active" id="langBtn-de" onclick="setLang('de')">DE</button>
     <button class="lang-btn" id="langBtn-en" onclick="setLang('en')">EN</button>
     <!-- v29: Testversion DE-Markt – nur DE und EN sichtbar.
-         Die Sprachen HY/RU/ES bleiben im Code vollständig erhalten,
+         Die Sprachen HY/RU/ES/VI bleiben im Code vollständig erhalten,
          nur die Buttons sind ausgeblendet. Zum Wieder-Einblenden
          einfach die folgenden drei Zeilen entkommentieren.
     <button class="lang-btn" id="langBtn-hy" onclick="setLang('hy')">ՀՅ</button>
     <button class="lang-btn" id="langBtn-ru" onclick="setLang('ru')">RU</button>
     <button class="lang-btn" id="langBtn-es" onclick="setLang('es')">ES</button>
+    <button class="lang-btn" id="langBtn-vi" onclick="setLang('vi')">VI</button>  v34 F3: VI ergänzt
     -->
     <!-- /v29 -->
   </div>
@@ -1575,6 +1576,307 @@ const LANG = {
     ],
   },
 
+  // ── VIETNAMESISCH ────────────────────────────────
+  // v34 F2: Neuer Sprachblock VI.
+  // Sprechtexte (aha, screens, steps, calib) stammen 1:1 aus dem Übersetzungsentwurf
+  // der 74 Sprechtexte (mp3-aufnahmeliste-vi-entwurf-v11.docx) – vor muttersprachlicher Prüfung.
+  // ui-, tx- und label-Strings sind NEUE, noch UNGEPRÜFTE Übersetzungen
+  // (siehe Ergänzungs-Review-Dokument vi-bildschirmtexte).
+  // Alle mp3-Felder bleiben leer, bis Aufnahmen deployt sind (TTS-Fallback aktiv).
+  // Hinweis Deployment: audio/vi/ benötigt später auch cue.mp3 und cue-err.mp3 (sprachunabhängige Kopien).
+  vi: {
+    tts_lang: 'vi-VN',
+    tts_voices: ['linh', 'hoaimy'],
+
+    mp3: {},
+    mp3_base: 'audio/vi/',
+
+    ui: {
+      hint:            'Chạm để bắt đầu',
+      weiter:          'Tiếp tục',
+      ja:              'Có',
+      nein:            'Không',
+      bereit:          'Sẵn sàng',
+      ich_habe_satz:   'Tôi đã có câu của mình',
+      sitzung_beenden: 'Kết thúc phiên',
+      teile_lbl:       'Các phần',
+      vorher_lbl:      'Trước',
+      nachher_lbl:     'Sau',
+      teile_singular:  'phần',
+      teile_plural:    'phần',
+      belastung_reduziert: (d) => `Hôm nay bạn đã giảm mức độ nặng nề xuống ${d} điểm.`,
+      prozess_weiter:  'Quá trình vẫn tiếp tục – ngay cả sau phiên.',
+      daten_loeschen:  'Mọi dữ liệu sẽ bị xóa vĩnh viễn sau khi đóng.',
+      toast_spontaner: 'Hãy trả lời ngay theo cảm nhận đầu tiên – tin vào xung động đầu tiên của bạn.',
+      calib_retry:     'Lần vừa rồi chưa đủ tự nhiên và tức thì. Chúng ta sẽ lặp lại phần hiệu chỉnh – hãy tin vào xung động đầu tiên của bạn.',
+      tap_hint:        'Hãy nhấn nút xanh lá ở góc dưới bên phải để tiếp tục.',
+      toast_asif:      'Nếu bạn không chắc – cứ làm như thể bạn biết.',
+      toast_asif_btn:  'Nếu bạn không chắc, cứ nhấn nút.',
+      toast_screen:    'Mẹo: hãy đảm bảo màn hình của bạn không tự tắt.',
+      badge_singular:  'Đã xử lý 1 phần',
+      badge_plural:    (n) => `Đã xử lý ${n} phần`,
+      augen_zu:        'Nhắm mắt',
+      abgeschlossen:   'Phiên đã hoàn thành.',
+    },
+
+    // §I18N:VI – sichtbare UI-Texte (dev_*-Schlüssel bewusst weggelassen → Fallback DE)
+    tx: {
+      // Splash
+      splash_brand:        'Influencial',
+      splash_sub:          'Silent Coaching',
+      splash_hint:         'Chạm để bắt đầu',
+      // Info-Screen
+      info_label:          'Influencial · Silent Coaching',
+      info_p1_html:        'Trong bạn có một sự hiểu biết sâu bên trong, khôn ngoan hơn cả lý trí của bạn. Có người gọi đó là trực giác, tiếng nói bên trong hay linh tính. Ứng dụng này tạo không gian cho nó <strong>thay đổi những khuôn mẫu cũ</strong> – mà bạn không cần phải nói hay suy nghĩ về vấn đề của mình.',
+      info_p2_html:        'Trong suốt phiên, bạn chỉ cần nhấn hai nút: <strong>Có</strong> hoặc <strong>Không</strong>. Không đòi hỏi gì hơn ở bạn.',
+      info_warning_html:   '<strong>Lưu ý quan trọng</strong><br>Ứng dụng này là một chương trình coaching, không phải là sản phẩm y tế. Nó không phù hợp trong trường hợp bệnh tâm lý cấp tính, khủng hoảng tâm lý hoặc có ý nghĩ tự tử. Trong những trường hợp đó, xin hãy liên hệ với bác sĩ hoặc phòng cấp cứu tâm thần.',
+      info_checkbox:       'Tôi xác nhận rằng không có lý do loại trừ nào ở trên áp dụng cho tôi, và tôi sử dụng ứng dụng này với trách nhiệm của chính mình.',
+      info_btn:            'Tiếp tục',
+      // Welcome
+      welcome_label:       'Coaching App',
+      welcome_h1_html:     'Chào mừng bạn<br>trở về với <em>chính mình.</em>',
+      welcome_li1:         'Sự chú tâm của bạn',
+      welcome_li2:         'Trực giác của bạn',
+      welcome_btn:         'Tiếp tục',
+      // Problem (Kernsatz)
+      problem_label:       'Vấn đề của bạn',
+      problem_h2_html:     'Câu <em>cốt lõi</em> của bạn.',
+      problem_p1:          'Trước khi bắt đầu — hãy dành cho mình một khoảnh khắc.',
+      problem_p2_html:     'Hãy diễn đạt vấn đề của bạn thành một câu rõ ràng. Ví dụ: <strong>„Tôi khó đi vào giấc ngủ.“</strong> Hoặc: <strong>„Tôi cảm thấy không thoải mái trong các tình huống giao tiếp xã hội.“</strong>',
+      problem_p3:          'Không giải thích, không phân tích — chỉ một câu, càng cụ thể càng tốt. Hãy giữ câu đó sẵn trong tâm trí.',
+      problem_btn:         'Tôi đã có câu của mình',
+      // Intro (Drei Ebenen)
+      intro_label:         'Cách hoạt động',
+      intro_h2_html:       'Ba <em>tầng</em><br>trong bạn.',
+      intro_li1_html:      '<strong>Trực giác của bạn</strong> – bản thể khôn ngoan dẫn dắt phiên này.',
+      intro_li2_html:      '<strong>Vô thức của bạn</strong> – một hệ thống gồm những phần bên trong đã lưu giữ những trải nghiệm cũ.',
+      intro_li3_html:      '<strong>Chính bạn</strong> – người quan sát và nhấn các nút.',
+      intro_btn:           'Tiếp tục',
+      // Practice
+      practice_label:      'Bài tập ngắn',
+      practice_h2_html:    'Làm quen với<br>các <em>nút bấm.</em>',
+      practice_body_html:  'Chạm một lần vào <strong>nút Đỏ</strong> – góc dưới bên trái.<br>Rồi một lần vào <strong>nút Xanh lá</strong> – góc dưới bên phải.<br>Mắt bạn có thể gần như đã nhắm.',
+      practice_label_no:   'Không',
+      practice_label_yes:  'Có',
+      // AHA
+      aha_label:           'Một khoảnh khắc cho bạn',
+      aha_btn_begin:       'Bắt đầu',
+      aha_label_no:        'Không',
+      aha_label_yes:       'Có',
+      aha_hint_yesno:      '← Không   Có →',
+      aha_hint_later_yes:  '← Để sau   Vẫn tiếp tục →',
+      aha_hint_later:      '← Để sau',
+      aha_label_later:     'Để sau',
+      // Calib2-Intro
+      calib2intro_label:   'Chuẩn bị',
+      calib2intro_h2_html: 'Bây giờ hãy<br>nhắm <em>mắt lại.</em>',
+      calib2intro_body_html: 'Những câu hỏi tiếp theo, bạn cũng trả lời theo cảm nhận đầu tiên — không suy nghĩ, không cân nhắc. Xung động đầu tiên của bạn chính là câu trả lời đúng.<br><br>Vì sao? Vì suy nghĩ có ý thức cho đến nay chưa đưa bạn đến một giải pháp lâu dài. Vô thức biết nhiều hơn — và đó chính là điều chúng ta sẽ tận dụng bây giờ.<br><br>Hãy nhấn ngay điều bạn cảm nhận được đầu tiên.',
+      // Calib2 Screen
+      calib2_label:        'Hiệu chỉnh · Mắt nhắm',
+      calib2_label_no:     'Không',
+      calib2_label_yes:    'Có',
+      // Landscape
+      landscape_label:     'Chuẩn bị',
+      landscape_h2_html:   'Xoay ngang<br>điện thoại <em>của bạn.</em>',
+      landscape_body_html: 'Cầm bằng cả hai tay — hai ngón cái ở bên trái và bên phải.<br><br>Như vậy, bạn có thể nhấn các nút mà không cần nhìn, khi lát nữa mắt bạn đã nhắm lại.',
+      landscape_warning:   'Vui lòng xoay điện thoại trước. Nếu màn hình không xoay: hãy tắt khóa xoay dọc của điện thoại.',
+      landscape_btn:       'Sẵn sàng',
+      // Calib1
+      calib_label:         'Hiệu chỉnh',
+      calib_label_no:      'Không',
+      calib_label_yes:     'Có',
+      // Pre-SUD
+      presud_label:        'Giai đoạn I · Đánh giá',
+      presud_h2_html:      'Bạn cảm nhận vấn đề<br>mạnh đến mức nào <em>lúc này?</em>',
+      presud_body:         'Hãy chạm ngay vào một con số từ 1 đến 10.',
+      // Contact
+      contact_label:       'Giai đoạn II · Kết nối',
+      contact_label_yes:   'Có',
+      // Step (Protokoll)
+      step_eyes_label:     'Nhắm mắt',
+      step_label_no:       'Không',
+      step_label_yes:      'Có',
+      // Post-SUD
+      postsud_label:       'Kết thúc · Đánh giá',
+      postsud_h2_html:     'Bạn cảm nhận vấn đề<br>mạnh đến mức nào <em>bây giờ?</em>',
+      postsud_body:        'Hãy chạm ngay vào một con số từ 1 đến 10.',
+      // Protokoll-Abschluss
+      proto_label:         'Biên bản phiên',
+      proto_h2_html:       'Phiên <em>đã hoàn thành.</em>',
+      proto_lbl_parts:     'Các phần',
+      proto_lbl_before:    'Trước',
+      proto_lbl_after:     'Sau',
+      proto_wipe:          'Mọi dữ liệu sẽ bị xóa vĩnh viễn sau khi đóng.',
+      proto_btn_end:       'Kết thúc phiên',
+    },
+
+    // §I18N:VI-AHA – Headlines neu/ungeprüft, Fragen/Brücken/Closing aus geprüftem Entwurf
+    aha: {
+      q1_headline: 'Một câu hỏi ngắn.',
+      q1_text:     'Trong cuộc sống của bạn, có điều gì đó đang khiến bạn bận tâm — dù bạn chưa thể gọi tên nó một cách rõ ràng?',
+      q2_headline: 'Hãy cảm nhận thử xem.',
+      q2_text:     'Bạn có cảm nhận được điều gì đó không — dù ở đâu, dù mờ nhạt đến mấy?',
+      q3_headline: 'Câu hỏi cuối cùng.',
+      q3_text:     'Sẽ tốt hơn chứ, nếu điều đó có thể trở nên nhẹ nhàng hơn?',
+      bridge_no1:  'Điều đó hoàn toàn bình thường. Đôi khi đó chỉ là một cảm giác mơ hồ, một chút bồn chồn nhẹ — một điều gì đó cứ hiện diện ở đó, mà không có tên gọi.',
+      bridge_no2:  'Đôi khi điều đó chỉ hiện ra khi ta lắng nghe kỹ hơn. Điều này hoàn toàn bình thường. Và nếu lúc này chưa phải là thời điểm phù hợp với bạn — bạn có thể quay lại bất cứ lúc nào.',
+      bridge_no3:  'Vậy thì có lẽ bây giờ chưa phải là thời điểm phù hợp — bạn có thể quay lại bất cứ lúc nào.',
+      closing:     'Phiên này chính là dành cho điều đó. Chúng ta cùng bắt đầu nhé.',
+    },
+
+    screens: {
+      // Info-Screen
+      info_tts: 'Trong bạn có một sự hiểu biết sâu bên trong, khôn ngoan hơn cả lý trí của bạn. Có người gọi đó là trực giác, tiếng nói bên trong hay linh tính. Ứng dụng này tạo không gian cho nó thay đổi những khuôn mẫu cũ – mà bạn không cần phải nói hay suy nghĩ về vấn đề của mình. Trong suốt phiên, bạn chỉ cần nhấn hai nút: Có hoặc Không. Không đòi hỏi gì hơn ở bạn. Lưu ý quan trọng: Ứng dụng này là một chương trình coaching, không phải là sản phẩm y tế. Nó không phù hợp trong trường hợp bệnh tâm lý cấp tính, khủng hoảng tâm lý hoặc có ý nghĩ tự tử. Trong những trường hợp đó, xin hãy liên hệ với bác sĩ hoặc phòng cấp cứu tâm thần.',
+      info_mp3: '',
+
+      // Welcome-Screen
+      welcome1_tts: 'Chào mừng bạn trở về với chính mình.',
+      welcome1_mp3: '',
+      welcome2_tts: 'Bạn chỉ cần hai điều: sự chú tâm của bạn – và trực giác của bạn.',
+      welcome2_mp3: '',
+
+      // Problem-Screen
+      problem_tts: 'Trước khi bắt đầu — hãy dành cho mình một khoảnh khắc. Hãy diễn đạt vấn đề của bạn thành một câu rõ ràng. Ví dụ: Tôi khó đi vào giấc ngủ. Hoặc: Tôi cảm thấy không thoải mái trong các tình huống giao tiếp xã hội. Không giải thích, không phân tích — chỉ một câu, càng cụ thể càng tốt. Hãy giữ câu đó sẵn trong tâm trí.',
+      problem_mp3: '',
+
+      // PreSUD
+      presud_tts: 'Bây giờ, hãy nhớ lại câu của bạn trong tâm trí. Cảm nhận xem vấn đề này đang đè nặng lên bạn đến mức nào — rồi chạm ngay vào một con số theo cảm nhận đầu tiên.',
+      presud_mp3: '',
+
+      // Intro (drei Ebenen) – intro3 deprecated (wie de)
+      intro1_tts: 'Tốt. Bây giờ tôi sẽ chỉ cho bạn cách phiên này diễn ra.',
+      intro1_mp3: '',
+      intro2_tts: 'Trong bạn có ba tầng. Trực giác của bạn – bản thể khôn ngoan dẫn dắt phiên này. Vô thức của bạn – một hệ thống gồm những phần bên trong đã lưu giữ những trải nghiệm cũ. Và chính bạn – người quan sát và nhấn các nút.',
+      intro2_mp3: '',
+      intro3_tts: '',
+      intro3_mp3: '',
+
+      // Button-Übung
+      practice1_tts: 'Một bài tập ngắn. Bây giờ hãy chạm một lần vào nút Đỏ – ở góc dưới bên trái.',
+      practice1_mp3: '',
+      practice2_tts: 'Tốt. Bây giờ chạm một lần vào nút Xanh lá – ở góc dưới bên phải.',
+      practice2_mp3: '',
+      practice3_tts: 'Hoàn hảo. Thêm một thông tin quan trọng: Khi lát nữa bạn đã nhắm mắt, bạn sẽ nghe thấy một âm thanh ngắn. Đó là tín hiệu dành cho bạn – khi đó bạn nhấn nút.',
+      practice3_mp3: '',
+
+      // Calib1 finish
+      calib_gut_tts: 'Bạn làm tốt lắm.',
+      calib_gut_mp3: '',
+      calib2_intro_tts: 'Hãy giữ mắt nhắm. Hoặc nhắm mắt lại ngay bây giờ, nếu mắt bạn vẫn còn mở. Đôi mắt là giác quan mạnh nhất của chúng ta — chúng thu hút gần như toàn bộ sự chú ý. Khi ta để đôi mắt nghỉ ngơi, các giác quan khác có thể hoạt động tinh tế hơn — và kết nối với vô thức của bạn trở nên rõ ràng hơn. Những câu hỏi tiếp theo, bạn cũng trả lời theo cảm nhận đầu tiên như vậy. Không suy nghĩ. Xung động đầu tiên của bạn chính là câu trả lời đúng. Một âm thanh ngắn là tín hiệu dành cho bạn — khi đó bạn nhấn Có hoặc Không.',
+      calib2_intro_mp3: '',
+
+      // Calib2 start
+      calib2_start_tts: 'Nhắm mắt lại. Trả lời theo cảm nhận đầu tiên.',
+      calib2_start_mp3: '',
+
+      // Preparation (Einstimmung) – TTS-Kette, bis prep-all.mp3 (VI) vorliegt
+      prep_all_mp3:      '',
+      prep_intro_tts:    'Trước khi bắt đầu, chúng ta hãy dành một chút thời gian để chuẩn bị. Hãy tiếp tục giữ mắt nhắm.',
+      prep_intro_mp3:    '',
+      prep_breath_tts:   'Hít vào và thở ra thật sâu ba lần. Hãy dành cho mình tất cả thời gian bạn cần.',
+      prep_breath_mp3:   '',
+      prep_body_tts:     'Bây giờ, hãy cảm nhận vào bên trong cơ thể mình. Bạn cảm nhận vấn đề của mình rõ nhất ở đâu – bụng, ngực, cổ họng, hay một nơi nào đó? Chỉ cần nhận biết những gì đang hiện diện. Và ngay cả khi bạn không thể gọi tên vị trí đó một cách rõ ràng – điều đó hoàn toàn bình thường.',
+      prep_body_mp3:     '',
+      prep_visual1_tts:  'Bây giờ, hãy hình dung bức tường trước mặt bạn – trong khả năng của bạn, hoàn toàn không cần gắng sức. Và có thể thêm một món đồ nội thất, một chiếc bình hoa, bất cứ thứ gì đang ở trước mặt bạn hoặc bạn chỉ đơn giản tưởng tượng ra.',
+      prep_visual1_mp3:  '',
+      prep_visual2_tts:  'Hãy nhìn thấy tất cả trong màu trắng. Yên bình và trong trẻo.',
+      prep_visual2_mp3:  '',
+      prep_visual3_tts:  'Và bây giờ, màu sắc chuyển sang màu đỏ – bức tường, món đồ, tất cả.',
+      prep_visual3_mp3:  '',
+      prep_visual4_tts:  'Bây giờ chuyển sang màu xanh dương.',
+      prep_visual4_mp3:  '',
+      prep_visual5_tts:  'Và từ từ trở lại màu trắng.',
+      prep_visual5_mp3:  '',
+
+      // Contact
+      contact_tts: 'Trực giác của bạn đang chuẩn bị.\n\nHãy hít thở nhẹ một chút – và nhấn nút khi bạn đã sẵn sàng.',
+      contact_mp3: '',
+
+      // Eyes shut + ready
+      eyes_tts: 'Hãy giữ mắt nhắm trong suốt phiên – tôi sẽ đồng hành cùng bạn.',
+      eyes_mp3: '',
+      ready_tts: 'Bạn là người phiên dịch giữa trực giác của bạn và ứng dụng. Hãy nhấn Xanh lá hoặc Đỏ ngay khi bạn cảm thấy xung động – đó là nhiệm vụ duy nhất của bạn. Hãy phản ứng ngay theo cảm nhận đầu tiên, không suy nghĩ – xung động đầu tiên của bạn luôn đúng. Âm thanh ngắn là tín hiệu dành cho bạn.',
+      ready_mp3: '',
+
+      // PostSUD
+      postsud1_tts: 'Bây giờ bạn có thể mở mắt trở lại.',
+      postsud1_mp3: '',
+      postsud2_tts: 'Bây giờ bạn cảm nhận vấn đề này mạnh đến mức nào? Hãy chạm ngay vào một con số từ 1 đến 10, theo cảm nhận đầu tiên.',
+      postsud2_mp3: '',
+      // Lofty Übergang
+      lofty_tts: 'Tiềm thức của bạn bây giờ bắt đầu làm việc.',
+      lofty_mp3: '',
+      // Protokoll-Screen Closing
+      eyes_open_tts: 'Bây giờ bạn có thể mở mắt trở lại. Hãy xoay điện thoại về chiều dọc.',
+      eyes_open_mp3: '',
+      proto_closing1_tts: 'Những gì đã bắt đầu hôm nay sẽ tiếp tục diễn ra trong bạn.',
+      proto_closing1_mp3: '',
+      proto_closing2_tts: 'Hãy để câu hỏi sau đây nhẹ nhàng vang vọng trong bạn.',
+      proto_closing2_mp3: '',
+      proto_closing3_tts: 'Vì sao ngay lúc này, có điều gì đó trong tôi đang tìm thấy con đường của nó?',
+      proto_closing3_mp3: '',
+      // Hinweiston (erst aktivieren, wenn audio/vi/cue.mp3 deployt ist)
+      cue_mp3: 'cue',
+      // Landscape
+      landscape_tts: 'Bây giờ hãy xoay ngang điện thoại của bạn – và cầm bằng cả hai tay, hai ngón cái ở bên trái và bên phải. Như vậy, bạn có thể nhấn các nút mà không cần nhìn, khi lát nữa mắt bạn đã nhắm lại.',
+      landscape_mp3: '',
+    },
+
+    calib: {
+      // Set A – Calib 1 (Augen offen) · Texte aus geprüftem Entwurf, mp3 folgt mit Aufnahmen (ca-01…ca-10)
+      set_a: [
+        { text: 'Tôi là một con người.', correct: true , mp3: '' },
+        { text: 'Tôi có một cái tên.', correct: true , mp3: '' },
+        { text: 'Tôi có một khuôn mặt.', correct: true , mp3: '' },
+        { text: 'Tôi có cân nặng.', correct: true , mp3: '' },
+        { text: 'Tim tôi đang đập.', correct: true , mp3: '' },
+        { text: 'Trái Đất hình tròn.', correct: true , mp3: '' },
+        { text: 'Một ngày có 24 giờ.', correct: true , mp3: '' },
+        { text: 'Những con số tồn tại.', correct: true , mp3: '' },
+        { text: 'Tuyết có màu đen.', correct: false, mp3: '' },
+        { text: 'Lửa thì lạnh.', correct: false, mp3: '' },
+      ],
+      // Set B – Calib 2 (Augen geschlossen) · mp3 folgt mit Aufnahmen (cb-01…cb-10)
+      set_b: [
+        { text: 'Tôi có một cái đầu.', correct: true , mp3: '' },
+        { text: 'Tôi đang ở trên Trái Đất.', correct: true , mp3: '' },
+        { text: 'Tôi đang cảm nhận điều gì đó.', correct: true , mp3: '' },
+        { text: 'Ngôn ngữ tồn tại.', correct: true , mp3: '' },
+        { text: '2 nhiều hơn 1.', correct: true , mp3: '' },
+        { text: 'Con người cần nước.', correct: true , mp3: '' },
+        { text: 'Có nhiều hơn một màu sắc.', correct: true , mp3: '' },
+        { text: 'Có những con người khác tồn tại.', correct: true , mp3: '' },
+        { text: 'Nước thì khô.', correct: false, mp3: '' },
+        { text: 'Tôi chưa đầy 1 tuổi.', correct: false, mp3: '' },
+      ],
+    },
+
+    steps: [
+      { num:1,  label:'Bước 1 · Xem xét', mp3:'', text:'Trực giác thân mến ơi, xin hãy xem xét vấn đề này, để có được bức tranh toàn cảnh về việc vấn đề đã bắt đầu như thế nào và vì sao nó vẫn tiếp diễn cho đến hôm nay. Hãy rà soát những ký ức về các sự kiện có thể liên quan đến nó, cả những khuôn mẫu mà có thể bạn đã tiếp nhận từ người khác: từ gia đình bạn, từ môi trường xung quanh, từ khoảng thời gian trước cả ký ức của chính bạn, từ những trải nghiệm không phải của bạn, và từ những khuôn mẫu đã được lưu giữ trong hệ thống của bạn. Hãy giao tiếp với những phần có liên quan. Mục tiêu là để bạn hiểu được, vấn đề đã trở thành một phần trong cuộc sống hôm nay của bạn như thế nào. Trực giác thân mến, xin hãy đi đến tận giới hạn khả năng của mình và xem xét vấn đề một cách toàn diện nhất có thể vào lúc này. Xin hãy cho tôi một xung động, để tôi biết rằng bạn đã hoàn thành – đơn giản là Có.' },
+      { num:2,  label:'Bước 2 · Xác định', mp3:'', text:'Trực giác thân mến ơi, bây giờ tôi xin bạn xác định phần đầu tiên trong tâm trí đang chủ động gây ra vấn đề. Phần này đã bị ảnh hưởng bởi những trải nghiệm sống hoặc bởi những khuôn mẫu được truyền lại cho bạn, đến mức nó chủ động gây ra vấn đề của bạn. Nhiệm vụ của bạn là dạy cho phần này một cách thuyết phục, để nó thích nghi với những khả năng, hiểu biết, nhu cầu, mối quan tâm, giá trị và khuynh hướng hiện nay của bạn. Tôi sẽ hướng dẫn bạn thực hiện, và đây là các bước: trước tiên, phần này cần được xác định; sau đó, nó cần được thông tin một cách thuyết phục về cuộc sống hôm nay; và những thông tin mới này cần được phần đó tiếp nhận và hòa nhập. Bằng cách này, phần đó được học lại và có thể hỗ trợ những nhu cầu hiện nay của bạn, mà không gây ra vấn đề. Phần này chỉ biết những gì nó đã biết vào thời điểm nó được tạo ra. Nó đang mắc kẹt trong thời gian của nó và không ý thức được về cuộc sống hôm nay. Trực giác thân mến, nhiệm vụ của bạn là dạy dỗ lại phần này và thông tin cho nó về cuộc sống hôm nay – cập nhật cho nó. Tôi sẽ hướng dẫn bạn trong quá trình đó. Trực giác thân mến, bây giờ xin hãy thực hiện bước đầu tiên và xác định phần này. Khi bạn hoàn thành, xin hãy cho tôi một xung động – đơn giản là Có.' },
+      { num:3,  label:'Bước 3 · Phần đầu tiên', mp3:'', text:'Trực giác thân mến ơi, bây giờ hãy bắt đầu với phần đầu tiên. Phần này đang mắc kẹt trong quá khứ. Nó hoạt động dựa trên hiểu biết của thời điểm nó được hình thành. Nó không biết đến hoàn cảnh sống hiện nay của bạn và những tác động từ ảnh hưởng của nó. Trực giác thân mến, nhiệm vụ của bạn là dạy cho phần này một cách thuyết phục về những khả năng, hiểu biết, mối quan tâm, niềm tin và khuynh hướng hiện nay của bạn. Trực giác thân mến, xin hãy giao tiếp với phần này theo cách sau: Hãy cảm ơn phần này vì tất cả những gì nó đã làm cho bạn cho đến nay. Tôi xin bạn trước tiên hãy lắng nghe phần này, và sau đó tìm hiểu xem phần này tin điều gì, và vì sao nó tin những gì nó tin. Và tiếp theo, trực giác thân mến, tôi xin bạn dùng những thông tin mới này để dạy cho phần đó về thực tại hiện nay. Phần này đang mắc kẹt trong thời điểm nó được tạo ra và bỏ qua hoàn cảnh sống hiện nay của bạn. Nó chỉ biết những gì bạn đã biết khi đó, mà không hề hay biết về cuộc sống hiện tại của bạn. Hãy thuyết phục phần này, từ bây giờ, ủng hộ cách suy nghĩ, niềm tin và hoàn cảnh sống hôm nay của bạn. Hãy cập nhật cho nó. Trực giác thân mến, bây giờ xin hãy bắt đầu với phần đầu tiên. Khi bạn hoàn thành, xin hãy cho tôi một xung động – đơn giản là Có.' },
+      { num:4,  label:'Bước 4 · Còn phần khác?', mp3:'', text:'Trực giác thân mến ơi, còn có phần nào khác cũng đang góp phần vào vấn đề hoặc chủ động gây ra nó không? Xin hãy cho tôi một xung động – đơn giản là Có hoặc Không.' },
+      { num:5,  label:'Bước 5 · Phần tiếp theo', mp3:'', text:'Trực giác thân mến ơi, bây giờ xin hãy làm việc với phần tiếp theo. Phần này đang mắc kẹt trong quá khứ. Nó hoạt động dựa trên hiểu biết của thời điểm nó được hình thành. Nó không biết đến hoàn cảnh sống hiện nay của bạn và những tác động từ ảnh hưởng của nó. Trực giác thân mến, nhiệm vụ của bạn là dạy cho phần này một cách thuyết phục về những khả năng, hiểu biết, mối quan tâm, niềm tin, giá trị và khuynh hướng hiện nay của bạn. Trực giác thân mến, xin hãy giao tiếp với phần này theo cách sau: Hãy cảm ơn phần này vì tất cả những gì nó đã làm cho bạn cho đến nay. Tôi xin bạn trước tiên hãy lắng nghe phần này, và sau đó tìm hiểu xem phần này tin điều gì, và vì sao nó tin những gì nó tin. Và tiếp theo, trực giác thân mến, tôi xin bạn dùng những thông tin mới này để dạy cho phần đó về thực tại hiện nay. Phần này đang mắc kẹt trong thời điểm nó được tạo ra và bỏ qua hoàn cảnh sống hiện nay của bạn. Nó chỉ biết những gì bạn đã biết khi đó, mà không hề hay biết về cuộc sống hiện tại của bạn. Hãy thuyết phục phần này, từ bây giờ, ủng hộ cách suy nghĩ, niềm tin và hoàn cảnh sống hôm nay của bạn. Hãy cập nhật cho nó. Trực giác thân mến, bây giờ xin hãy bắt đầu với phần tiếp theo. Khi bạn hoàn thành, xin hãy cho tôi một xung động – đơn giản là Có.' },
+      { num:6,  label:'Bước 6 · Còn phần khác?', mp3:'', text:'Trực giác thân mến ơi, còn có phần nào khác cũng đang góp phần vào vấn đề hoặc chủ động gây ra nó không? Xin hãy cho tôi một xung động – đơn giản là Có hoặc Không.' },
+      { num:7,  label:'Bước 7 · Phần tiếp theo', mp3:'', text:'Trực giác thân mến ơi, bây giờ xin hãy làm việc với phần tiếp theo. Phần này đang mắc kẹt trong quá khứ. Nó hoạt động dựa trên hiểu biết của thời điểm nó được hình thành. Nó không biết đến hoàn cảnh sống hiện nay của bạn và những tác động từ ảnh hưởng của nó. Trực giác thân mến, nhiệm vụ của bạn là dạy cho phần này một cách thuyết phục về những khả năng, hiểu biết, mối quan tâm, niềm tin và khuynh hướng hiện nay của bạn. Trực giác thân mến, xin hãy giao tiếp với phần này theo cách sau: Hãy cảm ơn phần này vì tất cả những gì nó đã làm cho bạn cho đến nay. Tôi xin bạn trước tiên hãy lắng nghe phần này, và sau đó tìm hiểu xem phần này tin điều gì, và vì sao nó tin những gì nó tin. Và tiếp theo, trực giác thân mến, tôi xin bạn dùng những thông tin mới này để dạy cho phần đó về thực tại hiện nay. Trực giác thân mến, phần này đang mắc kẹt trong thời điểm nó được tạo ra và bỏ qua hoàn cảnh sống hiện nay của bạn. Nó chỉ biết những gì bạn đã biết khi đó, mà không hề hay biết về cuộc sống hiện tại của bạn. Hãy thuyết phục phần này, từ bây giờ, ủng hộ cách suy nghĩ, niềm tin và hoàn cảnh sống hôm nay của bạn. Hãy cập nhật cho nó. Trực giác thân mến, bây giờ xin hãy bắt đầu với phần tiếp theo. Khi bạn hoàn thành, xin hãy cho tôi một xung động – đơn giản là Có.' },
+      { num:8,  label:'Bước 8 · Còn phần khác?', mp3:'', text:'Còn có những phần nào khác đang góp phần vào vấn đề hoặc chủ động gây ra nó không? Xin hãy lại cho tôi một xung động – đơn giản là Có hoặc Không.' },
+      { num:9,  label:'Bước 9 · Các phần còn lại', mp3:'', text:'Trực giác thân mến ơi, bây giờ bạn đã biết cách thực hiện. Xin hãy làm việc với những phần còn lại hiện nay theo đúng cách mà bạn đã biết – nghĩa là, hãy lặp lại công việc này với những phần còn lại. Khi bạn hoàn thành, xin hãy cho tôi một xung động – đơn giản là Có.' },
+      { num:10,  label:'Bước 10 · Kiểm tra', mp3:'', text:'Trực giác thân mến ơi, bây giờ đến bước kiểm tra. Xin hãy rà soát xem còn có phần nào khác liên quan đến vấn đề đang xuất hiện hoặc còn tồn tại không. Còn có những phần nào khác đang góp phần vào vấn đề hoặc chủ động gây ra nó không? Xin hãy lại cho tôi một xung động – đơn giản là Có hoặc Không.' },
+      { num:11,  label:'Bước 11 · Xử lý', mp3:'', text:'Trực giác thân mến ơi, xin hãy làm việc với phần hoặc những phần mà bạn vừa tìm thấy, theo đúng cách mà bạn đã biết. Khi bạn hoàn thành, xin hãy cho tôi một xung động – đơn giản là Có.' },
+      { num:12,  label:'Bước 12 · Phần mới', mp3:'', text:'Trực giác thân mến ơi, đôi khi có những phần chỉ xuất hiện sau khi các phần khác đã được học lại – điều đó cũng hoàn toàn bình thường. Vì vậy, trực giác thân mến, xin hãy tìm kiếm một lần nữa và tìm ra phần nào hoặc những phần nào vẫn còn đang góp phần vào vấn đề hoặc gây ra nó. Khi bạn đã xác định được những phần này, trực giác thân mến, hãy dạy lại chúng, như bạn đã làm ngay từ đầu. Khi bạn hoàn thành, xin hãy cho tôi một xung động – đơn giản là Có.' },
+      { num:13,  label:'Bước 13 · Thanh lọc cuối', mp3:'', text:'Trực giác thân mến ơi, nếu còn bất cứ điều gì bạn có thể làm, để vấn đề này không bao giờ xuất hiện trở lại trong cuộc sống của bạn, thì xin hãy làm điều đó ngay bây giờ! Ví dụ, bạn có thể xóa bỏ một phần hoặc nhiều phần không còn cần thiết nữa; bạn cũng có thể tạo ra những phần mới, góp phần loại bỏ vấn đề. Bạn có thể giao cho các phần những nhiệm vụ mới, có lợi cho sự phát triển tiếp theo. Và bạn có thể tháo gỡ những kết nối giữa các phần không còn cần thiết. Tương tự, bạn cũng có thể tạo ra những kết nối mới giữa các phần. Nếu một, nhiều hoặc tất cả những việc này là cần thiết hoặc hữu ích để loại bỏ vấn đề một cách lâu dài, thì xin hãy thực hiện ngay bây giờ. Hãy cho tôi một xung động khi chúng ta có thể tiếp tục – đơn giản là Có.' },
+      { num:14,  label:'Bước 14 · Nhận biết', mp3:'', text:'Và bây giờ, tôi nói trực tiếp với bạn – người bạn thân mến, người dùng của ứng dụng này. Bạn có muốn biết trực giác của bạn đã xử lý những gì không? Xin hãy cho tôi một dấu hiệu, một xung động – đơn giản là Có hoặc Không.' },
+      { num:15,  label:'Bước 15 · Tiếp cận bên trong', mp3:'', text:'Nếu bạn muốn biết những gì đã được xử lý, hãy nói theo tôi – thành tiếng hoặc chỉ trong suy nghĩ: Trực giác thân mến, tôi muốn biết bạn đã xử lý những gì, xin hãy cho tôi tiếp cận điều đó, trong vòng 1 phút. Hãy làm điều đó qua những ký ức, qua một tiếng nói bên trong, hoặc qua những nhận thức sáng tỏ. Hãy làm theo cách mà bạn thấy là phù hợp. Và khi bạn – người bạn thân mến, người dùng – đã nhận được câu trả lời, xin hãy cho tôi một dấu hiệu, một xung động – đơn giản là Có hoặc Không.' },
+      { num:16,  label:'Bước 16 · Lần thử thứ hai', mp3:'', text:'Trực giác thân mến ơi, có vẻ như con người của bạn chưa nhận được thông tin, hoặc chỉ nhận được chưa đầy đủ. Xin hãy làm cho con người của bạn, ngay bây giờ, tiếp cận được tất cả những gì hữu ích và cần thiết đối với họ. Còn bạn – người bạn thân mến, người dùng của ứng dụng này – xin hãy lại cho tôi một phản hồi, xem bạn có cảm nhận được điều gì không – đơn giản là Có hoặc Không.' },
+      { num:17, label:'Bước 17 · Lời nhắn', mp3:'', mp3_alt:'',
+        text:'Được rồi. Vậy thì có vẻ trực giác của bạn cho rằng, vào lúc này, tốt hơn cho bạn là những thông tin đó vẫn còn được giữ kín. Dù vậy, trong những ngày tới, vẫn có thể xuất hiện những linh cảm, ý tưởng hay nhận thức nào đó, có liên quan đến vấn đề của bạn. Cả những giấc mơ cũng có thể đến. Trực giác của bạn luôn đứng về phía bạn. Nó biết chính xác bạn có thể đón nhận được bao nhiêu. Trong những ngày tới, bạn chỉ cần chú ý đến những gì diễn ra trong cuộc sống của mình. Đôi khi đó chỉ là những điều nhỏ nhặt, mà có thể bạn không để ý, hoặc không liên hệ với trực giác của mình. Dù đó là gì đi nữa – một sự thay đổi chắc chắn đã diễn ra.',
+        text_chose_not_to_know:'Điều đó hoàn toàn bình thường.\n\nCó những người thích làm việc mà không cần biết những gì đã được xử lý ở phía sau – và đó cũng là một quyết định tốt không kém.\n\nTrực giác của bạn dù sao cũng đã làm việc, và một sự thay đổi chắc chắn đã diễn ra. Trong những ngày tới, bạn chỉ cần chú ý – có những điều chỉ hiện ra trong sự tĩnh lặng.',
+      },
+      { num:18,  label:'Bước 18 · Kết thúc', mp3:'', text:'Còn một lưu ý ngắn cuối cùng. Trong phiên ngắn này, một sự thay đổi đầu tiên đã diễn ra – dù lớn hay nhỏ. Bạn có thể quay lại bất cứ lúc nào và thực hiện một cuộc trò chuyện tiếp theo với trực giác của mình. Điều đó thậm chí có thể rất hữu ích. Bởi vì đôi khi những thay đổi nhỏ đã diễn ra, nhưng ta lại rơi trở về những khuôn mẫu hành vi cũ, hoặc có những sự kiện xảy ra tác động đến bạn, và những phần mới lại hình thành trong tiềm thức của bạn. Cũng có những phần chỉ hiện ra sau khi các phần khác đã được xử lý. Điều đó cũng hoàn toàn bình thường. Khi ấy, một cuộc trò chuyện tiếp theo với trực giác của bạn có thể rất hữu ích. Vậy nên, nếu bạn muốn – tôi luôn sẵn sàng ở đây vì bạn.' },
+      { num:19,  label:'Bước 19 · Cảm ơn', mp3:'', text:'Trực giác thân mến ơi, xin chân thành cảm ơn bạn vì công việc bạn đã hoàn thành.' },
+    ],
+  },
+
   // ── ARMENISCH ────────────────────────────────────
   hy: {
     tts_lang: 'hy-AM',
@@ -1784,26 +2086,30 @@ const LANG = {
     },
 
     steps: [
-      // Тексты шагов будут добавлены позже
-      { num:1,  label:'Шаг 1', mp3:'', text:'' },
-      { num:2,  label:'Шаг 2', mp3:'', text:'' },
-      { num:3,  label:'Шаг 3', mp3:'', text:'' },
-      { num:4,  label:'Шаг 4', mp3:'', text:'' },
-      { num:5,  label:'Шаг 5', mp3:'', text:'' },
-      { num:6,  label:'Шаг 6', mp3:'', text:'' },
-      { num:7,  label:'Шаг 7', mp3:'', text:'' },
-      { num:8,  label:'Шаг 8', mp3:'', text:'' },
-      { num:9,  label:'Шаг 9', mp3:'', text:'' },
-      { num:10, label:'Шаг 10', mp3:'', text:'' },
-      { num:11, label:'Шаг 11', mp3:'', text:'' },
-      { num:12, label:'Шаг 12', mp3:'', text:'' },
-      { num:13, label:'Шаг 13', mp3:'', text:'' },
-      { num:14, label:'Шаг 14', mp3:'', text:'' },
-      { num:15, label:'Шаг 15', mp3:'', text:'' },
-      { num:16, label:'Шаг 16', mp3:'', text:'' },
-      { num:17, label:'Шаг 17', mp3:'', mp3_alt:'', text:'', text_chose_not_to_know:'' },
-      { num:18, label:'Шаг 18', mp3:'', text:'' },
-      { num:19, label:'Шаг 19', mp3:'', text:'' },
+      // v34 F1: Protokolltexte RU (S01–S19) – Übersetzungsentwurf vor muttersprachlicher Prüfung.
+      // mp3-Felder bleiben leer, bis die Aufnahmen deployt sind (speak() nutzt dann TTS).
+      { num:1,  label:'Шаг 1 · Исследование', mp3:'', text:'Дорогая интуиция, пожалуйста, исследуй проблему, чтобы получить общую картину: как проблема началась и почему она продолжается до сегодняшнего дня. Проверь воспоминания о событиях, которые, возможно, были с ней связаны, а также паттерны, которые ты, возможно, переняла у других: от твоей семьи, из твоего окружения, из времени до твоих собственных воспоминаний, из опыта, который не был твоим, и из паттернов, сохранённых в твоей системе. Общайся с участвующими частями. Цель — понять, как проблема стала частью твоей сегодняшней жизни. Дорогая интуиция, пожалуйста, дойди до самых границ своих возможностей и исследуй проблему настолько всесторонне, насколько это возможно сейчас. Дай мне, пожалуйста, импульс — знак того, что ты закончила. Просто «Да».' },
+      { num:2,  label:'Шаг 2 · Идентификация', mp3:'', text:'Дорогая интуиция, теперь я прошу тебя определить первую часть твоего разума, которая активно вызывает проблему. Под влиянием жизненного опыта или паттернов, переданных тебе, эта часть стала активно вызывать твою проблему. Твоя задача — убедительно научить её приспособиться к твоим сегодняшним способностям, знаниям, потребностям, интересам, ценностям и склонностям. Я буду направлять тебя, и вот эти шаги: сначала часть нужно определить; затем её нужно убедительно проинформировать о сегодняшней жизни; и эта новая информация должна быть частью усвоена и встроена. Таким образом часть переобучается и может поддерживать твои сегодняшние потребности, не создавая проблемы. Эта часть знает только то, что она знала тогда, когда была создана. Она застряла в своём времени и не осознаёт сегодняшней жизни. Дорогая интуиция, твоя задача — заново обучить её, проинформировать о сегодняшней жизни и дать ей обновление. Я буду направлять тебя в этом. Дорогая интуиция, пожалуйста, сделай сейчас первый шаг и определи эту часть. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
+      { num:3,  label:'Шаг 3 · Первая часть', mp3:'', text:'Дорогая интуиция, начни теперь с первой части. Эта часть застряла в прошлом. Она действует на основе знаний того времени, когда она возникла. Она не знает твоей сегодняшней жизненной ситуации и последствий своего влияния. Дорогая интуиция, твоя задача — убедительно обучить эту часть твоим сегодняшним способностям, знаниям, интересам, убеждениям и склонностям. Дорогая интуиция, пожалуйста, общайся с этой частью следующим образом: поблагодари её за всё, что она до сих пор для тебя сделала. Я прошу тебя сначала выслушать эту часть, а затем выяснить, во что она верит и почему она верит в то, во что верит. И затем я прошу тебя, дорогая интуиция, с этой новой информацией обучить эту часть текущей реальности. Эта часть застряла во времени, в котором была создана, и не учитывает твою сегодняшнюю жизненную ситуацию. Она знает только то, что ты знала тогда, — не ведая о твоей нынешней жизни. Убеди эту часть теперь поддерживать твой сегодняшний образ мышления, твои убеждения и твою жизненную ситуацию. Дай ей обновление. Дорогая интуиция, начни теперь, пожалуйста, с первой части. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
+      { num:4,  label:'Шаг 4 · Ещё части?', mp3:'', text:'Дорогая интуиция, есть ли ещё одна часть, которая также способствует проблеме или активно её вызывает? Дай мне, пожалуйста, импульс — просто «Да» или «Нет».' },
+      { num:5,  label:'Шаг 5 · Следующая часть', mp3:'', text:'Дорогая интуиция, пожалуйста, поработай теперь со следующей частью. Эта часть застряла в прошлом. Она действует на основе знаний того времени, когда она возникла. Она не знает твоей сегодняшней жизненной ситуации и последствий своего влияния. Дорогая интуиция, твоя задача — убедительно обучить эту часть твоим сегодняшним способностям, знаниям, интересам, убеждениям, ценностям и склонностям. Дорогая интуиция, пожалуйста, общайся с этой частью следующим образом: поблагодари её за всё, что она до сих пор для тебя сделала. Я прошу тебя сначала выслушать эту часть, а затем выяснить, во что она верит и почему она верит в то, во что верит. И затем я прошу тебя, дорогая интуиция, с этой новой информацией обучить эту часть текущей реальности. Эта часть застряла во времени, в котором была создана, и не учитывает твою сегодняшнюю жизненную ситуацию. Она знает только то, что ты знала тогда, — не ведая о твоей нынешней жизни. Убеди эту часть теперь поддерживать твой сегодняшний образ мышления, твои убеждения и твою жизненную ситуацию. Дай ей обновление. Дорогая интуиция, начни теперь, пожалуйста, со следующей частью. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
+      { num:6,  label:'Шаг 6 · Ещё части?', mp3:'', text:'Дорогая интуиция, есть ли ещё одна часть, которая также способствует проблеме или активно её вызывает? Дай мне, пожалуйста, импульс — просто «Да» или «Нет».' },
+      { num:7,  label:'Шаг 7 · Следующая часть', mp3:'', text:'Дорогая интуиция, пожалуйста, поработай теперь со следующей частью. Эта часть застряла в прошлом. Она действует на основе знаний того времени, когда она возникла. Она не знает твоей сегодняшней жизненной ситуации и последствий своего влияния. Дорогая интуиция, твоя задача — убедительно обучить эту часть твоим сегодняшним способностям, знаниям, интересам, убеждениям и склонностям. Дорогая интуиция, пожалуйста, общайся с этой частью следующим образом: поблагодари её за всё, что она до сих пор для тебя сделала. Я прошу тебя сначала выслушать эту часть, а затем выяснить, во что она верит и почему она верит в то, во что верит. И затем я прошу тебя, дорогая интуиция, с этой новой информацией обучить эту часть текущей реальности. Дорогая интуиция, эта часть застряла во времени, в котором была создана, и не учитывает твою сегодняшнюю жизненную ситуацию. Она знает только то, что ты знала тогда, — не ведая о твоей нынешней жизни. Убеди эту часть теперь поддерживать твой сегодняшний образ мышления, твои убеждения и твою жизненную ситуацию. Дай ей обновление. Дорогая интуиция, начни теперь, пожалуйста, со следующей частью. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
+      { num:8,  label:'Шаг 8 · Ещё части?', mp3:'', text:'Есть ли ещё части, которые способствуют проблеме или активно её вызывают? Дай мне, пожалуйста, снова импульс — просто «Да» или «Нет».' },
+      { num:9,  label:'Шаг 9 · Остальные части', mp3:'', text:'Дорогая интуиция, теперь ты знаешь порядок действий. Пожалуйста, поработай с частями, которые ещё остались, тем же способом, который ты уже знаешь, — то есть повтори эту работу с остальными частями. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
+      { num:10,  label:'Шаг 10 · Проверка', mp3:'', text:'Дорогая интуиция, теперь наступает проверка. Пожалуйста, проверь, появляются ли ещё части, связанные с проблемой, или существуют ли они. Есть ли ещё части, которые способствуют проблеме или активно её вызывают? Дай мне, пожалуйста, снова импульс — просто «Да» или «Нет».' },
+      { num:11,  label:'Шаг 11 · Проработка', mp3:'', text:'Дорогая интуиция, поработай, пожалуйста, с частью или частями, которые ты ещё нашла, тем же способом, который ты уже знаешь. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
+      { num:12,  label:'Шаг 12 · Новые части', mp3:'', text:'Дорогая интуиция, иногда части проявляются лишь тогда, когда другие части уже были переобучены, — и это тоже нормально. Поэтому, дорогая интуиция, отправься, пожалуйста, ещё раз на поиск и выясни, какая часть или какие части всё ещё способствуют проблеме или вызывают её. Когда ты определишь эти части, дорогая интуиция, переобучи их так, как ты уже делала это в начале. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
+      { num:13,  label:'Шаг 13 · Финальное очищение', mp3:'', text:'Дорогая интуиция, если есть ещё что-то, что ты можешь сделать, чтобы проблема никогда больше не появлялась в твоей жизни, — сделай это сейчас, пожалуйста! Например, ты можешь удалить часть или несколько частей, которые больше не нужны; ты можешь также создать новые части, которые помогут устранить проблему. Ты можешь дать частям новые задачи, полезные для дальнейшего развития. И ты можешь разорвать связи между отдельными частями, которые больше не нужны. Точно так же ты можешь создать новые связи между отдельными частями. Если одна, несколько или все эти задачи необходимы или полезны для того, чтобы устранить проблему навсегда, — выполни это сейчас, пожалуйста. Дай мне импульс, когда мы сможем продолжить, — просто «Да».' },
+      { num:14,  label:'Шаг 14 · Осознание', mp3:'', text:'А теперь я обращаюсь лично к тебе — дорогой клиент, дорогой пользователь этого приложения. Хочешь ли ты узнать, что проработала твоя интуиция? Дай мне, пожалуйста, знак, импульс — просто «Да» или «Нет».' },
+      { num:15,  label:'Шаг 15 · Внутренний доступ', mp3:'', text:'Если ты хочешь узнать, что было проработано, повтори за мной — вслух или только мысленно: Дорогая интуиция, я хочу узнать, что ты проработала. Пожалуйста, открой мне это — в течение одной минуты. Сделай это через воспоминания, через внутренний голос или через озарения. Сделай это так, как считаешь правильным. И когда ты, дорогой клиент, дорогой пользователь, получишь ответ, дай мне, пожалуйста, знак, импульс — просто «Да» или «Нет».' },
+      { num:16,  label:'Шаг 16 · Вторая попытка', mp3:'', text:'Дорогая интуиция, похоже, до твоего человека информация не дошла — или дошла лишь частично. Пожалуйста, открой своему человеку сейчас всё, что для него полезно и необходимо. А ты, дорогой клиент, дорогой пользователь этого приложения, дай, пожалуйста, снова обратную связь: удалось ли тебе что-нибудь воспринять — просто «Да» или «Нет».' },
+      { num:17, label:'Шаг 17 · Пояснение', mp3:'', mp3_alt:'',
+        text:'Хорошо. Похоже, твоя интуиция считает, что сейчас для тебя лучше, чтобы эта информация пока оставалась скрытой. Тем не менее в ближайшие дни могут прийти какие-то озарения, идеи или осознания, которые могут быть связаны с твоей проблемой. Возможны и сны. Твоя интуиция всегда на твоей стороне. Она точно знает, сколько ты можешь принять. Просто обращай внимание в ближайшие дни на то, что происходит в твоей жизни. Иногда это лишь мелочи, которые ты, может быть, даже не замечаешь — или не связываешь со своей интуицией. Неважно, что это. Изменение в любом случае произошло.',
+        text_chose_not_to_know:'Это совершенно нормально.\n\nНекоторые люди предпочитают работать, не зная, что было проработано в глубине, — и это столь же хорошее решение.\n\nТвоя интуиция всё равно поработала, и изменение в любом случае произошло. Просто будь в ближайшие дни внимательнее — многое проявляется только в тишине.',
+      },
+      { num:18,  label:'Шаг 18 · Завершение', mp3:'', text:'Ещё одно короткое завершающее замечание. В этой короткой сессии уже произошло первое изменение — неважно, большое или маленькое. Ты можешь в любой момент вернуться и провести ещё один разговор со своей интуицией. Это может быть даже очень полезно. Ведь иногда происходят небольшие изменения, но человек снова возвращается к старым моделям поведения, — или случаются события, которые влияют на тебя, и в твоём подсознании снова возникают новые части. Некоторые части проявляются только после того, как другие части уже были проработаны. И это тоже совершенно нормально. Тогда ещё один разговор с твоей интуицией может быть очень полезен. Так что, если захочешь, — я всегда снова здесь, рядом с тобой.' },
+      { num:19,  label:'Шаг 19 · Благодарность', mp3:'', text:'Дорогая интуиция, большое спасибо за проделанную работу.' },
     ],
   },
 

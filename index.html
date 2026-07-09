@@ -2295,22 +2295,36 @@ function applyUITexts() {
 }
 
 // TTS-Stimme für aktive Sprache
-let ttsVoice = null;
+// v35 F3: Stimmenauswahl pro Sprache statt einmalig beim Laden.
+// Vorher: initVoices() lief EINMAL beim Start und cachte eine Stimme für die
+// Startsprache. Nach setLang('ru') blieb z.B. die deutsche Stimme aktiv –
+// russischer Text wurde mit deutscher Stimme gesprochen (gesetzte u.voice
+// überschreibt u.lang auf den meisten Engines). Jetzt: pickVoice(langCode)
+// löst die Stimme lazy pro Sprache auf und cached sie sprachgebunden.
+// Auswahllogik unverändert: bevorzugte Namen aus tts_voices, dann lokale
+// Stimme der Sprache, dann irgendeine Stimme der Sprache, sonst null.
+// Bei voiceschanged (Stimmenliste lädt asynchron nach) wird der Cache geleert.
+const _voiceCache = {}; // v35 F3: Sprachcode → SpeechSynthesisVoice|null
 
-(function initVoices() {
-  const load = () => {
-    const voices = speechSynthesis.getVoices();
-    const preferred = (L.tts_voices || []);
-    ttsVoice = preferred.reduce((found, name) =>
-      found || voices.find(v => new RegExp(name, 'i').test(v.name)), null)
-      || voices.find(v => v.lang.startsWith(currentLang) && v.localService)
-      || voices.find(v => v.lang.startsWith(currentLang))
-      || null;
-  };
-  if (speechSynthesis.getVoices().length) load();
-  else speechSynthesis.onvoiceschanged = load;
-  setTimeout(load, 600);
-})();
+function pickVoice(langCode) {
+  if (langCode in _voiceCache) return _voiceCache[langCode];
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return null; // Liste noch nicht geladen – NICHT cachen
+  const preferred = (LANG[langCode] && LANG[langCode].tts_voices) || [];
+  const voice = preferred.reduce((found, name) =>
+    found || voices.find(v => new RegExp(name, 'i').test(v.name)), null)
+    || voices.find(v => v.lang.startsWith(langCode) && v.localService)
+    || voices.find(v => v.lang.startsWith(langCode))
+    || null;
+  _voiceCache[langCode] = voice;
+  return voice;
+}
+
+speechSynthesis.onvoiceschanged = () => {
+  // v35 F3: Stimmenliste nachgeladen/geändert → Cache verwerfen,
+  // damit pickVoice beim nächsten Aufruf neu auflöst.
+  for (const k in _voiceCache) delete _voiceCache[k];
+};
 
 // AudioContext initialisieren (iOS benoetigt Nutzer-Geste)
 let _audioCtx = null;
@@ -2376,15 +2390,30 @@ function speak(textOrKey, onDone, mp3Key, mp3Direct) {
   if (mp3path) {
     // ── MP3 abspielen ──────────────────────────────
     // setTimeout 50ms: iOS blockiert neuen Audio()-Aufruf direkt aus onended-Callback
+    // v35 F1: Once-Guard. Bei bestimmten MP3-Ladefehlern (404, Netzabbruch,
+    // korruptes File) feuern sowohl das error-Event als auch die Promise-
+    // Rejection von play(). Ohne Guard lief _speakTTS() dann doppelt, cb()
+    // wurde doppelt aufgerufen und die State-Machine verzweigte sich
+    // (z.B. runStep zweimal parallel, parts_counter doppelt inkrementiert).
+    // Jetzt gewinnt der erste Fortsetzungspfad, alle weiteren laufen ins Leere.
     setTimeout(() => {
+      let settled = false; // v35 F1
+      const settleDone = () => {     // v35 F1: normales Ende – genau einmal
+        if (settled) return; settled = true;
+        _currentAudio = null; cb();
+      };
+      const settleFallback = () => { // v35 F1: Fehler → TTS – genau einmal
+        if (settled) return; settled = true;
+        _currentAudio = null; _speakTTS(textOrKey, cb);
+      };
       try {
         if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
         const audio = new Audio(mp3path);
         _currentAudio = audio;
-        audio.onended  = () => { _currentAudio = null; cb(); };
-        audio.onerror  = () => { _currentAudio = null; _speakTTS(textOrKey, cb); };
-        audio.play().catch(() => { _currentAudio = null; _speakTTS(textOrKey, cb); });
-      } catch(e) { _speakTTS(textOrKey, cb); }
+        audio.onended  = settleDone;
+        audio.onerror  = settleFallback;
+        audio.play().catch(settleFallback);
+      } catch(e) { settleFallback(); }
     }, 50);
   } else {
     // ── TTS ────────────────────────────────────────
@@ -2418,7 +2447,8 @@ function _speakTTS(text, cb) {
         u.lang  = L.tts_lang;
         u.rate  = 0.88;
         u.pitch = 1.0;
-        if (ttsVoice) u.voice = ttsVoice;
+        const voice = pickVoice(currentLang); // v35 F3
+        if (voice) u.voice = voice;
         u.onstart = () => { utteranceStarted = true; };
         u.onend   = finish;
         u.onerror = finish;

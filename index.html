@@ -244,12 +244,14 @@ font-size: 2.4rem; font-weight: 300; line-height: 1; color: #1a1810;
 .proto-lbl { font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: #9a9488; margin-top: 4px; }
 .proto-note { font-size: 0.82rem; color: #6a6458; text-align: center; max-width: 300px; line-height: 1.7; margin-bottom: 1rem; flex-shrink: 0; }
 .proto-wipe { font-size: 0.7rem; color: #aaa49a; text-align: center; margin-bottom: 2rem; flex-shrink: 0; }
-/* v36 F2: Nachwirken-Hinweis am Sitzungsende. Erscheint fuer ALLE Nutzer nach der
-   Closing-Kette – unabhaengig vom SUD-Ergebnis. protoNote (Stats) ist zu diesem
-   Zeitpunkt bereits ausgefadet und daher kein geeigneter Ort. */
-.proto-afternote { font-size: 0.78rem; color: #6a6458; text-align: center; max-width: 340px; line-height: 1.75; margin: 0 auto 1.2rem; flex-shrink: 0; }
-/* v36 F4 BETA: Ruckleitung zur Feedback-Seite. Nach der Testphase entfernen. */
-.beta-link { display: block; font-size: 0.72rem; color: #6a6458; text-align: center; margin-top: 1.4rem; text-decoration: underline; letter-spacing: 0.04em; }
+/* v37 G2: Abschluss-Screen NACH der Sitzung. Traegt den Nachwirken-Hinweis.
+   Bewusst getrennt vom Protokoll-Screen, damit die Lofty-Frage als letzter
+   Eindruck der Sitzung stehen bleibt. */
+.after-note { font-size: 0.9rem; color: #6a6458; text-align: center; max-width: 360px; line-height: 1.85; margin-bottom: 2.5rem; }
+/* v37 BETA: Feedback-Button. Nach der Testphase durch regulaeren Button ersetzen. */
+.btn-end-link { display: inline-block; text-decoration: none; text-align: center; }
+/* v37 BETA: Dezenter Zweitausgang. Nach der Testphase entfernen. */
+.after-home-link { font-size: 0.72rem; color: #6a6458; text-align: center; margin-top: 1.6rem; text-decoration: underline; letter-spacing: 0.04em; cursor: pointer; }
 
 /* ── PROTOCOL STAGE (v24 Punkt 3) ──
    Stats und Closings teilen sich denselben Platz via Grid-Stack.
@@ -839,12 +841,25 @@ border-color: var(--gold); color: var(--gold);
     </div>
   </div>
 
-  <!-- v36 F2: Nachwirken-Hinweis, wird zusammen mit Wipe/End-Button eingeblendet. -->
-  <div class="proto-afternote" id="protoAfterNote" data-i18n="proto_afternote" style="display:none;">Vielleicht ist etwas aufgetaucht, das du nicht einordnen kannst. Vielleicht hast du auch gar nichts bemerkt. Beides ist in Ordnung. Du musst nicht verstehen, was heute geschehen ist – lass es einfach ein paar Tage nachwirken. Der Prozess arbeitet weiter, auch ohne deine Erklärung.</div>
+  <!-- v37 G1: Nachwirken-Hinweis und Feedback-Link sind auf screenAfter verlegt.
+       Begruendung: Die Lofty-Frage (proto-03) soll als offene Frage nachwirken.
+       Ein erklaerender Text oder ein Feedback-Link daneben schliesst genau den
+       Zustand, den die Frage herstellen soll. -->
   <div class="proto-wipe" id="protoWipe" data-i18n="proto_wipe" style="display:none;">Alle Daten werden nach dem Schließen unwiderruflich gelöscht.</div>
   <button class="btn-end hidden-until-tts" id="protoEndBtn" data-i18n="proto_btn_end" onclick="endSession()">Sitzung beenden</button>
-  <!-- v36 F4 BETA: Nur waehrend der Beta-Testphase. Nach Abschluss ersatzlos entfernen. -->
-  <a class="beta-link" id="betaFeedbackLink" href="https://ralfmaleska.com/app-test/" data-i18n="beta_feedback" style="display:none;">Wie war deine Sitzung? Feedback geben</a>
+</div>
+
+<!-- ══ ABSCHLUSS-SCREEN (v37 G2) ══
+     Erscheint erst NACH "Sitzung beenden". Organisatorische Ebene, nicht mehr
+     Teil der Sitzung. Traegt den Nachwirken-Hinweis und den Ausgang. -->
+<div class="screen" id="screenAfter">
+  <div class="after-note" id="afterNote" data-i18n="proto_afternote">Vielleicht ist etwas aufgetaucht, das du nicht einordnen kannst. Vielleicht hast du auch gar nichts bemerkt. Beides ist in Ordnung. Du musst nicht verstehen, was heute geschehen ist – lass es einfach ein paar Tage nachwirken. Der Prozess arbeitet weiter, auch ohne deine Erklärung.</div>
+  <!-- v37 BETA: Waehrend der Testphase Feedback-Button. Nach der Beta ersetzen durch:
+       <button class="btn-end" data-i18n="after_btn_home" onclick="goTo('screenSplash')">Zurück zum Start</button>
+       und den Textlink darunter ersatzlos entfernen. -->
+  <a class="btn-end btn-end-link" id="afterFeedbackBtn" href="https://ralfmaleska.com/app-test/" data-i18n="after_btn_feedback">Feedback geben</a>
+  <!-- v37 BETA: Ausgang fuer alle, die kein Feedback geben wollen. Nach der Beta entfernen. -->
+  <div class="after-home-link" id="afterHomeLink" data-i18n="after_btn_home" onclick="goTo('screenSplash')">Zurück zum Start</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1081,8 +1096,10 @@ const LANG = {
       proto_btn_end:       'Sitzung beenden',
       // v36 F2: Nachwirken-Hinweis (Bildschirmtext, kein Audio).
       proto_afternote:     'Vielleicht ist etwas aufgetaucht, das du nicht einordnen kannst. Vielleicht hast du auch gar nichts bemerkt. Beides ist in Ordnung. Du musst nicht verstehen, was heute geschehen ist – lass es einfach ein paar Tage nachwirken. Der Prozess arbeitet weiter, auch ohne deine Erklärung.',
-      // v36 F4 BETA: Nach der Testphase entfernen.
-      beta_feedback:       'Wie war deine Sitzung? Feedback geben',
+      // v37 BETA: Beschriftungen des Abschluss-Screens. Nach der Testphase
+      // after_btn_feedback entfernen, after_btn_home bleibt.
+      after_btn_feedback:  'Feedback geben',
+      after_btn_home:      'Zurück zum Start',
       // Dev-Menü (interner Einsatz, aber Ralf nutzt EN beim Pitch ggf.)
       dev_skip:            'Dev Skip ▾',
       dev_admin:           'Admin',
@@ -1405,8 +1422,9 @@ const LANG = {
       proto_btn_end:       'End Session',
       // v36 F2: Nachwirken-Hinweis (Bildschirmtext, kein Audio).
       proto_afternote:     'Perhaps something surfaced that you cannot quite place. Perhaps you noticed nothing at all. Either is fine. You do not need to understand what happened today – just let it settle for a few days. The process continues working, even without your explanation.',
-      // v36 F4 BETA: Nach der Testphase entfernen.
-      beta_feedback:       'How was your session? Give feedback',
+      // v37 BETA: siehe DE.
+      after_btn_feedback:  'Give feedback',
+      after_btn_home:      'Back to start',
       // Dev menu
       dev_skip:            'Dev Skip ▾',
       dev_admin:           'Admin',
@@ -4089,11 +4107,6 @@ function showProtocol(opts) {
 
   const wipeEl = document.getElementById('protoWipe');
   if (wipeEl) wipeEl.style.display = 'none';
-  // v36 F2/F4: Nachwirken-Hinweis und Beta-Link fuer neue Sitzung zuruecksetzen.
-  const afterNoteEl = document.getElementById('protoAfterNote');
-  if (afterNoteEl) afterNoteEl.style.display = 'none';
-  const betaLinkEl = document.getElementById('betaFeedbackLink');
-  if (betaLinkEl) betaLinkEl.style.display = 'none';
   const endBtn = document.getElementById('protoEndBtn');
   if (endBtn) { endBtn.textContent = L.ui.sitzung_beenden; endBtn.classList.add('hidden-until-tts'); }
 
@@ -4135,13 +4148,10 @@ function startProtoClosing() {
     showClosing(c2El, s.proto_closing2_tts || '', s.proto_closing2_mp3 || null, () => {
       showClosing(c3El, s.proto_closing3_tts || '', s.proto_closing3_mp3 || null, () => {
         // Reveal wipe text and end button
-        // v36 F2/F4: Nachwirken-Hinweis und Beta-Link gemeinsam einblenden.
-        const afterNoteEl2 = document.getElementById('protoAfterNote');
-        if (afterNoteEl2) afterNoteEl2.style.display = 'block';
+        // v37 G3: Nur Wipe + End-Button. Der Nachwirken-Hinweis liegt jetzt auf
+        // screenAfter, damit die Lofty-Frage hier als Letztes stehen bleibt.
         if (wipeEl) wipeEl.style.display = 'block';
         if (endBtn) endBtn.classList.remove('hidden-until-tts');
-        const betaLinkEl2 = document.getElementById('betaFeedbackLink');
-        if (betaLinkEl2) betaLinkEl2.style.display = 'block';
       });
     });
   });
@@ -4162,7 +4172,10 @@ function endSession() {
   // Reset protocol closing for next session
   const endBtn = document.getElementById('protoEndBtn');
   if (endBtn) endBtn.classList.add('hidden-until-tts');
-  goTo('screenSplash');
+  // v37 G4: Statt direkt zum Splash geht es auf den Abschluss-Screen.
+  // Aufraeumen (TTS, Spirale, Wake Lock, Session-Reset) ist zu diesem Zeitpunkt
+  // bereits erfolgt – screenAfter ist rein organisatorisch, ohne Audio.
+  goTo('screenAfter');
 }
 
 // ══════════════════════════════════════════════════

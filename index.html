@@ -554,7 +554,7 @@ border-color: var(--gold); color: var(--gold);
   <div class="splash-hint" data-i18n="splash_hint">Tippe um zu beginnen</div>
   <!-- v35 R1: Rotations-Hinweis auf dem Splash – App benötigt Auto-Rotation,
        Nutzer soll das VOR dem Durchlauf wissen (Frust-Prävention Kalibrierung). -->
-  <div data-i18n="splash_rotation_hint_html" style="margin:1.4rem auto 0;font-size:0.62rem;letter-spacing:0.04em;color:#5c646e;max-width:17rem;line-height:1.6;padding:0 1.2rem;text-align:center;"><strong style="color:#7a828c;">Wichtig:</strong> Diese App benötigt die automatische Bildschirmdrehung. Falls dein Bildschirm gesperrt ist, aktiviere die Rotation kurz in den Einstellungen.</div>
+  <div data-i18n="splash_rotation_hint_html" style="margin:1.4rem auto 0;font-size:0.62rem;letter-spacing:0.04em;color:#5c646e;max-width:17rem;line-height:1.6;padding:0 1.2rem;text-align:center;"><strong style="color:#7a828c;">Wichtig:</strong> Diese App benötigt die automatische Bildschirmdrehung. Falls dein Bildschirm gesperrt ist, aktiviere die Rotation kurz in den Einstellungen. Du brauchst außerdem eine stabile Internetverbindung und einen Ort, an dem du ungestört bist.</div>
   <!-- DEV-ONLY – versteckt, einblendbar via 5-Tap-Trigger oben rechts -->
   <button id="devSkipBtn" class="dev-hidden" onclick="devMenuToggle()" data-i18n="dev_skip" style="position:fixed;top:1rem;right:1rem;background:#1a1d22;border:1px solid #c4a05a55;color:#c4a05a88;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Dev Skip &#9662;</button>
   <button id="adminBtn" class="dev-hidden" onclick="adminOpen()" data-i18n="dev_admin" style="position:fixed;top:1rem;right:7.5rem;background:#1a1d22;border:1px solid #4a7a9b88;color:#4a7a9b;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Admin</button>
@@ -857,7 +857,7 @@ border-color: var(--gold); color: var(--gold);
   <!-- v37 BETA: Waehrend der Testphase Feedback-Button. Nach der Beta ersetzen durch:
        <button class="btn-end" data-i18n="after_btn_home" onclick="goTo('screenSplash')">Zurück zum Start</button>
        und den Textlink darunter ersatzlos entfernen. -->
-  <a class="btn-end btn-end-link" id="afterFeedbackBtn" href="https://ralfmaleska.com/app-test/" data-i18n="after_btn_feedback">Feedback geben</a>
+  <a class="btn-end btn-end-link" id="afterFeedbackBtn" href="https://ralfmaleska.com/feedback" data-i18n="after_btn_feedback">Feedback geben</a>
   <!-- v37 BETA: Ausgang fuer alle, die kein Feedback geben wollen. Nach der Beta entfernen. -->
   <div class="after-home-link" id="afterHomeLink" data-i18n="after_btn_home" onclick="goTo('screenSplash')">Zurück zum Start</div>
 </div>
@@ -1009,7 +1009,7 @@ const LANG = {
       splash_brand:        'Influencial',
       splash_sub:          'Silent Coaching',
       splash_hint:         'Tippe um zu beginnen',
-      splash_rotation_hint_html: '<strong style="color:#7a828c;">Wichtig:</strong> Diese App benötigt die automatische Bildschirmdrehung. Falls dein Bildschirm gesperrt ist, aktiviere die Rotation kurz in den Einstellungen.', // v35 R3
+      splash_rotation_hint_html: '<strong style="color:#7a828c;">Wichtig:</strong> Diese App benötigt die automatische Bildschirmdrehung. Falls dein Bildschirm gesperrt ist, aktiviere die Rotation kurz in den Einstellungen. Du brauchst außerdem eine stabile Internetverbindung und einen Ort, an dem du ungestört bist.', // v35 R3 · v38 H1: Verbindungs-/Setting-Hinweis ergaenzt (Beta-Feedback 1+3)
       landscape_rotation_hint: 'Falls sich das Bild nicht dreht: Aktiviere kurz die automatische Bildschirmdrehung in den Einstellungen.', // v35 R3
       // Info-Screen
       info_label:          'Influencial · Silent Coaching',
@@ -1335,7 +1335,7 @@ const LANG = {
       splash_brand:        'Influencial',
       splash_sub:          'Silent Coaching',
       splash_hint:         'Tap to begin',
-      splash_rotation_hint_html: '<strong style="color:#7a828c;">Important:</strong> This app requires auto-rotation. If your screen is locked, briefly enable rotation in your settings.', // v35 R4
+      splash_rotation_hint_html: '<strong style="color:#7a828c;">Important:</strong> This app requires auto-rotation. If your screen is locked, briefly enable rotation in your settings. You also need a stable internet connection and a place where you will not be disturbed.', // v35 R4 · v38 H1: siehe DE
       landscape_rotation_hint: 'If the screen doesn\'t rotate: briefly enable auto-rotation in your settings.', // v35 R4
       // Info-Screen
       info_label:          'Influencial · Silent Coaching',

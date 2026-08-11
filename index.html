@@ -871,7 +871,26 @@ border-color: var(--gold); color: var(--gold);
      Erscheint erst NACH "Sitzung beenden". Organisatorische Ebene, nicht mehr
      Teil der Sitzung. Traegt den Nachwirken-Hinweis und den Ausgang. -->
 <div class="screen" id="screenAfter">
-  <div class="after-note" id="afterNote" data-i18n="proto_afternote">Vielleicht ist etwas aufgetaucht, das du nicht einordnen kannst. Vielleicht hast du auch gar nichts bemerkt. Beides ist in Ordnung. Du musst nicht verstehen, was heute geschehen ist – lass es einfach ein paar Tage nachwirken. Der Prozess arbeitet weiter, auch ohne deine Erklärung.</div>
+  <!-- v41 J2: Sitzungsergebnis. Werte werden in endSession() aus dem
+       Protokoll-Screen uebernommen (DOM-Kopie, weil S dort bereits
+       zurueckgesetzt ist). -->
+  <h2 class="headline" data-i18n="proto_h2_html" style="font-size:1.4rem;margin-bottom:0.4rem;">Sitzung <em>abgeschlossen.</em></h2>
+  <div class="proto-grid">
+    <div class="proto-cell">
+      <div class="proto-val" id="afterPartsVal">–</div>
+      <div class="proto-lbl" data-i18n="proto_lbl_parts">Teile</div>
+    </div>
+    <div class="proto-cell">
+      <div class="proto-val" id="afterPreVal">–</div>
+      <div class="proto-lbl" data-i18n="proto_lbl_before">Vorher</div>
+    </div>
+    <div class="proto-cell">
+      <div class="proto-val" id="afterPostVal">–</div>
+      <div class="proto-lbl" data-i18n="proto_lbl_after">Nachher</div>
+    </div>
+  </div>
+  <div class="proto-note" id="afterStatsNote"></div>
+  <div class="after-note" id="afterNote" data-i18n="proto_afternote">Du musst nicht verstehen, was heute geschehen ist – lass es einfach ein paar Tage nachwirken. Der Prozess arbeitet weiter, auch ohne deine Erklärung.</div>
   <!-- v37 BETA: Waehrend der Testphase Feedback-Button. Nach der Beta ersetzen durch:
        <button class="btn-end" data-i18n="after_btn_home" onclick="goTo('screenSplash')">Zurück zum Start</button>
        und den Textlink darunter ersatzlos entfernen. -->
@@ -1113,7 +1132,9 @@ const LANG = {
       proto_wipe:          'Alle Daten werden nach dem Schließen unwiderruflich gelöscht.',
       proto_btn_end:       'Sitzung beenden',
       // v36 F2: Nachwirken-Hinweis (Bildschirmtext, kein Audio).
-      proto_afternote:     'Vielleicht ist etwas aufgetaucht, das du nicht einordnen kannst. Vielleicht hast du auch gar nichts bemerkt. Beides ist in Ordnung. Du musst nicht verstehen, was heute geschehen ist – lass es einfach ein paar Tage nachwirken. Der Prozess arbeitet weiter, auch ohne deine Erklärung.',
+      // v42 K1: Auf zwei Saetze gekuerzt – der Abschluss-Screen traegt seit v41
+      // zusaetzlich das Sitzungsergebnis, der Vorlauf war zu lang.
+      proto_afternote:     'Du musst nicht verstehen, was heute geschehen ist – lass es einfach ein paar Tage nachwirken. Der Prozess arbeitet weiter, auch ohne deine Erklärung.',
       // v37 BETA: Beschriftungen des Abschluss-Screens. Nach der Testphase
       // after_btn_feedback entfernen, after_btn_home bleibt.
       after_btn_feedback:  'Feedback geben',
@@ -1439,7 +1460,9 @@ const LANG = {
       proto_wipe:          'All data is permanently deleted after closing.',
       proto_btn_end:       'End Session',
       // v36 F2: Nachwirken-Hinweis (Bildschirmtext, kein Audio).
-      proto_afternote:     'Perhaps something surfaced that you cannot quite place. Perhaps you noticed nothing at all. Either is fine. You do not need to understand what happened today – just let it settle for a few days. The process continues working, even without your explanation.',
+      // v42 K1: Auf zwei Saetze gekuerzt – der Abschluss-Screen traegt seit v41
+      // zusaetzlich das Sitzungsergebnis, der Vorlauf war zu lang.
+      proto_afternote:     'You do not need to understand what happened today – just let it settle for a few days. The process continues working, even without your explanation.',
       // v37 BETA: siehe DE.
       after_btn_feedback:  'Give feedback',
       after_btn_home:      'Back to start',
@@ -4120,7 +4143,13 @@ function showProtocol(opts) {
   // werden die Klassen dann gewechselt.
   const statsEl = document.getElementById('protoStats');
   const closingsBoxEl = document.getElementById('protoClosingsBox');
-  if (statsEl) statsEl.classList.remove('fade-out');
+  // v41 J1: Die Statistik wird hier NICHT mehr sichtbar gemacht.
+  // Grund: startProtoClosing() setzt seit v26 FIX 3 im selben Tick 'fade-out'
+  // (noetig, damit die Closing-Audio-Kette im User-Gesture-Fenster startet).
+  // Die Zahlen blitzten dadurch nur kurz auf und waren nicht lesbar.
+  // Sie erscheinen jetzt auf screenAfter, wo kein Audio laeuft und der Nutzer
+  // beliebig Zeit hat. Der Protokoll-Screen gehoert allein der Lofty-Frage.
+  if (statsEl) statsEl.classList.add('fade-out');
   if (closingsBoxEl) closingsBoxEl.classList.remove('fade-in');
 
   const wipeEl = document.getElementById('protoWipe');
@@ -4190,6 +4219,22 @@ function endSession() {
   // Reset protocol closing for next session
   const endBtn = document.getElementById('protoEndBtn');
   if (endBtn) endBtn.classList.add('hidden-until-tts');
+  // v41 J3: Sitzungsergebnis auf den Abschluss-Screen uebernehmen.
+  // Bewusst per DOM-Kopie statt aus S: S wurde oben mit freshSession()
+  // bereits zurueckgesetzt, die angezeigten Werte stehen aber noch im Markup.
+  const copyPairs = [['protoPartsVal','afterPartsVal'],
+                     ['protoPreVal','afterPreVal'],
+                     ['protoPostVal','afterPostVal'],
+                     ['protoNote','afterStatsNote']];
+  copyPairs.forEach(([fromId, toId]) => {
+    const from = document.getElementById(fromId);
+    const to   = document.getElementById(toId);
+    if (from && to) to.textContent = from.textContent;
+  });
+  // Gruene Hervorhebung bei Verbesserung mituebernehmen.
+  const postFrom = document.getElementById('protoPostVal');
+  const postTo   = document.getElementById('afterPostVal');
+  if (postFrom && postTo) postTo.classList.toggle('positive', postFrom.classList.contains('positive'));
   // v37 G4: Statt direkt zum Splash geht es auf den Abschluss-Screen.
   // Aufraeumen (TTS, Spirale, Wake Lock, Session-Reset) ist zu diesem Zeitpunkt
   // bereits erfolgt – screenAfter ist rein organisatorisch, ohne Audio.

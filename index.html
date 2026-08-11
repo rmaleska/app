@@ -31,6 +31,24 @@ font-family: 'DM Sans', sans-serif;
 font-weight: 300;
 overflow: hidden;
 touch-action: manipulation;
+/* v40 I1: iOS oeffnet bei laengerem Druck das native Kontextmenue
+   (Text auswaehlen / Kopieren) und schluckt dabei den Touch – der
+   Button-Klick kommt nie an. Betrifft genau die Zielsituation: Augen
+   geschlossen, kein Ton gehoert, deshalb laenger gedrueckt.
+   touch-action allein verhindert nur den Doppeltipp-Zoom. */
+-webkit-touch-callout: none;
+-webkit-user-select: none;
+-moz-user-select: none;
+user-select: none;
+}
+
+/* v40 I1: Eingabefelder ausgenommen – sonst laesst sich im Admin-Bereich
+   kein Text markieren oder korrigieren. */
+input, textarea {
+-webkit-touch-callout: default;
+-webkit-user-select: text;
+-moz-user-select: text;
+user-select: text;
 }
 
 body::after {

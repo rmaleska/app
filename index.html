@@ -61,7 +61,8 @@ pointer-events: none; z-index: 9999;
 /* ── SPLASH ── */
 #screenSplash { background: var(--bg); }
 .splash-btn {
-width: 120px; height: 120px; border-radius: 50%;
+/* v43 F1: Start-Button verkleinert (120 -> 92px) */
+width: 92px; height: 92px; border-radius: 50%;
 border: 1px solid var(--muted);
 background: transparent; cursor: pointer;
 display: flex; flex-direction: column;
@@ -497,10 +498,17 @@ font-weight: 300; letter-spacing: 0.12em;
 color: var(--text); text-align: center;
 margin-bottom: 0.3rem;
 }
+/* v43 F1: aus der Marken-Zeile wird die Slogan-Zeile. Laengerer Text,
+   daher kein uppercase und kein weites letter-spacing mehr (Umbruch mobil). */
 .splash-sub {
-font-size: 0.65rem; letter-spacing: 0.28em;
-text-transform: uppercase; color: var(--muted);
-text-align: center; margin-bottom: 2rem;
+font-size: clamp(0.72rem, 2.8vw, 0.88rem); letter-spacing: 0.1em;
+color: var(--muted); max-width: 20rem; line-height: 1.5;
+text-align: center; margin-bottom: 0.5rem;
+}
+/* v43 F1: dritte Zeile – Credential unter dem Slogan */
+.splash-cred {
+font-size: 0.62rem; letter-spacing: 0.08em;
+color: #5c646e; text-align: center; margin-bottom: 1.9rem;
 }
 
 /* Language selector */
@@ -517,6 +525,40 @@ cursor: pointer; transition: border-color 0.3s, color 0.3s;
 }
 .lang-btn.active {
 border-color: var(--gold); color: var(--gold);
+}
+/* v43 F1: Sprachauswahl als Dropdown – skaliert auf beliebig viele Sprachen,
+   ohne dass die Zeile breiter wird. Optik an .lang-btn angelehnt. */
+.lang-select {
+background: transparent; border: 1px solid var(--muted);
+color: var(--muted); font-family: 'DM Sans', sans-serif;
+font-size: 0.62rem; letter-spacing: 0.18em;
+text-transform: uppercase; padding: 0.35rem 0.8rem;
+cursor: pointer; border-radius: 0;
+-webkit-appearance: none; appearance: none;
+-webkit-tap-highlight-color: transparent;
+text-align: center; text-align-last: center;
+}
+.lang-select:focus { outline: none; border-color: var(--gold); color: var(--gold); }
+.lang-select option { background: #0e1215; color: var(--text); }
+
+/* ── v43 F2: PRE-SCREEN (Screen 2) ── */
+.pre-usp {
+font-size: 0.7rem; letter-spacing: 0.16em;
+text-transform: uppercase; color: var(--gold-dim);
+text-align: center; margin-bottom: 1.6rem;
+max-width: 22rem; line-height: 1.8;
+}
+.pre-offer {
+font-family: 'Cormorant Garamond', serif;
+font-size: clamp(1.05rem, 3.6vw, 1.35rem);
+font-weight: 300; color: var(--text);
+text-align: center; margin-bottom: 2.2rem;
+max-width: 22rem; line-height: 1.5;
+}
+.pre-need {
+font-size: 0.62rem; letter-spacing: 0.04em;
+color: #5c646e; text-align: center;
+margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
 }
 .lang-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
 
@@ -550,29 +592,36 @@ border-color: var(--gold); color: var(--gold);
 
 <!-- SPLASH -->
 <div class="screen active" id="screenSplash">
-  <div class="splash-brand" data-i18n="splash_brand">Influencial</div>
-  <div class="splash-sub" data-i18n="splash_sub">Silent Coaching</div>
+  <!-- v43 F1: Marke ersetzt durch Slogan. splash_brand/splash_sub behalten
+       ihre Schluesselnamen, nur die Textwerte in tx: haben sich geaendert. -->
+  <div class="splash-brand" data-i18n="splash_brand">Coach dich selbst</div>
+  <div class="splash-sub" data-i18n="splash_sub">Verhaltensmuster und Blockaden lösen</div>
+  <div class="splash-cred" data-i18n="splash_cred">von einem Psychologen entwickelt</div>
   <div class="lang-selector">
-    <button class="lang-btn active" id="langBtn-de" onclick="setLang('de')">DE</button>
-    <button class="lang-btn" id="langBtn-en" onclick="setLang('en')">EN</button>
-    <!-- v29: Testversion DE-Markt – nur DE und EN sichtbar.
-         Die Sprachen HY/RU/ES/VI bleiben im Code vollständig erhalten,
-         nur die Buttons sind ausgeblendet. Zum Wieder-Einblenden
-         einfach die folgenden drei Zeilen entkommentieren.
-    <button class="lang-btn" id="langBtn-hy" onclick="setLang('hy')">ՀՅ</button>
-    <button class="lang-btn" id="langBtn-ru" onclick="setLang('ru')">RU</button>
-    <button class="lang-btn" id="langBtn-es" onclick="setLang('es')">ES</button>
-    <button class="lang-btn" id="langBtn-vi" onclick="setLang('vi')">VI</button>  v34 F3: VI ergänzt
-    -->
-    <!-- /v29 -->
+    <!-- v43 F1: Dropdown statt Einzel-Buttons. setLang() ist unveraendert –
+         der Aufruf erfolgt jetzt ueber onchange statt onclick.
+         Weitere Sprachen: einfach die Kommentarzeilen unten aktivieren. -->
+    <select class="lang-select" id="langSelect" onchange="setLang(this.value)">
+      <option value="de" selected>Deutsch</option>
+      <option value="en">English</option>
+      <!-- v45 A5: RU aktiviert – Aufnahmen liegen vor, screens/calib/aha/steps
+           sind verdrahtet. Die Oberflaechentexte (tx:) folgen in Schritt C und
+           fallen bis dahin auf Deutsch zurueck. -->
+      <option value="ru">Русский</option>
+      <!-- HY/ES/VI bleiben im Code vollstaendig erhalten:
+      <option value="hy">Հայերեն</option>
+      <option value="es">Español</option>
+      <option value="vi">Tiếng Việt</option>
+      -->
+    </select>
   </div>
   <button class="splash-btn" onclick="splashStart()">
     <div class="splash-dot"></div>
   </button>
   <div class="splash-hint" data-i18n="splash_hint">Tippe um zu beginnen</div>
-  <!-- v35 R1: Rotations-Hinweis auf dem Splash – App benötigt Auto-Rotation,
-       Nutzer soll das VOR dem Durchlauf wissen (Frust-Prävention Kalibrierung). -->
-  <div data-i18n="splash_rotation_hint_html" style="margin:1.4rem auto 0;font-size:0.62rem;letter-spacing:0.04em;color:#5c646e;max-width:17rem;line-height:1.6;padding:0 1.2rem;text-align:center;"><strong style="color:#7a828c;">Wichtig:</strong> Diese App benötigt die automatische Bildschirmdrehung. Falls dein Bildschirm gesperrt ist, aktiviere die Rotation kurz in den Einstellungen. Du brauchst außerdem eine stabile Internetverbindung und einen Ort, an dem du ungestört bist.</div>
+  <!-- v43 F1: Der frueher hier stehende Rotations-/Voraussetzungs-Hinweis
+       (v35 R1) ist auf den Pre-Screen (screenPre) gewandert und dort gekuerzt.
+       Der tx-Schluessel splash_rotation_hint_html bleibt im Code erhalten. -->
   <!-- DEV-ONLY – versteckt, einblendbar via 5-Tap-Trigger oben rechts -->
   <button id="devSkipBtn" class="dev-hidden" onclick="devMenuToggle()" data-i18n="dev_skip" style="position:fixed;top:1rem;right:1rem;background:#1a1d22;border:1px solid #c4a05a55;color:#c4a05a88;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Dev Skip &#9662;</button>
   <button id="adminBtn" class="dev-hidden" onclick="adminOpen()" data-i18n="dev_admin" style="position:fixed;top:1rem;right:7.5rem;background:#1a1d22;border:1px solid #4a7a9b88;color:#4a7a9b;font-size:0.7rem;letter-spacing:0.14em;padding:0.4rem 0.9rem;cursor:pointer;text-transform:uppercase;z-index:9998;">Admin</button>
@@ -595,6 +644,16 @@ border-color: var(--gold); color: var(--gold);
     <div onclick="devJump('closing')" data-i18n="dev_closing" style="padding:0.5rem 1rem;font-size:0.7rem;letter-spacing:0.12em;color:#c4a05a88;cursor:pointer;text-transform:uppercase;">&#8594; Abschluss</div>
   </div>
   <!-- /DEV-ONLY -->
+</div>
+
+<!-- §SCREEN:PRE  – v43 F2: Zwischenscreen zwischen Splash und Info.
+     Bewusst statisch: kein TTS, kein Timer, kein Audio, keine Zustandslogik.
+     Weiter ausschliesslich ueber preStart(). -->
+<div class="screen" id="screenPre">
+  <div class="pre-usp" data-i18n="pre_usp">Ohne Worte · Ohne Datenspeicherung · Ohne Anmeldung</div>
+  <div class="pre-offer" data-i18n="pre_offer">Methode &amp; Einstieg live erleben. Vollversion: ~17 $ in Krypto</div><!-- v44 P2: statischer Fallback, wird von applyUITexts() ueberschrieben -->
+  <div class="pre-need" data-i18n="pre_need">Du brauchst: stabiles Internet, automatische Bildschirmdrehung, ca. 30 Min. ungestört</div>
+  <button class="btn" onclick="preStart()" data-i18n="pre_btn">Kostenlos testen</button>
 </div>
 
 <!-- §SCREEN:INFO -->
@@ -995,6 +1054,16 @@ border-color: var(--gold); color: var(--gold);
 //   calib      – Kalibrierungs-Pools (true/false Aussagen)
 //   steps      – Protokoll-Texte S1–S19
 
+// ══════════════════════════════════════════════════
+// §JS:PRICE  – v44 P1: Zentraler Sitzungspreis
+// ══════════════════════════════════════════════════
+// EINZIGE Stelle, an der der Preis gepflegt wird. Wird unten in den
+// pre_offer-Texten aller Sprachen eingesetzt. Muss vor LANG stehen,
+// weil die Textstrings beim Aufbau des Objekts zusammengesetzt werden.
+// Der Pi-Betrag (Vercel-Variable PI_SESSION_PRICE) wird separat gepflegt
+// und muss bei einer Preisaenderung mit angepasst werden.
+const PRICE_USD = 17;
+
 const LANG = {
 
   // ── DEUTSCH ──────────────────────────────────────
@@ -1043,9 +1112,15 @@ const LANG = {
     // _html-Suffix → innerHTML, sonst → textContent.
     tx: {
       // Splash
-      splash_brand:        'Influencial',
-      splash_sub:          'Silent Coaching',
+      splash_brand:        'Coach dich selbst',                        // v43 F4
+      splash_sub:          'Verhaltensmuster und Blockaden lösen',       // v43 F4
+      splash_cred:         'von einem Psychologen entwickelt',           // v43 F4
       splash_hint:         'Tippe um zu beginnen',
+      // v43 F4: Pre-Screen (Screen 2)
+      pre_usp:             'Ohne Worte · Ohne Datenspeicherung · Ohne Anmeldung',
+      pre_offer:           'Methode & Einstieg live erleben. Vollversion: ~' + PRICE_USD + ' $ in Krypto', // v44 P2
+      pre_need:            'Du brauchst: stabiles Internet, automatische Bildschirmdrehung, ca. 30 Min. ungestört',
+      pre_btn:             'Kostenlos testen',
       splash_rotation_hint_html: '<strong style="color:#7a828c;">Wichtig:</strong> Diese App benötigt die automatische Bildschirmdrehung. Falls dein Bildschirm gesperrt ist, aktiviere die Rotation kurz in den Einstellungen. Du brauchst außerdem eine stabile Internetverbindung und einen Ort, an dem du ungestört bist.', // v35 R3 · v38 H1: Verbindungs-/Setting-Hinweis ergaenzt (Beta-Feedback 1+3)
       landscape_rotation_hint: 'Falls sich das Bild nicht dreht: Aktiviere kurz die automatische Bildschirmdrehung in den Einstellungen.', // v35 R3
       // Info-Screen
@@ -1371,9 +1446,15 @@ const LANG = {
     // §I18N:EN  – sichtbare UI-Texte für applyUITexts()
     tx: {
       // Splash
-      splash_brand:        'Influencial',
-      splash_sub:          'Silent Coaching',
+      splash_brand:        'Be your own coach',                          // v43 F4
+      splash_sub:          'Break old patterns and blocks',               // v43 F4
+      splash_cred:         'Developed by a psychologist',                 // v43 F4
       splash_hint:         'Tap to begin',
+      // v43 F4: Pre-Screen (Screen 2)
+      pre_usp:             'No words · No data stored · No sign-up',
+      pre_offer:           'Experience the method. Full version: ~$' + PRICE_USD + ' in crypto', // v44 P2
+      pre_need:            'You need: stable internet, screen rotation enabled, ~30 min undisturbed',
+      pre_btn:             'Try for free',
       splash_rotation_hint_html: '<strong style="color:#7a828c;">Important:</strong> This app requires auto-rotation. If your screen is locked, briefly enable rotation in your settings. You also need a stable internet connection and a place where you will not be disturbed.', // v35 R4 · v38 H1: siehe DE
       landscape_rotation_hint: 'If the screen doesn\'t rotate: briefly enable auto-rotation in your settings.', // v35 R4
       // Info-Screen
@@ -2093,58 +2174,242 @@ const LANG = {
     mp3_base: 'audio/ru/',
 
     ui: {
-      hint:            'Нажмите, чтобы начать',
+      // v46 B1: Anrede durchgehend "ты" – vorher "вы". Die Aufnahmen duzen
+      // konsequent; die Oberflaeche siezte. Beides muss zusammenpassen.
+      //
+      // v46 B3/B4: Russische Zahlwoerter haben DREI Formen, nicht zwei
+      // (1 балл / 2-4 балла / 5+ баллов). Die alte Fassung kannte nur zwei und
+      // erzeugte bei 2-4 falsche Formen. plural_ru() bildet die Regel ab.
+      plural_ru: (n, one, few, many) => {
+        const m10 = n % 10, m100 = n % 100;
+        if (m10 === 1 && m100 !== 11) return one;
+        if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+        return many;
+      },
+
+      hint:            'Нажми, чтобы начать',
       weiter:          'Продолжить',
       ja:              'Да',
       nein:            'Нет',
-      bereit:          'Готов',
-      ich_habe_satz:   'У меня есть моё предложение',
+      bereit:          'Готово',                    // v46 B1: geschlechtsneutral statt 'Готов'
+      ich_habe_satz:   'Предложение готово',        // v46 B1
       sitzung_beenden: 'Завершить сессию',
       teile_lbl:       'Части',
       vorher_lbl:      'До',
       nachher_lbl:     'После',
       teile_singular:  'Часть',
       teile_plural:    'Части',
-      belastung_reduziert: (d) => `Сегодня вы снизили нагрузку на ${d} ${d===1?'балл':'баллов'}.`,
+      // v46 B3: unpersoenlich formuliert – "ты снизил/снизила" waere
+      // geschlechtsabhaengig, die App kennt das Geschlecht aber nicht.
+      belastung_reduziert: (d) => `Сегодня нагрузка снизилась на ${d} ${LANG.ru.ui.plural_ru(d, 'балл', 'балла', 'баллов')}.`,
       prozess_weiter:  'Процесс продолжается – даже после сессии.',
       daten_loeschen:  'Все данные безвозвратно удаляются после закрытия.',
-      toast_spontaner: 'Пожалуйста, отвечайте более спонтанно – доверяйте первому импульсу.',
-      calib_retry:     'Это было ещё недостаточно спонтанно. Повторим калибровку – доверяйте первому импульсу.', // v33 F1: Ansage vor Kalibrierungs-Neustart (calib-retry.mp3, TTS-Fallback)
-      tap_hint:        'Нажми на кнопку, когда будешь готов.', // v36 F1: ENTWURF – muttersprachliche Prüfung ausstehend (ты-Form, konsistent mit steps). // v33 F2: Hinweis-Ansage im Tap-Modus S18/S19 (tap-weiter.mp3, TTS-Fallback)
-      toast_asif:      'Если сомневаетесь – просто делайте вид, что знаете.',
-      toast_asif_btn:  'Если сомневаетесь, просто нажмите кнопку.',
-      toast_screen:    'Совет: убедитесь, что экран не выключается автоматически.',
+      toast_spontaner: 'Пожалуйста, отвечай спонтаннее – доверься своему первому импульсу.', // v46 B1
+      // v46 B2: gepruefter Wortlaut aus mp3-aufnahmeliste-ru-v12 (calib-retry.mp3)
+      calib_retry:     'Пока получилось недостаточно спонтанно. Давай повторим калибровку – доверься своему первому импульсу.',
+      // v46 B2: gepruefter Wortlaut aus mp3-aufnahmeliste-ru-v12 (tap-weiter.mp3)
+      tap_hint:        'Нажми на кнопку, когда захочешь продолжить.',
+      toast_asif:      'Если сомневаешься – просто сделай вид, что знаешь.',   // v46 B1
+      toast_asif_btn:  'Если сомневаешься, просто нажми на кнопку.',           // v46 B1
+      toast_screen:    'Совет: убедись, что экран не выключается автоматически.', // v46 B1
       badge_singular:  '1 часть обработана',
-      badge_plural:    (n) => `${n} части обработано`,
+      badge_plural:    (n) => `${n} ${LANG.ru.ui.plural_ru(n, 'часть', 'части', 'частей')} обработано`,
       augen_zu:        'Глаза закрыты',
       abgeschlossen:   'Сессия завершена.',
     },
 
+    // §I18N:RU  – sichtbare UI-Texte für applyUITexts()
+    // v47 C: muttersprachlich geprüft (influencial-tx-russisch-vorlage_Korrektur).
+    // Terminologie wie in den Aufnahmen: «внутреннее чутьё», «подсознание», Anrede «ты».
+    // Die dev_*-Schlüssel fehlen bewusst → Fallback auf DE (wie bei VI).
+    tx: {
+      // Splash
+      splash_brand:             'Стань себе коучем',
+      splash_sub:               'Освободись от привычных шаблонов и внутренних блоков',
+      splash_cred:              'разработано психологом',
+      splash_hint:              'Нажми, чтобы начать',
+      // Pre-Screen (Screen 2)
+      pre_usp:                  'Без слов · Без хранения данных · Без регистрации',
+      pre_offer:                'Познакомься с методом вживую. Полная версия: ~17 $ в криптовалюте',
+      pre_need:                 'Тебе понадобится: стабильный интернет, автоповорот экрана, около 30 мин. без помех',
+      pre_btn:                  'Попробовать бесплатно',
+      splash_rotation_hint_html:'<strong style="color:#7a828c;">Важно:</strong> Для работы приложения необходимо включить автоповорот экрана. Если поворот экрана заблокирован, включи его в настройках. Также тебе понадобится стабильное интернет-соединение и место, где тебя никто не будет отвлекать.',  // v47 C2: <strong>-Auszeichnung wiederhergestellt · Schlüssel wird seit v43 nicht mehr angezeigt
+      landscape_rotation_hint:  'Если экран не поворачивается, включи автоповорот в настройках.',
+      // Info-Screen
+      info_label:               'Influencial · Silent Coaching',
+      info_p1_html:             'У тебя есть внутреннее знание, которое превосходит твой разум. Кто-то называет это интуицией, внутренним голосом или внутренним чутьём. Это приложение даёт ему пространство, чтобы <strong>изменить привычные шаблоны</strong> – не заставляя тебя говорить о своей проблеме или анализировать её.',
+      info_p2_html:             'Во время сессии ты нажимаешь только две кнопки: <strong>Да</strong> или <strong>Нет</strong>. Большего от тебя не требуется.',
+      info_warning_html:        '<strong>Важное примечание</strong><br>Это приложение предназначено для коучинга и не является медицинским продуктом. Оно не подходит при острых психических заболеваниях, психических кризисах или суицидальных мыслях. В таких случаях, пожалуйста, обратись к врачу или в отделение неотложной психиатрической помощи.',
+      info_checkbox:            'Я подтверждаю, что ни одно из указанных ограничений ко мне не относится, и использую это приложение под свою ответственность.',
+      info_btn:                 'Далее',
+      // Welcome
+      welcome_label:            'Коуч-приложение',
+      welcome_h1_html:          'Добро пожаловать<br>к самому <em>себе.</em>',
+      welcome_li1:              'Твоё внимание',
+      welcome_li2:              'Твоё внутреннее чутьё',
+      welcome_btn:              'Далее',
+      // Problem (Kernsatz)
+      problem_label:            'Твоя тема',
+      problem_h2_html:          'Твоё <em>ключевое предложение.</em>',
+      problem_p1:               'Прежде чем начать — удели себе минутку.',
+      problem_p2_html:          'Сформулируй свою тему одним чётким предложением. Например: <strong>«Мне трудно заснуть.»</strong> Или: <strong>«Я чувствую себя некомфортно в общении с другими людьми.»</strong>',
+      problem_p3:               'Ничего не объясняй и не анализируй — только одно предложение, как можно конкретнее. Просто держи его в уме.',
+      problem_btn:              'Предложение готово',
+      // Intro (Drei Ebenen)
+      intro_label:              'Как это работает',
+      intro_h2_html:            'Три <em>уровня</em><br>внутри тебя.',
+      intro_li1_html:           '<strong>Твоё внутреннее чутьё</strong> – мудрая внутренняя сила, которая направляет эту сессию.',
+      intro_li2_html:           '<strong>Твоё подсознание</strong> – система внутренних частей, хранящая прошлый опыт.',
+      intro_li3_html:           '<strong>И ты сам</strong> – тот, кто наблюдает и нажимает на кнопки.',
+      intro_btn:                'Далее',
+      // Practice
+      practice_label:           'Небольшое упражнение',
+      practice_h2_html:         'Познакомься<br>с <em>кнопками.</em>',
+      practice_body_html:       'Нажми один раз на <strong>красную</strong> кнопку – внизу слева.<br>Затем один раз на <strong>зелёную</strong> – внизу справа.<br>Глаза уже могут быть почти закрыты.',  // v47 C1: Korrekturfeld enthielt nur den Schlusssatz – zusammengeführt
+      practice_label_no:        'Нет',
+      practice_label_yes:       'Да',
+      // AHA
+      aha_label:                'Минутка для тебя',
+      aha_btn_begin:            'Начать',
+      aha_label_no:             'Нет',
+      aha_label_yes:            'Да',
+      aha_hint_yesno:           '← Нет   Да →',
+      aha_hint_later_yes:       '← Позже   Всё равно продолжить →',
+      aha_hint_later:           '← Позже',
+      aha_label_later:          'Позже',
+      // Calib2-Intro
+      calib2intro_label:        'Подготовка',
+      calib2intro_h2_html:      'Закрой сейчас<br><em>глаза.</em>',
+      calib2intro_body_html:    'На следующие вопросы отвечай так же спонтанно — не раздумывая, не взвешивая. Твой первый импульс и есть правильный ответ.<br><br>Почему? Потому что сознательные размышления до сих пор не привели тебя к устойчивому решению. Подсознание знает больше — и именно это мы сейчас используем.<br><br>Просто нажимай то, что почувствуешь первым.',
+      // Calib2 Screen
+      calib2_label:             'Калибровка · Глаза закрыты',
+      calib2_label_no:          'Нет',
+      calib2_label_yes:         'Да',
+      // Landscape
+      landscape_label:          'Подготовка',
+      landscape_h2_html:        'Поверни телефон<br><em>горизонтально.</em>',
+      landscape_body_html:      'Держи его обеими руками — большие пальцы слева и справа.<br><br>Так ты сможешь нажимать кнопки вслепую, когда закроешь глаза.',
+      landscape_warning:        'Пожалуйста, сначала поверни телефон. Если экран не поворачивается: отключи блокировку поворота экрана на своём телефоне.',
+      landscape_btn:            'Готово',
+      // Calib1
+      calib_label:              'Калибровка',
+      calib_label_no:           'Нет',
+      calib_label_yes:          'Да',
+      // Pre-SUD
+      presud_label:             'Этап I · Оценка',
+      presud_h2_html:           'Насколько сильно тебя<br>волнует эта тема <em>сейчас?</em>',
+      presud_body:              'Не раздумывая, нажми на число от 1 до 10.',
+      // Contact
+      contact_label:            'Этап II · Контакт',
+      contact_label_yes:        'Да',
+      // Step (Protokoll)
+      step_eyes_label:          'Глаза закрыты',
+      step_label_no:            'Нет',
+      step_label_yes:           'Да',
+      // Post-SUD
+      postsud_label:            'Завершение · Оценка',
+      postsud_h2_html:          'Насколько сильно ты чувствуешь<br>эту тему <em>сейчас?</em>',
+      postsud_body:             'Не раздумывая, нажми на число от 1 до 10.',
+      // Protokoll-Abschluss
+      proto_label:              'Итоги сессии',  // v47 C3: Schlusspunkt entfernt (Überschrift)
+      proto_h2_html:            'Сессия <em>завершена.</em>',
+      proto_lbl_parts:          'Части',
+      proto_lbl_before:         'До',
+      proto_lbl_after:          'После',
+      proto_wipe:               'Все данные безвозвратно удаляются после закрытия.',
+      proto_btn_end:            'Завершить сессию',
+      proto_afternote:          'Тебе не нужно понимать, что произошло сегодня – просто дай этому несколько дней. Процесс продолжает работать и без твоих объяснений.',
+      // Abschluss-Screen
+      after_btn_feedback:       'Оставить отзыв',
+      after_btn_home:           'Вернуться в начало',
+    },
+
     screens: {
-      // Тексты будут добавлены позже
-      info_tts: '', info_mp3: '',
-      welcome1_tts: '', welcome1_mp3: '',
-      welcome2_tts: '', welcome2_mp3: '',
-      problem_tts: '', problem_mp3: '',
-      presud_tts: '', presud_mp3: '',
-      intro1_tts: '', intro1_mp3: '',
-      intro2_tts: '', intro2_mp3: '',
-      // v36 F3: ENTWURF – muttersprachliche Pruefung ausstehend (ты-Form).
-      intro3_tts: 'Твоё внутреннее чувство ведёт тебя ровно настолько, насколько это хорошо для тебя.', intro3_mp3: 'ui-07b',
-      practice1_tts: '', practice1_mp3: '',
-      practice2_tts: '', practice2_mp3: '',
-      practice3_tts: '', practice3_mp3: '',
-      calib_gut_tts: '', calib_gut_mp3: '',
-      calib2_intro_tts: '', calib2_intro_mp3: '',
-      calib2_start_tts: '', calib2_start_mp3: '',
-      contact_tts: '', contact_mp3: '',
-      eyes_tts: '', eyes_mp3: '',
-      ready_tts: '', ready_mp3: '',
-      postsud1_tts: '', postsud1_mp3: '',
-      postsud2_tts: '', postsud2_mp3: '',
+      // v45 A1: Wortlaute aus mp3-aufnahmeliste-ru-v12.docx (muttersprachlich
+      // geprueft). MP3-Verweise gesetzt – speak() nutzt jetzt die Aufnahmen und
+      // faellt nur bei fehlender Datei auf TTS zurueck.
+      info_tts: 'У тебя есть внутреннее знание, которое превосходит твой разум. Кто-то называет это интуицией, внутренним голосом или внутренним чутьём. Это приложение даёт ему проявиться, чтобы изменить привычные шаблоны  – не заставляя тебя говорить о своей проблеме или постоянно ее анализировать. Во время сессии ты нажимаешь только две кнопки: Да или Нет. Большего от тебя не требуется.  Важное примечание: это приложение предназначено для коучинга и не является медицинским продуктом. Оно не подходит при острых психических заболеваниях, психических кризисах или суицидальных мыслях. В таких случаях, пожалуйста, обратитесь к врачу или в отделение неотложной психиатрической помощи.', info_mp3: 'ui-01',
+      welcome1_tts: 'Добро пожаловать к самому себе.', welcome1_mp3: 'ui-02',
+      welcome2_tts: 'Тебе нужны всего две вещи: твое внимание – и твоё внутреннее чутьё.', welcome2_mp3: 'ui-03',
+      problem_tts: 'Прежде чем начать – удели себе минутку. Сформулируй свою тему одним чётким предложением. Например: мне трудно заснуть. Или: я чувствую себя некомфортно в общении с другими людьми. Ничего не объясняй и не анализируй – только одно предложение, чем конкретнее, тем лучше. Просто помни о нем.', problem_mp3: 'ui-04',
+      presud_tts: 'Теперь вспомни свое предложение. Почувствуй, насколько сильно эта тема волнует тебя сейчас, а затем, не раздумывая, нажми на число.', presud_mp3: 'ui-05',
+      intro1_tts: 'Хорошо. Теперь я покажу тебе, как проходит сессия.', intro1_mp3: 'ui-06',
+      intro2_tts: 'В тебе есть три уровня. Твое внутреннее чутьё – мудрая внутренняя сила, которая направляет эту сессию. Твое подсознание – система внутренних частей, хранящая прошлый опыт. И ты, -  тот, кто наблюдает и нажимает на кнопки.', intro2_mp3: 'ui-07',
+      // v45 A1: ui-07b ist in KEINER Aufnahmeliste enthalten (auch nicht DE/EN).
+      // Wortlaut daher aus dem bestehenden v36-Entwurf uebernommen; solange die
+      // Datei fehlt, greift der TTS-Fallback – wie derzeit auch in DE.
+      intro3_tts: 'Твоё внутреннее чутьё ведёт тебя ровно настолько, насколько это хорошо для тебя.', intro3_mp3: 'ui-07b',
+      practice1_tts: 'Небольшое упражнение. Теперь один раз нажми на красную кнопку внизу слева.', practice1_mp3: 'ui-08',
+      practice2_tts: 'Хорошо. Теперь нажми один раз на зелёную кнопку внизу справа.', practice2_mp3: 'ui-09',
+      practice3_tts: 'Отлично. И еще один важный момент: после того как ты закроешь свои глаза, прозвучит короткий сигнал. Услышав его, нажми на кнопку.', practice3_mp3: 'ui-10',
+      calib_gut_tts: 'Отлично!', calib_gut_mp3: 'ui-11',
+      calib2_intro_tts: 'Держи глаза закрытыми. Если они еще открыты – закрой их сейчас. Зрение – наш самый сильный орган чувств, поэтому все наше внимание сосредоточено на том, что мы видим. Когда глаза отдыхают, остальные чувства становятся острее, а связь с твоим подсознанием – яснее. На следующие вопросы отвечай также спонтанно. Не раздумывай. Первый импульс – и есть правильный ответ. Когда прозвучит короткий сигнал, нажми “Да” или “Нет”.', calib2_intro_mp3: 'ui-12',
+      calib2_start_tts: 'Закрой глаза. Отвечай спонтанно.', calib2_start_mp3: 'ui-13',
+
+      // Einstimmung – eine Datei mit eingebauten Pausen.
+      // Die Einzelfelder bleiben als TTS-Fallback bestehen, falls prep-all fehlt.
+      prep_all_mp3:      'prep-all',
+      prep_intro_tts:    'Прежде чем мы начнём, давай уделим немного времени подготовке. Не открывай глаза.',
+      prep_intro_mp3:    '',
+      prep_breath_tts:   'Трижды глубоко вдохни и выдохни. Не спеши – столько времени, сколько тебе нужно.',
+      prep_breath_mp3:   '',
+      prep_body_tts:     'Теперь прислушайся к своему телу. Где в теле твоя тема ощущается сильнее всего – в животе, в груди, в горле или где-то ещё? Просто замечай всё, что есть и чувствуешь. И если ты не можешь точно понять, где именно это ощущается, — это совершенно нормально.',
+      prep_body_mp3:     '',
+      prep_visual1_tts:  'Теперь представь перед собой стену. Настолько отчётливо, насколько получится, без всякого усилия. А теперь представь ещё какой-нибудь предмет: например, предмет мебели, вазу или что-то ещё.',
+      prep_visual1_mp3:  '',
+      prep_visual2_tts:  'Представь, что всё белое. Спокойное и ясное.',
+      prep_visual2_mp3:  '',
+      prep_visual3_tts:  'А теперь пусть все становится красным: стена, предмет мебели, все вокруг.',
+      prep_visual3_mp3:  '',
+      prep_visual4_tts:  'Теперь – синим.',
+      prep_visual4_mp3:  '',
+      prep_visual5_tts:  'А теперь снова пусть все вокруг будет белым.',
+      prep_visual5_mp3:  '',
+
+      contact_tts: 'Твоё внутреннее чутьё уже готовится. Сделай глубокий вдох и выдох – и нажми на кнопку, когда почувствуешь готовность.', contact_mp3: 'ui-14',
+      eyes_tts: 'Не открывай глаза на протяжении всего сеанса – я буду рядом и проведу тебя через него.', eyes_mp3: 'ui-15',
+      ready_tts: 'Ты – связующее звено между своим внутренним чутьём и приложением. Как только почувствуешь импульс, нажми на зелёную или красную кнопку – это всё, что от тебя требуется. Отвечай спонтанно, не раздумывая. Твой первый импульс всегда правильный. Короткий сигнал подскажет, когда нужно нажать.', ready_mp3: 'ui-16',
+      postsud1_tts: 'Теперь ты можешь снова открыть глаза', postsud1_mp3: 'ui-17',
+      postsud2_tts: 'Насколько сильно это беспокоит тебя? Не задумываясь, нажми на число от 1 до 10.', postsud2_mp3: 'ui-18',
+      lofty_tts: 'Теперь начинает работать твое подсознание.', lofty_mp3: 'ui-19',
+
+      eyes_open_tts: 'Теперь ты можешь снова открыть глаза. Поверни телефон обратно вертикально.', eyes_open_mp3: 'proto-00',
+      proto_closing1_tts: 'То, что началось сегодня, продолжает развиваться в тебе дальше.', proto_closing1_mp3: 'proto-01',
+      proto_closing2_tts: 'Просто позволь следующему вопросу отозваться внутри тебя', proto_closing2_mp3: 'proto-02',
+      proto_closing3_tts: 'Почему сейчас что-то внутри меня начинает меняться?', proto_closing3_mp3: 'proto-03',
+
+      cue_mp3: 'cue',
+      landscape_tts: 'Теперь поверни телефон горизонтально и возьми его обеими руками, расположив большие пальцы по бокам. Так ты сможешь нажимать кнопки вслепую, когда закроешь глаза.', landscape_mp3: 'ui-quer',
     },
 
     calib: {
+      // v45 A2: Feste Sets analog DE/EN, mit MP3-Verweisen aus der v12-Liste.
+      // Vorher existierten nur pool_true / pool_false – dadurch lief die
+      // Kalibrierung auf Zufallssaetzen ohne jede Audioausgabe.
+      set_a: [
+        { text: 'Я человек.',                            correct: true,  mp3: 'ca-01' },
+        { text: 'У меня есть имя.',                      correct: true,  mp3: 'ca-02' },
+        { text: 'У меня есть лицо.',                     correct: true,  mp3: 'ca-03' },
+        { text: 'Я имею определенный вес.',              correct: true,  mp3: 'ca-04' },
+        { text: 'Мое сердце сейчас бьётся.',             correct: true,  mp3: 'ca-05' },
+        { text: 'Земля круглая.',                        correct: true,  mp3: 'ca-06' },
+        { text: 'В сутках 24 часа.',                     correct: true,  mp3: 'ca-07' },
+        { text: 'Числа существуют.',                     correct: true,  mp3: 'ca-08' },
+        { text: 'Снег черный.',                          correct: false, mp3: 'ca-09' },
+        { text: 'Огонь холодный.',                       correct: false, mp3: 'ca-10' },
+      ],
+      set_b: [
+        { text: 'У меня есть голова.',                   correct: true,  mp3: 'cb-01' },
+        { text: 'Я нахожусь на Земле.',                  correct: true,  mp3: 'cb-02' },
+        { text: 'Сейчас я что-то ощущаю.',               correct: true,  mp3: 'cb-03' },
+        { text: 'Язык существует.',                      correct: true,  mp3: 'cb-04' },
+        { text: '2 больше, чем 1.',                      correct: true,  mp3: 'cb-05' },
+        { text: 'Людям нужна вода.',                     correct: true,  mp3: 'cb-06' },
+        { text: 'Цветов больше одного.',                 correct: true,  mp3: 'cb-07' },
+        { text: 'Кроме меня, существуют другие люди.',   correct: true,  mp3: 'cb-08' },
+        { text: 'Вода сухая.',                           correct: false, mp3: 'cb-09' },
+        { text: 'Мне меньше 1 года.',                    correct: false, mp3: 'cb-10' },
+      ],
       pool_true: [
         'Я человек.','Я сейчас бодрствую.','Я сейчас дышу.',
         'Я сейчас сижу или лежу.','Вокруг меня есть свет.',
@@ -2177,31 +2442,48 @@ const LANG = {
       ],
     },
 
+
+    aha: {
+      // v45 A3: Fragen, Bruecken und Closing aus der geprueften v12-Liste.
+      // Die drei *_headline sind reine Bildschirmtexte und daher NICHT Teil der
+      // Aufnahmeliste – Uebersetzungsentwurf, Pruefung in Schritt C offen.
+      q1_headline: 'Короткий вопрос.',           // ENTWURF
+      q1_text:     'Есть ли в твоей жизни что-то, что тебя беспокоит прямо сейчас – даже если ты пока не можешь это точно назвать?',
+      q2_headline: 'Прислушайся к себе.',        // ENTWURF
+      q2_text:     'Есть ли что-то что ты можешь почувствовать – неважно где и насколько слабо?',
+      q3_headline: 'Последний вопрос.',          // ENTWURF
+      q3_text:     'Было бы хорошо, если бы стало легче?',
+      bridge_no1:  'Это совершенно нормально. Иногда это лишь смутное чувство, лёгкое беспокойство – что-то, что просто есть, не имея имени.',
+      bridge_no2:  'Иногда это проявляется лишь тогда, когда ты начинаешь прислушиваться внимательнее. Это совершенно нормально. И если сейчас не подходящий момент для тебя – ты можешь вернуться в любое время.',
+      bridge_no3:  'Тогда, возможно, сейчас не самый подходящий момент — ты можешь вернуться в любое время.',
+      closing:     'Именно для этого и создана эта сессия. Давай начнём.',
+    },
+
     steps: [
-      // v34 F1: Protokolltexte RU (S01–S19) – Übersetzungsentwurf vor muttersprachlicher Prüfung.
-      // mp3-Felder bleiben leer, bis die Aufnahmen deployt sind (speak() nutzt dann TTS).
-      { num:1,  label:'Шаг 1 · Исследование', mp3:'', text:'Дорогая интуиция, пожалуйста, исследуй проблему, чтобы получить общую картину: как проблема началась и почему она продолжается до сегодняшнего дня. Проверь воспоминания о событиях, которые, возможно, были с ней связаны, а также паттерны, которые ты, возможно, переняла у других: от твоей семьи, из твоего окружения, из времени до твоих собственных воспоминаний, из опыта, который не был твоим, и из паттернов, сохранённых в твоей системе. Общайся с участвующими частями. Цель — понять, как проблема стала частью твоей сегодняшней жизни. Дорогая интуиция, пожалуйста, дойди до самых границ своих возможностей и исследуй проблему настолько всесторонне, насколько это возможно сейчас. Дай мне, пожалуйста, импульс — знак того, что ты закончила. Просто «Да».' },
-      { num:2,  label:'Шаг 2 · Идентификация', mp3:'', text:'Дорогая интуиция, теперь я прошу тебя определить первую часть твоего разума, которая активно вызывает проблему. Под влиянием жизненного опыта или паттернов, переданных тебе, эта часть стала активно вызывать твою проблему. Твоя задача — убедительно научить её приспособиться к твоим сегодняшним способностям, знаниям, потребностям, интересам, ценностям и склонностям. Я буду направлять тебя, и вот эти шаги: сначала часть нужно определить; затем её нужно убедительно проинформировать о сегодняшней жизни; и эта новая информация должна быть частью усвоена и встроена. Таким образом часть переобучается и может поддерживать твои сегодняшние потребности, не создавая проблемы. Эта часть знает только то, что она знала тогда, когда была создана. Она застряла в своём времени и не осознаёт сегодняшней жизни. Дорогая интуиция, твоя задача — заново обучить её, проинформировать о сегодняшней жизни и дать ей обновление. Я буду направлять тебя в этом. Дорогая интуиция, пожалуйста, сделай сейчас первый шаг и определи эту часть. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
-      { num:3,  label:'Шаг 3 · Первая часть', mp3:'', text:'Дорогая интуиция, начни теперь с первой части. Эта часть застряла в прошлом. Она действует на основе знаний того времени, когда она возникла. Она не знает твоей сегодняшней жизненной ситуации и последствий своего влияния. Дорогая интуиция, твоя задача — убедительно обучить эту часть твоим сегодняшним способностям, знаниям, интересам, убеждениям и склонностям. Дорогая интуиция, пожалуйста, общайся с этой частью следующим образом: поблагодари её за всё, что она до сих пор для тебя сделала. Я прошу тебя сначала выслушать эту часть, а затем выяснить, во что она верит и почему она верит в то, во что верит. И затем я прошу тебя, дорогая интуиция, с этой новой информацией обучить эту часть текущей реальности. Эта часть застряла во времени, в котором была создана, и не учитывает твою сегодняшнюю жизненную ситуацию. Она знает только то, что ты знала тогда, — не ведая о твоей нынешней жизни. Убеди эту часть теперь поддерживать твой сегодняшний образ мышления, твои убеждения и твою жизненную ситуацию. Дай ей обновление. Дорогая интуиция, начни теперь, пожалуйста, с первой части. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
-      { num:4,  label:'Шаг 4 · Ещё части?', mp3:'', text:'Дорогая интуиция, есть ли ещё одна часть, которая также способствует проблеме или активно её вызывает? Дай мне, пожалуйста, импульс — просто «Да» или «Нет».' },
-      { num:5,  label:'Шаг 5 · Следующая часть', mp3:'', text:'Дорогая интуиция, пожалуйста, поработай теперь со следующей частью. Эта часть застряла в прошлом. Она действует на основе знаний того времени, когда она возникла. Она не знает твоей сегодняшней жизненной ситуации и последствий своего влияния. Дорогая интуиция, твоя задача — убедительно обучить эту часть твоим сегодняшним способностям, знаниям, интересам, убеждениям, ценностям и склонностям. Дорогая интуиция, пожалуйста, общайся с этой частью следующим образом: поблагодари её за всё, что она до сих пор для тебя сделала. Я прошу тебя сначала выслушать эту часть, а затем выяснить, во что она верит и почему она верит в то, во что верит. И затем я прошу тебя, дорогая интуиция, с этой новой информацией обучить эту часть текущей реальности. Эта часть застряла во времени, в котором была создана, и не учитывает твою сегодняшнюю жизненную ситуацию. Она знает только то, что ты знала тогда, — не ведая о твоей нынешней жизни. Убеди эту часть теперь поддерживать твой сегодняшний образ мышления, твои убеждения и твою жизненную ситуацию. Дай ей обновление. Дорогая интуиция, начни теперь, пожалуйста, со следующей частью. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
-      { num:6,  label:'Шаг 6 · Ещё части?', mp3:'', text:'Дорогая интуиция, есть ли ещё одна часть, которая также способствует проблеме или активно её вызывает? Дай мне, пожалуйста, импульс — просто «Да» или «Нет».' },
-      { num:7,  label:'Шаг 7 · Следующая часть', mp3:'', text:'Дорогая интуиция, пожалуйста, поработай теперь со следующей частью. Эта часть застряла в прошлом. Она действует на основе знаний того времени, когда она возникла. Она не знает твоей сегодняшней жизненной ситуации и последствий своего влияния. Дорогая интуиция, твоя задача — убедительно обучить эту часть твоим сегодняшним способностям, знаниям, интересам, убеждениям и склонностям. Дорогая интуиция, пожалуйста, общайся с этой частью следующим образом: поблагодари её за всё, что она до сих пор для тебя сделала. Я прошу тебя сначала выслушать эту часть, а затем выяснить, во что она верит и почему она верит в то, во что верит. И затем я прошу тебя, дорогая интуиция, с этой новой информацией обучить эту часть текущей реальности. Дорогая интуиция, эта часть застряла во времени, в котором была создана, и не учитывает твою сегодняшнюю жизненную ситуацию. Она знает только то, что ты знала тогда, — не ведая о твоей нынешней жизни. Убеди эту часть теперь поддерживать твой сегодняшний образ мышления, твои убеждения и твою жизненную ситуацию. Дай ей обновление. Дорогая интуиция, начни теперь, пожалуйста, со следующей частью. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
-      { num:8,  label:'Шаг 8 · Ещё части?', mp3:'', text:'Есть ли ещё части, которые способствуют проблеме или активно её вызывают? Дай мне, пожалуйста, снова импульс — просто «Да» или «Нет».' },
-      { num:9,  label:'Шаг 9 · Остальные части', mp3:'', text:'Дорогая интуиция, теперь ты знаешь порядок действий. Пожалуйста, поработай с частями, которые ещё остались, тем же способом, который ты уже знаешь, — то есть повтори эту работу с остальными частями. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
-      { num:10,  label:'Шаг 10 · Проверка', mp3:'', text:'Дорогая интуиция, теперь наступает проверка. Пожалуйста, проверь, появляются ли ещё части, связанные с проблемой, или существуют ли они. Есть ли ещё части, которые способствуют проблеме или активно её вызывают? Дай мне, пожалуйста, снова импульс — просто «Да» или «Нет».' },
-      { num:11,  label:'Шаг 11 · Проработка', mp3:'', text:'Дорогая интуиция, поработай, пожалуйста, с частью или частями, которые ты ещё нашла, тем же способом, который ты уже знаешь. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
-      { num:12,  label:'Шаг 12 · Новые части', mp3:'', text:'Дорогая интуиция, иногда части проявляются лишь тогда, когда другие части уже были переобучены, — и это тоже нормально. Поэтому, дорогая интуиция, отправься, пожалуйста, ещё раз на поиск и выясни, какая часть или какие части всё ещё способствуют проблеме или вызывают её. Когда ты определишь эти части, дорогая интуиция, переобучи их так, как ты уже делала это в начале. Когда ты закончишь, дай мне, пожалуйста, импульс — просто «Да».' },
-      { num:13,  label:'Шаг 13 · Финальное очищение', mp3:'', text:'Дорогая интуиция, если есть ещё что-то, что ты можешь сделать, чтобы проблема никогда больше не появлялась в твоей жизни, — сделай это сейчас, пожалуйста! Например, ты можешь удалить часть или несколько частей, которые больше не нужны; ты можешь также создать новые части, которые помогут устранить проблему. Ты можешь дать частям новые задачи, полезные для дальнейшего развития. И ты можешь разорвать связи между отдельными частями, которые больше не нужны. Точно так же ты можешь создать новые связи между отдельными частями. Если одна, несколько или все эти задачи необходимы или полезны для того, чтобы устранить проблему навсегда, — выполни это сейчас, пожалуйста. Дай мне импульс, когда мы сможем продолжить, — просто «Да».' },
-      { num:14,  label:'Шаг 14 · Осознание', mp3:'', text:'А теперь я обращаюсь лично к тебе — дорогой клиент, дорогой пользователь этого приложения. Хочешь ли ты узнать, что проработала твоя интуиция? Дай мне, пожалуйста, знак, импульс — просто «Да» или «Нет».' },
-      { num:15,  label:'Шаг 15 · Внутренний доступ', mp3:'', text:'Если ты хочешь узнать, что было проработано, повтори за мной — вслух или только мысленно: Дорогая интуиция, я хочу узнать, что ты проработала. Пожалуйста, открой мне это — в течение одной минуты. Сделай это через воспоминания, через внутренний голос или через озарения. Сделай это так, как считаешь правильным. И когда ты, дорогой клиент, дорогой пользователь, получишь ответ, дай мне, пожалуйста, знак, импульс — просто «Да» или «Нет».' },
-      { num:16,  label:'Шаг 16 · Вторая попытка', mp3:'', text:'Дорогая интуиция, похоже, до твоего человека информация не дошла — или дошла лишь частично. Пожалуйста, открой своему человеку сейчас всё, что для него полезно и необходимо. А ты, дорогой клиент, дорогой пользователь этого приложения, дай, пожалуйста, снова обратную связь: удалось ли тебе что-нибудь воспринять — просто «Да» или «Нет».' },
-      { num:17, label:'Шаг 17 · Пояснение', mp3:'', mp3_alt:'',
-        text:'Хорошо. Похоже, твоя интуиция считает, что сейчас для тебя лучше, чтобы эта информация пока оставалась скрытой. Тем не менее в ближайшие дни могут прийти какие-то озарения, идеи или осознания, которые могут быть связаны с твоей проблемой. Возможны и сны. Твоя интуиция всегда на твоей стороне. Она точно знает, сколько ты можешь принять. Просто обращай внимание в ближайшие дни на то, что происходит в твоей жизни. Иногда это лишь мелочи, которые ты, может быть, даже не замечаешь — или не связываешь со своей интуицией. Неважно, что это. Изменение в любом случае произошло.',
-        text_chose_not_to_know:'Это совершенно нормально.\n\nНекоторые люди предпочитают работать, не зная, что было проработано в глубине, — и это столь же хорошее решение.\n\nТвоя интуиция всё равно поработала, и изменение в любом случае произошло. Просто будь в ближайшие дни внимательнее — многое проявляется только в тишине.',
+      // v45 A4: Geprueft Wortlaute + MP3-Verweise aus der v12-Liste.
+      // Terminologie: 'Дорогое внутреннее чутьё' (saechlich), 'подсознание'.
+      { num:1, label:'Шаг 1 · Исследование', mp3:'s01', text:'Дорогое внутреннее чутьё, пожалуйста, исследуй проблему, чтобы получить общую картину: как она возникла и почему она продолжается до сих пор. Проверь, нет ли в твоей памяти событий, которые, возможно, были с ней связаны, а также шаблоны, которые перешли к тебе от других: от твоей семьи, от твоего окружения, из периода твоей жизни, который ты не помнишь, из чужого опыта, из шаблонов, сохранившихся в твоей внутренней системе. Поговори с этими внутренними частями, которые связаны с этой проблемой. Твоя цель – понять как эта проблема стала частью твоей сегодняшней жизни. Дорогое внутреннее чутьё, пожалуйста, задействуй все свои возможности и исследуй проблему настолько глубоко и всесторонне, насколько это возможно. Когда закончишь, дай мне знак – просто “ДА”.' },
+      { num:2, label:'Шаг 2 · Идентификация', mp3:'s02', text:'Дорогое внутреннее чутьё, пожалуйста, определи первую внутреннюю часть твоего разума, которая создаёт эту проблему. Эта часть сформировалась под влиянием твоего жизненного опыта, или шаблонов, переданных тебе другими, и теперь активно вызывает проблему. Твоя задача – убедительно показать этой части, как приспособится к твоим нынешним способностям, знаниям, потребностям, интересам, ценностям и склонностям. Я проведу тебя через весь этот процесс, который состоит из несколько шагов: сначала нужно определить эту часть. Затем помочь ей увидеть, какой стала твоя жизнь сегодня. После этого ей нужно усвоить эту новую информацию. Так эта часть сможет переучиться и начать помогать тебе, поддерживая твои нынешние потребности, не создавая при этом проблемы. Эта часть знает только то, что знала в момент своего формирования. Она словно осталась в том времени, и не осознает, какой стала твоя жизнь сегодня. Дорогое внутреннее чутьё, пожалуйста, начни с первого шага и определи мне эту часть. Когда закончишь, дай мне знак – просто “ДА”.' },
+      { num:3, label:'Шаг 3 · Первая часть', mp3:'s03', text:'Дорогое внутреннее чутьё, теперь начни с первой части. Эта часть застряла в прошлом. Она действует на основе знаний того времени, когда она возникла. Она не знает твоей сегодняшней жизненной ситуации и не осознаёт последствия своего влияния. Дорогое внутреннее чутьё, твоя задача – убедительно познакомить эту часть с твоими нынешними способностями, знаниями, интересами, убеждениями и склонностями. Дорогое внутреннее чутьё, пожалуйста, поговори с этой частью следующим образом: сначала поблагодари её за все, что она до сих пор сделала для тебя. Затем внимательно выслушай её и постарайся понять во что она верит и почему. А затем, дорогое внутреннее чутьё, пожалуйста, используя эту новую информацию, познакомь эту часть с тем, какой стала твоя жизнь сегодня. Эта часть словно осталась в том времени, когда сформировалась, и не осознает твою сегодняшнюю жизнь. Теперь убеди эту часть поддерживать твоё нынешнее мышление, убеждения и твою нынешнюю жизнь. Познакомь ее с тем, какой стала твоя жизнь сегодня. Дорогое внутреннее чутьё, пожалуйста, начни с первого шага и определи мне эту часть. Когда закончишь, дай мне знак – просто “ДА”.' },
+      { num:4, label:'Шаг 4 · Ещё части?', mp3:'s04', text:'Дорогое внутреннее чутьё, есть ли еще какая-то часть, которая способствует возникновению этой проблемы или активно её вызывает? Дай мне, пожалуйста, знак – просто “ДА” или “НЕТ”.' },
+      { num:5, label:'Шаг 5 · Следующая часть', mp3:'s05', text:'Дорогое внутреннее чутьё, пожалуйста, проработай теперь следующую часть. Эта часть застряла в прошлом. Она действует на основе знаний того времени, когда она возникла. Она не знает твоей сегодняшней жизненной ситуации и не осознаёт последствия своего влияния. Дорогое внутреннее чутьё, твоя задача – убедительно познакомить эту часть с твоими нынешними способностями, знаниями, интересами, убеждениями и склонностями. Дорогое внутреннее чутьё, пожалуйста, поговори с этой частью следующим образом: сначала поблагодари её за все, что она до сих пор сделала для тебя. Затем внимательно выслушай её и постарайся понять во что она верит и почему. А затем, дорогое внутреннее чутьё, пожалуйста, используя эту новую информацию, познакомь эту часть с тем, какой стала твоя жизнь сегодня. Эта часть словно осталась в том времени, когда сформировалась, и не осознает твою сегодняшнюю жизнь. Теперь убеди эту часть поддерживать твоё нынешнее мышление, убеждения и твою нынешнюю жизнь. Познакомь ее с тем, какой стала твоя жизнь сегодня. Дорогое внутреннее чутьё, пожалуйста, начни со следующей части. Когда закончишь, дай мне знак – просто “ДА”.' },
+      { num:6, label:'Шаг 6 · Ещё части?', mp3:'s06', text:'Дорогое внутреннее чутьё, есть ли еще какая-то часть, которая способствует возникновению этой проблемы или активно её вызывает? Дай мне, пожалуйста, знак – просто “ДА” или “НЕТ”.' },
+      { num:7, label:'Шаг 7 · Следующая часть', mp3:'s07', text:'Дорогое внутреннее чутьё, пожалуйста, проработай теперь следующую часть. Эта часть застряла в прошлом. Она действует на основе знаний того времени, когда она возникла. Она не знает твоей сегодняшней жизненной ситуации и не осознаёт последствия своего влияния. Дорогое внутреннее чутьё, твоя задача – убедительно познакомить эту часть с твоими нынешними способностями, знаниями, интересами, убеждениями и склонностями. Дорогое внутреннее чутьё, пожалуйста, поговори с этой частью следующим образом: сначала поблагодари её за все, что она до сих пор сделала для тебя. Затем внимательно выслушай её и постарайся понять во что она верит и почему. А затем, дорогое внутреннее чутьё, пожалуйста, используя эту новую информацию, познакомь эту часть с тем, какой стала твоя жизнь сегодня. Эта часть словно осталась в том времени, когда сформировалась, и не осознает твою сегодняшнюю жизнь. Теперь убеди эту часть поддерживать твоё нынешнее мышление, убеждения и твою нынешнюю жизнь. Познакомь ее с тем, какой стала твоя жизнь сегодня. Эта часть словно осталась в том времени, когда сформировалась, и не осознает твою сегодняшнюю жизнь. Теперь убеди эту часть поддерживать твоё нынешнее мышление, убеждения и твою нынешнюю жизнь. Познакомь ее с тем, какой стала твоя жизнь сегодня. Дорогое внутреннее чутьё, пожалуйста, начни со следующей части. Когда закончишь, дай мне знак – просто “ДА”.' },
+      { num:8, label:'Шаг 8 · Ещё части?', mp3:'s08', text:'Есть ли еще какие-то части, которые способствуют возникновению этой проблемы или активно её вызывает? Дай мне, пожалуйста, знак – просто “ДА” или “НЕТ”.' },
+      { num:9, label:'Шаг 9 · Остальные части', mp3:'s09', text:'Дорогое внутреннее чутьё, теперь ты знаешь весь порядок действий. Пожалуйста, поработай с остальными частями, которые еще остались, таким же образом, который ты уже знаешь. Повтори этот процесс для каждой следующей части. Когда ты закончишь, дай мне, пожалуйста, знак – просто “ДА” или “НЕТ”.' },
+      { num:10, label:'Шаг 10 · Проверка', mp3:'s10', text:'Дорогое внутреннее чутьё, теперь пришло время всё проверить. Посмотри, пожалуйста, остались ли еще какие-нибудь части, связанные с этой проблемой. Есть ли еще части, которые способствуют этой проблеме или активно ее вызывают? Дай мне снова, пожалуйста, знак – просто “ДА” или “НЕТ”.' },
+      { num:11, label:'Шаг 11 · Проработка', mp3:'s11', text:'Дорогое внутреннее чутьё, пожалуйста, поработай с частью или частями, которые ты еще нашла, таким же образом, который ты уже знаешь. Когда закончишь, дай мне знак – просто “ДА”.' },
+      { num:12, label:'Шаг 12 · Новые части', mp3:'s12', text:'Дорогое внутреннее чутьё, иногда части проявляются только лишь после того, когда другие части уже переучились. И это совершенно нормально. Поэтому, дорогое внутреннее чутьё, пожалуйста, еще раз внимательно поищи и выясни есть ли еще другие части, которые способствуют проблеме или вызывают её. Если ты найдёшь такие части, то, пожалуйста, переобучи их, также как сделала в самом начале. Когда закончишь, дай мне знак – просто “ДА”.' },
+      { num:13, label:'Шаг 13 · Финальное очищение', mp3:'s13', text:'Дорогое внутреннее чутьё, если есть еще что-то, что ты можешь сделать, чтобы проблема больше никогда не появилась в твоей жизни, то сделай это сейчас, пожалуйста! Например, ты можешь убрать одну или несколько частей, которые больше не нужны. Ты также можешь дать частям новые задачи, которые будут способствовать твоему дальнейшему развитию. Ты также можешь разорвать связи между отдельными частями, которые тебе больше не нужны. И точно так же ты можешь создать новые связи между ними. Если любое из этих действий, - одно, несколько, или все сразу – необходимы или поможет полностью устранить проблему, сделай это сейчас. Дай мне знак, когда мы сможем продолжить, - просто “ДА”.' },
+      { num:14, label:'Шаг 14 · Осознание', mp3:'s14', text:'А теперь я обращаюсь лично к тебе, дорогой пользователь этого приложения. Хочешь ли ты узнать, что проработало твое внутреннее чутьё? Дай мне, пожалуйста, знак, - просто “ДА” или “НЕТ”.' },
+      { num:15, label:'Шаг 15 · Внутренний доступ', mp3:'s15', text:'Если ты хочешь узнать, что именно было проработано, повтори за мной – вслух или мысленно: дорогое внутреннее чутьё, я хочу узнать, что именно ты проработало. Пожалуйста, помоги мне это осознать в течение одной минуты. Пусть это придет через внутренний голос, воспоминания или озарения – так, как ты считаешь нужным. И, когда ты, дорогой пользователь, получишь ответ, дай мне, пожалуйста, знак, - просто “ДА” или “НЕТ”.' },
+      { num:16, label:'Шаг 16 · Вторая попытка', mp3:'s16', text:'Дорогое внутреннее чутьё, похоже, человеку не удалось получить всю необходимую информацию, или она оказалась неполной. Пожалуйста, помоги ему осознать всё, что для него будет полезно и необходимо. А теперь, дорогой пользователь, скажи, заметил ли ты что-нибудь. Просто “ДА” или “НЕТ”.' },
+      { num:17, label:'Шаг 17 · Пояснение', mp3:'s17a', mp3_alt:'s17b',
+        text:'Хорошо. Похоже, твое внутреннее чутьё считает, что сейчас для тебя будет лучше, если эта информация пока останется для тебя скрытой. Тем не менее, в течение ближайших дней, могут прийти озарения, новые мысли или понимания, связанные с твоей проблемой. Сны также могут быть возможными. Твоё внутреннее чутьё всегда на твоей стороне. Оно точно знает, сколько ты сейчас способен принять. В ближайшие дни, просто попытайся быть внимательным к тому, что сейчас происходит в твоей жизни. Иногда, это могут быть какие-то мелочи, на которые ты не обращаешь внимание или не связал бы их со своим внутренним чутьём. Что бы это ни было, перемены уже начались.',
+        text_chose_not_to_know:'Это абсолютно нормально. Некоторые предпочитают не знать, что именно происходило во время процесса, - и это ничуть не хуже. Твое внутреннее чутьё все равно проработало, и изменения уже начались. В ближайшие дни просто будь внимателен к тому, что происходит вокруг и внутри тебя. Иногда что-то становится заметным только в тишине.',
       },
-      { num:18,  label:'Шаг 18 · Завершение', mp3:'', text:'Ещё одно короткое завершающее замечание. В этой короткой сессии уже произошло первое изменение — неважно, большое или маленькое. Ты можешь в любой момент вернуться и провести ещё один разговор со своей интуицией. Это может быть даже очень полезно. Ведь иногда происходят небольшие изменения, но человек снова возвращается к старым моделям поведения, — или случаются события, которые влияют на тебя, и в твоём подсознании снова возникают новые части. Некоторые части проявляются только после того, как другие части уже были проработаны. И это тоже совершенно нормально. Тогда ещё один разговор с твоей интуицией может быть очень полезен. Так что, если захочешь, — я всегда снова здесь, рядом с тобой.' },
-      { num:19,  label:'Шаг 19 · Благодарность', mp3:'', text:'Дорогая интуиция, большое спасибо за проделанную работу.' },
+      { num:18, label:'Шаг 18 · Завершение', mp3:'s18', text:'И напоследок еще несколько слов. Даже во время этой короткой сессии уже произошли изменения, - неважно большие они или маленькие. Ты можешь вернуться в любой момент и снова провести разговор со своим внутренним чутьём. Иногда это бывает очень полезным. Бывает, что иногда после первых изменений человек постепенно возвращается к старым моделям поведения или сталкивается с новыми событиями, которые на него влияют. Тогда в подсознании могут сформироваться новые внутренние части. И это совершенно нормально. В таких случаях еще один разговор с твоим внутренним чутьём может быть очень полезным. Поэтому, если захочешь, я всегда буду рядом.' },
+      { num:19, label:'Шаг 19 · Благодарность', mp3:'s19', text:'Дорогое внутреннее чутьё, большое спасибо тебе за проделанную работу.' },
     ],
   },
 
@@ -2716,8 +2998,16 @@ function splashStart() {
   ensureAudioCtx();
   // v30 F2: Cue-Elemente innerhalb dieser User-Geste freischalten (iOS).
   primeCueAudio();
-  _infoTimerDone = false; _infoTtsDone = false; _infoChecked = false;
   ensureWakeLock();
+  // v43 F3: Der Splash fuehrt jetzt auf den Pre-Screen (Screen 2) statt direkt
+  // auf screenInfo. primeCueAudio() bleibt bewusst HIER – erster User-Tap.
+  goTo('screenPre');
+}
+
+// v43 F3: Uebernimmt den frueheren zweiten Teil von splashStart() unveraendert.
+// Aufruf vom Button auf screenPre – eigene User-Geste, iOS-Audiokette intakt.
+function preStart() {
+  _infoTimerDone = false; _infoTtsDone = false; _infoChecked = false;
   goTo('screenInfo');
   setTimeout(() => { _infoTimerDone = true; _infoTryReveal(); }, 8000);
   const infoTxt = L.screens.info_tts;

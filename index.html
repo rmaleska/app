@@ -4112,14 +4112,24 @@ function primeCueAudio() {
 // onDone feuert genau einmal, danach folgt der Hinweiston (Aufrufer).
 function playTapHint(onDone) {
   let fired = false;
-  const cb = () => { if (fired) return; fired = true; (onDone || function(){})(); };
+  let guard = null;
+  const cb = () => {
+    if (fired) return;
+    fired = true;
+    if (guard) { clearTimeout(guard); guard = null; }
+    if (_tapHintEl) _tapHintEl.onended = null;
+    (onDone || function(){})();
+  };
+  // v48 F2: Wachhund wie in cueError. Bleibt play() haengen oder meldet der
+  // TTS-Fallback kein Ende, geht der Ablauf trotzdem weiter.
+  guard = setTimeout(cb, 8000);
   const ttsFallback = () => { try { _speakTTS(L.ui.tap_hint, cb); } catch(e) { cb(); } };
   try {
     if (!_tapHintEl) { ttsFallback(); return; }
     _tapHintEl.muted = false;
     _tapHintEl.volume = 1.0;
     _tapHintEl.currentTime = 0;
-    _tapHintEl.onended = () => { _tapHintEl.onended = null; cb(); };
+    _tapHintEl.onended = cb;
     _tapHintEl.play().catch(() => { _tapHintEl.onended = null; ttsFallback(); });
   } catch(e) {
     ttsFallback();
@@ -4145,13 +4155,31 @@ function _playCueMp3(volume) {
 // gekettet (onended-Kette = iOS-sicher, ersetzt die früheren setTimeouts).
 // Die Nachpause fürs Pacing ist in der MP3 enthalten.
 function cueError(onDone) {
-  const cb = onDone || function(){};
+  const done = onDone || function(){};
+  // v48 F1: Der Callback MUSS feuern – an ihm haengt S.locked=false und die
+  // Wiederholung der Kalibrierungsfrage. Vorher gab es dafuer nur zwei Wege
+  // (onended oder play()-catch). Fehlt cue-err.mp3 – aktuell in allen drei
+  // Sprachordnern – kann play() ein Promise liefern, das weder erfuellt noch
+  // abgelehnt wird. Dann feuerte nichts: Buttons blieben aus, der Nutzer sass
+  // mit geschlossenen Augen vor einer haengenden App.
+  let fired = false;
+  let guard = null;
+  const cb = () => {
+    if (fired) return;
+    fired = true;
+    if (guard) { clearTimeout(guard); guard = null; }
+    if (_cueErrEl) _cueErrEl.onended = null;
+    done();
+  };
+  // Wachhund: greift spaetestens nach 2s, unabhaengig vom Zustand des
+  // Audio-Elements. Im Normalfall war cb da laengst ueber onended gelaufen.
+  guard = setTimeout(cb, 2000);
   try {
     if (!_cueErrEl) _cueErrEl = new Audio(_cueErrPath());
     _cueErrEl.muted = false; // v31 F1: Priming-Stummschaltung aufheben
     _cueErrEl.volume = 0.85;
     _cueErrEl.currentTime = 0;
-    _cueErrEl.onended = () => { _cueErrEl.onended = null; cb(); };
+    _cueErrEl.onended = cb;
     _cueErrEl.play().catch(() => { _emitErrTone(); setTimeout(cb, 1200); });
   } catch(e) {
     _emitErrTone(); setTimeout(cb, 1200);

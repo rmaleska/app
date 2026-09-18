@@ -267,10 +267,18 @@ font-size: 2.4rem; font-weight: 300; line-height: 1; color: #1a1810;
    Bewusst getrennt vom Protokoll-Screen, damit die Lofty-Frage als letzter
    Eindruck der Sitzung stehen bleibt. */
 .after-note { font-size: 0.9rem; color: #6a6458; text-align: center; max-width: 360px; line-height: 1.85; margin-bottom: 2.5rem; }
-/* v37 BETA: Feedback-Button. Nach der Testphase durch regulaeren Button ersetzen. */
+/* v49 E2: Button-Optik fuer Links. Traegt seit v49 den Buchungs-Button
+   (frueher: den Feedback-Button, der jetzt ein Textlink ist). */
 .btn-end-link { display: inline-block; text-decoration: none; text-align: center; }
-/* v37 BETA: Dezenter Zweitausgang. Nach der Testphase entfernen. */
+/* v49 E2: Trennt die Sitzung (oben) vom Organisatorischen (unten). */
+.after-divider { width: 100%; max-width: 260px; height: 1px; background: #2a2a26; margin: 0 auto 2.2rem; }
+/* v49 E2: Nachbearbeitungs-Angebot. Nur DE, Sichtbarkeit via endSession(). */
+.after-offer { display: flex; flex-direction: column; align-items: center; }
+.after-offer-note { font-size: 0.78rem; color: #6a6458; text-align: center; max-width: 300px; line-height: 1.7; margin-top: 0.9rem; }
+/* v49 E2: aus dem BETA-Zweitausgang wird die gemeinsame Textlink-Optik fuer
+   Feedback und Ausgang. a-Variante ergaenzt, sonst greifen UA-Linkfarben. */
 .after-home-link { font-size: 0.72rem; color: #6a6458; text-align: center; margin-top: 1.6rem; text-decoration: underline; letter-spacing: 0.04em; cursor: pointer; }
+a.after-home-link { display: block; color: #6a6458; }
 
 /* ── PROTOCOL STAGE (v24 Punkt 3) ──
    Stats und Closings teilen sich denselben Platz via Grid-Stack.
@@ -465,6 +473,15 @@ scrollbar-color: var(--muted) transparent;
 .info-onboard-text strong { color: var(--text); font-weight: 400; }
 .info-onboard-text .warning { color: #c4a05a88; font-size: 0.92rem; }
 
+/* v49 A5: Preiszeile auf dem Info-Screen. Bewusst dezent gehalten –
+   Information, kein Preisschild. Orientiert sich am Rotationshinweis
+   des Querformat-Screens. */
+.info-price {
+font-size: 0.82rem; color: #6a6458;
+text-align: left; max-width: 380px;
+line-height: 1.7; margin-bottom: 1.4rem;
+padding: 0 0.5rem;
+}
 .info-checkbox-wrap {
 display: flex; align-items: flex-start; gap: 0.75rem;
 max-width: 380px; margin-bottom: 1.5rem;
@@ -562,6 +579,52 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
 }
 .lang-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
 
+/* ── v51 G1: GATE-SCREEN (Freischaltung nach der Kalibrierung) ──
+   Bewusst nuechtern gehalten: kein Preisschild-Look, gleiche Typografie
+   wie der Info-Screen. Der Nutzer kommt hier direkt aus der Einstimmung
+   und soll nicht in eine Verkaufsseite fallen. */
+.gate-text {
+font-size: 0.88rem; color: var(--muted);
+line-height: 1.8; max-width: 360px;
+text-align: center; margin-bottom: 1.6rem;
+}
+.gate-text strong { color: var(--text); font-weight: 400; }
+.gate-input {
+background: transparent;
+border: 1px solid var(--muted);
+color: var(--text);
+font-family: 'DM Sans', sans-serif;
+font-size: 0.95rem; letter-spacing: 0.12em;
+text-align: center; text-transform: uppercase;
+padding: 0.9rem 1rem; width: 100%; max-width: 320px;
+margin-bottom: 0.9rem; border-radius: 0;
+-webkit-appearance: none; appearance: none;
+}
+.gate-input:focus { outline: none; border-color: var(--gold); }
+.gate-input::placeholder { color: #3f453c; text-transform: none; letter-spacing: 0.04em; }
+/* Meldungszeile: haelt ihre Hoehe auch im Leerzustand, damit die Buttons
+   beim Einblenden einer Fehlermeldung nicht springen. */
+.gate-msg {
+font-size: 0.8rem; line-height: 1.6;
+text-align: center; max-width: 320px;
+min-height: 1.15rem; margin-bottom: 1.2rem;
+color: var(--red-light);
+}
+.gate-msg.ok { color: var(--green-light); }
+.gate-divider {
+width: 60%; max-width: 260px; height: 1px;
+background: #1e2a34; margin: 1.6rem 0 1.4rem;
+flex-shrink: 0;
+}
+.gate-link {
+font-size: 0.72rem; letter-spacing: 0.1em;
+color: var(--muted); text-align: center;
+margin-top: 1.4rem; cursor: pointer;
+text-decoration: none; display: block;
+-webkit-tap-highlight-color: transparent;
+}
+.gate-link:hover { color: var(--gold-dim); }
+
 /* v27: Versteckter Dev-Modus.
    Dev Skip + Admin sind standardmäßig unsichtbar.
    Werden durch 5 schnelle Taps in die obere rechte Ecke (innerhalb 3 s) eingeblendet.
@@ -619,6 +682,11 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
     <div class="splash-dot"></div>
   </button>
   <div class="splash-hint" data-i18n="splash_hint">Tippe um zu beginnen</div>
+  <!-- v51 G2: Einstieg fuer Rueckkehrer mit vorhandener Lizenz. Bewusst als
+       dezenter Textlink unterhalb des Hinweises – Erstnutzer sollen ihn
+       nicht als Huerde wahrnehmen. gateOpen('splash') kehrt nach erfolgreicher
+       Freischaltung hierher zurueck. -->
+  <div class="gate-link" data-i18n="gate_have_key" onclick="gateOpen('splash')">Ich habe schon eine Lizenz</div>
   <!-- v43 F1: Der frueher hier stehende Rotations-/Voraussetzungs-Hinweis
        (v35 R1) ist auf den Pre-Screen (screenPre) gewandert und dort gekuerzt.
        Der tx-Schluessel splash_rotation_hint_html bleibt im Code erhalten. -->
@@ -650,8 +718,8 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
      Bewusst statisch: kein TTS, kein Timer, kein Audio, keine Zustandslogik.
      Weiter ausschliesslich ueber preStart(). -->
 <div class="screen" id="screenPre">
-  <div class="pre-usp" data-i18n="pre_usp">Ohne Worte · Ohne Datenspeicherung · Ohne Anmeldung</div>
-  <div class="pre-offer" data-i18n="pre_offer">Methode &amp; Einstieg live erleben. Vollversion: ~17 $ in Krypto</div><!-- v44 P2: statischer Fallback, wird von applyUITexts() ueberschrieben -->
+  <div class="pre-usp" data-i18n="pre_usp">Ohne Worte · Ohne Anmeldung · Keine Sitzungsdaten</div>
+  <div class="pre-offer" data-i18n="pre_offer">Methode und Verbindung live erleben. Der Einstieg ist kostenlos.</div><!-- v49 A3: Preis vom Pre-Screen entfernt, steht jetzt auf dem Info-Screen. Statischer Fallback, wird von applyUITexts() ueberschrieben. -->
   <div class="pre-need" data-i18n="pre_need">Du brauchst: stabiles Internet, automatische Bildschirmdrehung, ca. 30 Min. ungestört</div>
   <button class="btn" onclick="preStart()" data-i18n="pre_btn">Kostenlos testen</button>
 </div>
@@ -665,6 +733,13 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
     <p class="warning" data-i18n="info_warning_html"><strong>Wichtiger Hinweis</strong><br>
     Diese App ist ein Coaching-Angebot und kein medizinisches Produkt. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.</p>
   </div>
+  <!-- v49 A4: Preisnennung. Steht bewusst AUSSERHALB von .info-onboard-text:
+       jener Block hat max-height 52vh und scrollt, die Zeile koennte dort
+       unterhalb der Scrollkante liegen und nie gelesen werden. Hier steht sie
+       immer sichtbar direkt ueber der Bestaetigungs-Checkbox.
+       Nicht Teil von ui-01.mp3 – rein visuell, damit Preisaenderungen keine
+       Neuaufnahmen erzwingen. -->
+  <div class="info-price" data-i18n="info_price">Einstieg und Kalibrierung sind kostenlos. So erlebst du erst, ob du den Zugang findest – und entscheidest danach. Die vollständige Sitzung ist Teil der Jahreslizenz für 149 €.</div>
   <label class="info-checkbox-wrap">
     <input type="checkbox" id="infoCheckbox" onchange="infoCheckChanged()">
     <span class="info-checkbox-label" data-i18n="info_checkbox">Ich bestätige, dass keiner dieser Ausschlussgründe auf mich zutrifft, und nutze diese App eigenverantwortlich.</span>
@@ -821,6 +896,23 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
   <div class="lofty-text" id="loftyText"></div>
 </div>
 
+<!-- §SCREEN:GATE – v51 G3: Freischaltung nach der kostenlosen Einstimmung.
+     Steht bewusst ZWISCHEN Einstimmung und screenContact: der Nutzer hat die
+     Kalibrierung und die Farbvisualisierung erlebt, bevor eine Zahlung
+     verlangt wird. Die Reihenfolge der Elemente folgt dem Nutzerzustand:
+     erst erklaeren, dann kaufen, dann freischalten. -->
+<div class="screen" id="screenGate">
+  <div class="label" data-i18n="gate_label">Freischaltung</div>
+  <h2 class="headline" data-i18n="gate_h2_html" style="font-size:1.5rem;">Der Einstieg <em>ist geschafft.</em></h2>
+  <div class="gate-text" data-i18n="gate_body_html">Deine Verbindung steht – die Kalibrierung hat funktioniert. Die vollständige Sitzung ist Teil der <strong>Jahreslizenz</strong>. Nach dem Kauf bekommst du einen Lizenzschlüssel per E-Mail und auf der Bestellseite angezeigt.</div>
+  <a class="btn" id="gateBuyBtn" href="#" target="_blank" rel="noopener" data-i18n="gate_buy_btn" style="text-decoration:none;text-align:center;">Lizenz kaufen</a>
+  <div class="gate-divider"></div>
+  <input class="gate-input" id="gateInput" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="INF1-XXXX-XXXX-XXXX"><!-- v51 G3: Platzhalter ist sprachneutral (Schluesselformat) und wird bewusst NICHT uebersetzt. -->
+  <div class="gate-msg" id="gateMsg"></div>
+  <button class="btn" data-i18n="gate_unlock_btn" onclick="gateUnlock()">Freischalten</button>
+  <div class="gate-link" id="gateBackLink" data-i18n="gate_back" onclick="goTo('screenSplash')" style="display:none;">Zurück</div>
+</div>
+
 <!-- §SCREEN:CONTACT -->
 <div class="screen" id="screenContact">
   <div class="label" data-i18n="contact_label">Phase II · Kontakt</div>
@@ -950,11 +1042,28 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
   </div>
   <div class="proto-note" id="afterStatsNote"></div>
   <div class="after-note" id="afterNote" data-i18n="proto_afternote">Du musst nicht verstehen, was heute geschehen ist – lass es einfach ein paar Tage nachwirken. Der Prozess arbeitet weiter, auch ohne deine Erklärung.</div>
-  <!-- v37 BETA: Waehrend der Testphase Feedback-Button. Nach der Beta ersetzen durch:
-       <button class="btn-end" data-i18n="after_btn_home" onclick="goTo('screenSplash')">Zurück zum Start</button>
-       und den Textlink darunter ersatzlos entfernen. -->
-  <a class="btn-end btn-end-link" id="afterFeedbackBtn" href="https://ralfmaleska.com/feedback" data-i18n="after_btn_feedback">Feedback geben</a>
-  <!-- v37 BETA: Ausgang fuer alle, die kein Feedback geben wollen. Nach der Beta entfernen. -->
+
+  <!-- v49 E1: Sichtbare Trennung zweier Zonen. Oberhalb endet die Sitzung
+       (Statistik + Nachwirken-Hinweis), unterhalb steht Organisatorisches.
+       Ohne diese Linie stuende ein Angebot unmittelbar unter dem Satz
+       "lass es einfach ein paar Tage nachwirken" – ein Bruch, den der
+       Nutzer spuert. -->
+  <div class="after-divider"></div>
+
+  <!-- v49 E1: Nachbearbeitungs-Angebot, 30 Minuten. Nur fuer deutschsprachige
+       Nutzer – Sichtbarkeit und href werden in endSession() gesetzt (E4).
+       Der Preis steht bewusst nicht hier, sondern nur in TidyCal. -->
+  <div class="after-offer" id="afterBooking" style="display:none;">
+    <a class="btn-end btn-end-link" id="afterBookingBtn" href="#" target="_blank" rel="noopener" data-i18n="after_btn_booking">Nachgespräch buchen</a>
+    <div class="after-offer-note" data-i18n="after_booking_note">30 Minuten persönlich mit mir – für alles, was nach der Sitzung auftaucht.</div>
+  </div>
+
+  <!-- v49 E1: Feedback bleibt erhalten, aber als dezenter Textlink statt als
+       Button: Rueckmeldungen zahlender Nutzer sind wertvoll, sollen dem
+       Buchungsangebot aber nicht die Aufmerksamkeit nehmen. Wortlaut ab v49
+       nicht mehr "Feedback geben" (klingt nach Testphase, und danach, dass
+       wir etwas wollen). -->
+  <a class="after-home-link" id="afterFeedbackBtn" href="https://ralfmaleska.com/feedback" data-i18n="after_btn_feedback">Wie war deine Sitzung?</a>
   <div class="after-home-link" id="afterHomeLink" data-i18n="after_btn_home" onclick="goTo('screenSplash')">Zurück zum Start</div>
 </div>
 
@@ -1058,11 +1167,104 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
 // §JS:PRICE  – v44 P1: Zentraler Sitzungspreis
 // ══════════════════════════════════════════════════
 // EINZIGE Stelle, an der der Preis gepflegt wird. Wird unten in den
-// pre_offer-Texten aller Sprachen eingesetzt. Muss vor LANG stehen,
+// info_price-Texten aller Sprachen eingesetzt. Muss vor LANG stehen,
 // weil die Textstrings beim Aufbau des Objekts zusammengesetzt werden.
-// Der Pi-Betrag (Vercel-Variable PI_SESSION_PRICE) wird separat gepflegt
-// und muss bei einer Preisaenderung mit angepasst werden.
-const PRICE_USD = 17;
+//
+// v49 A1: Umstellung von PRICE_USD (17 $, Krypto/Pi) auf PRICE_EUR
+// (149 EUR Jahreslizenz, Verkauf ueber Digistore24). Der Preis steht ab
+// v49 NICHT mehr auf dem Pre-Screen, sondern nur noch auf dem Info-Screen
+// (info_price) – der Nutzer soll den kostenlosen Einstieg erleben, bevor
+// eine Zahl genannt wird, die Zahl aber gelesen haben, bevor er beginnt.
+//
+// Der Preis erscheint bewusst in KEINER MP3. Sonst wuerde jede
+// Preisaenderung drei Neuaufnahmen (DE/EN/RU) erzwingen.
+const PRICE_EUR = 149;
+
+// v50 F1: Buchungslink fuer das Nachbearbeitungs-Gespraech (30 Min).
+// Echte TidyCal-URL eingetragen (Stripe verbunden, 89 EUR, 15 Min Puffer,
+// 12 Std. Mindestvorlauf, Pflichtfeld WhatsApp-Nummer).
+// Der Preis steht bewusst NICHT hier, sondern nur in TidyCal: so laesst er
+// sich aendern, ohne die App neu zu deployen.
+const BOOKING_URL = 'https://tidycal.com/ralfmaleska/nachgespraech';
+
+// ══════════════════════════════════════════════════
+// §JS:LICENSE  – v51 L1: Jahreslizenz ueber Digistore24
+// ══════════════════════════════════════════════════
+// CHECKOUT_URL: Der Digistore24-Bestelllink des Produkts (Jahreslizenz).
+// PLATZHALTER – vor dem Livegang durch den echten Produktlink ersetzen.
+const CHECKOUT_URL = 'https://www.digistore24.com/product/PLATZHALTER';
+
+// LIC_SECRET: gemeinsames Geheimwort von App und Lizenzserver (api/lizenz.js).
+// Beide Seiten MUESSEN denselben Wert benutzen, sonst gilt kein Schluessel.
+// Bewusste Abwaegung: Die Pruefung laeuft vollstaendig offline im Browser,
+// damit die App ohne Backend und ohne Nutzerkonto auskommt. Der Preis dafuer
+// ist, dass dieses Wort im Quelltext steht und damit lesbar ist.
+const LIC_SECRET = 'infl-yager-2026-8fK3qP';
+
+// Praefix und Speicherort. LIC_STORE haelt den zuletzt akzeptierten Schluessel,
+// damit Rueckkehrer ihn nicht bei jedem Besuch neu eintippen muessen.
+const LIC_PREFIX = 'INF1';
+const LIC_STORE  = 'inf_lic';
+
+// Tageszaehler ab 01.01.2020 (UTC). Gleiche Rechnung wie im Lizenzserver.
+const LIC_EPOCH = Date.UTC(2020, 0, 1);
+
+function licDayNumber(ms) {
+  return Math.floor((ms - LIC_EPOCH) / 86400000);
+}
+
+// Einfacher, deterministischer Hash (FNV-1a-Variante). Bewusst keine
+// Krypto-Bibliothek: App und Lizenzserver muessen exakt dasselbe Ergebnis
+// liefern, und diese wenigen Zeilen lassen sich in beiden Dateien
+// identisch halten.
+function licHash(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h >>> 0;
+}
+
+// Vier Zeichen Pruefsumme in Base36, immer Grossbuchstaben.
+function licChecksum(expBlock, rndBlock) {
+  const raw = LIC_PREFIX + '-' + expBlock + '-' + rndBlock + '-' + LIC_SECRET;
+  return licHash(raw).toString(36).toUpperCase().slice(-4).padStart(4, '0');
+}
+
+// Prueft einen Schluessel rein rechnerisch. Rueckgabe:
+//   { ok: true,  expires: Date }                        – gueltig
+//   { ok: false, reason: 'format' | 'invalid' | 'expired', expires?: Date }
+function licCheck(input) {
+  const key = String(input || '').toUpperCase().replace(/\s+/g, '');
+  const m = key.match(/^INF1-([0-9A-Z]{4})-([0-9A-Z]{4})-([0-9A-Z]{4})$/);
+  if (!m) return { ok: false, reason: 'format' };
+  const [, expBlock, rndBlock, chkBlock] = m;
+  if (licChecksum(expBlock, rndBlock) !== chkBlock) return { ok: false, reason: 'invalid' };
+  const expDay = parseInt(expBlock, 36);
+  if (!isFinite(expDay)) return { ok: false, reason: 'invalid' };
+  const expires = new Date(LIC_EPOCH + expDay * 86400000);
+  if (licDayNumber(Date.now()) > expDay) return { ok: false, reason: 'expired', expires: expires };
+  return { ok: true, expires: expires };
+}
+
+// Gespeicherten Schluessel lesen bzw. sichern. localStorage kann im
+// Privatmodus werfen – deshalb beide Zugriffe gekapselt. Faellt der Speicher
+// aus, funktioniert die App weiter, der Schluessel muss dann nur erneut
+// eingegeben werden.
+function licLoad() {
+  try { return localStorage.getItem(LIC_STORE) || ''; } catch (e) { return ''; }
+}
+
+function licSave(key) {
+  try { localStorage.setItem(LIC_STORE, key); } catch (e) { /* Speicher nicht verfuegbar */ }
+}
+
+// Ist aktuell eine gueltige Lizenz hinterlegt?
+function licActive() {
+  const stored = licLoad();
+  return stored ? licCheck(stored).ok : false;
+}
 
 const LANG = {
 
@@ -1117,8 +1319,12 @@ const LANG = {
       splash_cred:         'von einem Psychologen entwickelt',           // v43 F4
       splash_hint:         'Tippe um zu beginnen',
       // v43 F4: Pre-Screen (Screen 2)
-      pre_usp:             'Ohne Worte · Ohne Datenspeicherung · Ohne Anmeldung',
-      pre_offer:           'Methode & Einstieg live erleben. Vollversion: ~' + PRICE_USD + ' $ in Krypto', // v44 P2
+      // v49 A2: 'Ohne Datenspeicherung' war ab v49 nicht mehr praezise –
+      // der Lizenzschluessel liegt im localStorage. Sitzungsdaten weiterhin nie.
+      pre_usp:             'Ohne Worte · Ohne Anmeldung · Keine Sitzungsdaten',
+      // v49 A3: Preis vom Pre-Screen entfernt. Er steht jetzt auf dem
+      // Info-Screen (info_price), wo der Nutzer noch nichts erlebt hat.
+      pre_offer:           'Methode und Verbindung live erleben. Der Einstieg ist kostenlos.',
       pre_need:            'Du brauchst: stabiles Internet, automatische Bildschirmdrehung, ca. 30 Min. ungestört',
       pre_btn:             'Kostenlos testen',
       splash_rotation_hint_html: '<strong style="color:#7a828c;">Wichtig:</strong> Diese App benötigt die automatische Bildschirmdrehung. Falls dein Bildschirm gesperrt ist, aktiviere die Rotation kurz in den Einstellungen. Du brauchst außerdem eine stabile Internetverbindung und einen Ort, an dem du ungestört bist.', // v35 R3 · v38 H1: Verbindungs-/Setting-Hinweis ergaenzt (Beta-Feedback 1+3)
@@ -1129,6 +1335,14 @@ const LANG = {
       info_p2_html:        'Du drückst während der Sitzung nur zwei Buttons: <strong>Ja</strong> oder <strong>Nein</strong>. Mehr wird nicht von dir verlangt.',
       info_warning_html:   '<strong>Wichtiger Hinweis</strong><br>Diese App ist ein Coaching-Angebot und kein medizinisches Produkt. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.',
       info_checkbox:       'Ich bestätige, dass keiner dieser Ausschlussgründe auf mich zutrifft, und nutze diese App eigenverantwortlich.',
+      // v49 A4: Preisnennung vor dem Start. Bewusst hier und nicht auf dem
+      // Pre-Screen: der Nutzer ist an dieser Stelle noch nuechtern, liest
+      // ohnehin aufmerksam, und die Zeile wirkt nicht als Preisschild.
+      // Nicht Teil von ui-01.mp3 – rein visuell.
+      // v50 A6: Mittelsatz ergaenzt. Bewusst NICHT 'ob dein Bauchgefuehl
+      // antwortet' (es antwortet immer) und NICHT 'ob die Methode wirkt'
+      // (waere ein Wirkversprechen). Es geht um den Zugang des Nutzers.
+      info_price:          'Einstieg und Kalibrierung sind kostenlos. So erlebst du erst, ob du den Zugang findest – und entscheidest danach. Die vollständige Sitzung ist Teil der Jahreslizenz für ' + PRICE_EUR + ' €.',
       info_btn:            'Weiter',
       // Welcome
       welcome_label:       'Coaching App',
@@ -1210,10 +1424,29 @@ const LANG = {
       // v42 K1: Auf zwei Saetze gekuerzt – der Abschluss-Screen traegt seit v41
       // zusaetzlich das Sitzungsergebnis, der Vorlauf war zu lang.
       proto_afternote:     'Du musst nicht verstehen, was heute geschehen ist – lass es einfach ein paar Tage nachwirken. Der Prozess arbeitet weiter, auch ohne deine Erklärung.',
-      // v37 BETA: Beschriftungen des Abschluss-Screens. Nach der Testphase
-      // after_btn_feedback entfernen, after_btn_home bleibt.
-      after_btn_feedback:  'Feedback geben',
+      // Beschriftungen des Abschluss-Screens.
+      // v49 E3: after_btn_feedback bleibt dauerhaft (nicht mehr nur Beta) –
+      // Rueckmeldungen zahlender Nutzer sind die Grundlage fuer alles, was
+      // spaeter an echten Nutzerdaten vorgezeigt werden soll. Wortlaut von
+      // 'Feedback geben' geaendert: klang nach Testphase und nach Bringschuld.
+      after_btn_feedback:  'Wie war deine Sitzung?',
       after_btn_home:      'Zurück zum Start',
+      // v49 E3: Nachbearbeitungs-Angebot, nur DE. Bewusst ohne Preis –
+      // der steht in TidyCal und ist dort aenderbar, ohne neu zu deployen.
+      after_btn_booking:   'Nachgespräch buchen',
+      after_booking_note:  '30 Minuten persönlich mit mir – für alles, was nach der Sitzung auftaucht.',
+      // v51 T1: Gate-Screen (Freischaltung). Der Preis laeuft ueber PRICE_EUR,
+      // steht also auch hier nur an einer Stelle im Code.
+      gate_label:          'Freischaltung',
+      gate_h2_html:        'Der Einstieg <em>ist geschafft.</em>',
+      gate_body_html:      'Deine Verbindung steht – die Kalibrierung hat funktioniert. Die vollständige Sitzung ist Teil der <strong>Jahreslizenz für ' + PRICE_EUR + ' €</strong>. Nach dem Kauf bekommst du einen Lizenzschlüssel per E-Mail und direkt auf der Bestellseite angezeigt.',
+      gate_buy_btn:        'Lizenz kaufen',
+      gate_unlock_btn:     'Freischalten',
+      gate_msg_invalid:    'Dieser Schlüssel ist nicht gültig. Bitte prüfe die Schreibweise.',
+      gate_msg_expired:    'Dieser Schlüssel ist abgelaufen. Mit einer neuen Lizenz geht es weiter.',
+      gate_msg_ok:         'Freigeschaltet. Es geht gleich weiter.',
+      gate_have_key:       'Ich habe schon eine Lizenz',
+      gate_back:           'Zurück',
       // Dev-Menü (interner Einsatz, aber Ralf nutzt EN beim Pitch ggf.)
       dev_skip:            'Dev Skip ▾',
       dev_admin:           'Admin',
@@ -1451,8 +1684,9 @@ const LANG = {
       splash_cred:         'Developed by a psychologist',                 // v43 F4
       splash_hint:         'Tap to begin',
       // v43 F4: Pre-Screen (Screen 2)
-      pre_usp:             'No words · No data stored · No sign-up',
-      pre_offer:           'Experience the method. Full version: ~$' + PRICE_USD + ' in crypto', // v44 P2
+      // v49 A2 / A3: siehe DE-Block.
+      pre_usp:             'No words · No sign-up · No session data',
+      pre_offer:           'Experience the method and the connection. Getting started is free.',
       pre_need:            'You need: stable internet, screen rotation enabled, ~30 min undisturbed',
       pre_btn:             'Try for free',
       splash_rotation_hint_html: '<strong style="color:#7a828c;">Important:</strong> This app requires auto-rotation. If your screen is locked, briefly enable rotation in your settings. You also need a stable internet connection and a place where you will not be disturbed.', // v35 R4 · v38 H1: siehe DE
@@ -1463,6 +1697,9 @@ const LANG = {
       info_p2_html:        'During the session you press only two buttons: <strong>Yes</strong> or <strong>No</strong>. Nothing more is required of you.',
       info_warning_html:   '<strong>Important notice</strong><br>This app is a coaching offering and not a medical product. It is not suitable for acute mental illness, mental crises, or suicidal thoughts. Please contact a doctor or psychiatric emergency service in those cases.',
       info_checkbox:       'I confirm that none of these exclusion criteria apply to me, and I use this app on my own responsibility.',
+      // v49 A4: siehe DE-Block.
+      // v50 A6: siehe DE-Block.
+      info_price:          'Getting started and calibration are free. So you first experience whether you find your way in – and decide afterwards. The full session is part of the annual licence at €' + PRICE_EUR + '.',
       info_btn:            'Continue',
       // Welcome
       welcome_label:       'Coaching App',
@@ -1545,8 +1782,21 @@ const LANG = {
       // zusaetzlich das Sitzungsergebnis, der Vorlauf war zu lang.
       proto_afternote:     'You do not need to understand what happened today – just let it settle for a few days. The process continues working, even without your explanation.',
       // v37 BETA: siehe DE.
-      after_btn_feedback:  'Give feedback',
+      // v49 E3: siehe DE-Block. Kein after_btn_booking – das Angebot ist
+      // DE-only und wird fuer EN nie eingeblendet.
+      after_btn_feedback:  'How was your session?',
       after_btn_home:      'Back to start',
+      // v51 T2: Gate-Screen (unlock). Siehe DE-Block.
+      gate_label:          'Unlock',
+      gate_h2_html:        'The first part <em>is done.</em>',
+      gate_body_html:      'Your connection is working – the calibration went through. The full session is part of the <strong>annual licence at €' + PRICE_EUR + '</strong>. After the purchase you receive a licence key by email and directly on the order page.',
+      gate_buy_btn:        'Buy licence',
+      gate_unlock_btn:     'Unlock',
+      gate_msg_invalid:    'This key is not valid. Please check the spelling.',
+      gate_msg_expired:    'This key has expired. A new licence continues the session.',
+      gate_msg_ok:         'Unlocked. Continuing in a moment.',
+      gate_have_key:       'I already have a licence',
+      gate_back:           'Back',
       // Dev menu
       dev_skip:            'Dev Skip ▾',
       dev_admin:           'Admin',
@@ -2229,8 +2479,11 @@ const LANG = {
       splash_cred:              'разработано психологом',
       splash_hint:              'Нажми, чтобы начать',
       // Pre-Screen (Screen 2)
-      pre_usp:                  'Без слов · Без хранения данных · Без регистрации',
-      pre_offer:                'Познакомься с методом вживую. Полная версия: ~17 $ в криптовалюте',
+      // v49 A2 / A3: siehe DE-Block. Der Preis war hier bisher als feste
+      // Zahl eingetragen und lief nicht ueber die Konstante – ab v49 steht
+      // er nur noch in info_price und dort ueber PRICE_EUR.
+      pre_usp:                  'Без слов · Без регистрации · Без данных сессии',
+      pre_offer:                'Познакомься с методом вживую. Начало — бесплатно.',
       pre_need:                 'Тебе понадобится: стабильный интернет, автоповорот экрана, около 30 мин. без помех',
       pre_btn:                  'Попробовать бесплатно',
       splash_rotation_hint_html:'<strong style="color:#7a828c;">Важно:</strong> Для работы приложения необходимо включить автоповорот экрана. Если поворот экрана заблокирован, включи его в настройках. Также тебе понадобится стабильное интернет-соединение и место, где тебя никто не будет отвлекать.',  // v47 C2: <strong>-Auszeichnung wiederhergestellt · Schlüssel wird seit v43 nicht mehr angezeigt
@@ -2241,6 +2494,10 @@ const LANG = {
       info_p2_html:             'Во время сессии ты нажимаешь только две кнопки: <strong>Да</strong> или <strong>Нет</strong>. Большего от тебя не требуется.',
       info_warning_html:        '<strong>Важное примечание</strong><br>Это приложение предназначено для коучинга и не является медицинским продуктом. Оно не подходит при острых психических заболеваниях, психических кризисах или суицидальных мыслях. В таких случаях, пожалуйста, обратись к врачу или в отделение неотложной психиатрической помощи.',
       info_checkbox:            'Я подтверждаю, что ни одно из указанных ограничений ко мне не относится, и использую это приложение под свою ответственность.',
+      // v49 A4: siehe DE-Block.
+      // v50 A6: siehe DE-Block. Verbformen geschlechtsneutral (узнаешь,
+      // найдёшь, решишь) – muttersprachliche Pruefung steht noch aus.
+      info_price:               'Начало и калибровка бесплатны. Так ты сначала узнаешь, найдёшь ли ты доступ — и решишь потом. Полная сессия входит в годовую лицензию за ' + PRICE_EUR + ' €.',
       info_btn:                 'Далее',
       // Welcome
       welcome_label:            'Коуч-приложение',
@@ -2320,8 +2577,21 @@ const LANG = {
       proto_btn_end:            'Завершить сессию',
       proto_afternote:          'Тебе не нужно понимать, что произошло сегодня – просто дай этому несколько дней. Процесс продолжает работать и без твоих объяснений.',
       // Abschluss-Screen
-      after_btn_feedback:       'Оставить отзыв',
+      // v49 E3: siehe DE-Block. Kein after_btn_booking – DE-only.
+      after_btn_feedback:       'Как прошла твоя сессия?',
       after_btn_home:           'Вернуться в начало',
+      // v51 T3: Gate-Screen (Freischaltung). Siehe DE-Block.
+      // Muttersprachliche Pruefung steht noch aus – wie bei info_price (v50 A6).
+      gate_label:               'Активация',
+      gate_h2_html:             'Начало <em>пройдено.</em>',
+      gate_body_html:           'Связь установлена — калибровка удалась. Полная сессия входит в <strong>годовую лицензию за ' + PRICE_EUR + ' €</strong>. После покупки ты получишь лицензионный ключ по электронной почте и увидишь его на странице заказа.',
+      gate_buy_btn:             'Купить лицензию',
+      gate_unlock_btn:          'Активировать',
+      gate_msg_invalid:         'Этот ключ недействителен. Пожалуйста, проверь написание.',
+      gate_msg_expired:         'Срок действия ключа истёк. С новой лицензией можно продолжить.',
+      gate_msg_ok:              'Активировано. Сейчас продолжим.',
+      gate_have_key:            'У меня уже есть лицензия',
+      gate_back:                'Назад',
     },
 
     screens: {
@@ -3725,7 +3995,8 @@ function startPreparation() {
       s.prep_visual4_tts, s.prep_visual5_tts
     ].filter(Boolean).join(' ... ');
     speak(fallbackText, () => {
-      startContact();
+      // v51 G5: statt direkt startContact() – die Weiche prueft die Lizenz.
+      afterPreparation();
     }, null, s.prep_all_mp3);
     return;
   }
@@ -3748,7 +4019,8 @@ function startPreparation() {
                             setTimeout(() => {
                               speak(s.prep_visual5_tts, () => {
                                 setTimeout(() => {
-                                  startContact();
+                                  // v51 G5: siehe oben – Lizenzweiche statt startContact().
+                                  afterPreparation();
                                 }, PREP_PAUSE.afterVisual5);
                               }, null, null);
                             }, PREP_PAUSE.afterVisual4);
@@ -3765,6 +4037,63 @@ function startPreparation() {
       }, null, null);
     }, PREP_PAUSE.afterIntro);
   }, null, null);
+}
+
+// ══════════════════════════════════════════════════
+// §JS:GATE  – v51 G4: Freischaltung zwischen Einstimmung und Hauptteil
+// ══════════════════════════════════════════════════
+// Merkt sich, wohin nach erfolgreicher Freischaltung gesprungen wird:
+// 'session' = weiter in den Hauptteil (Normalfall aus der Einstimmung),
+// 'splash'  = zurueck zum Start (Rueckkehrer ueber den Splash-Link).
+let _gateReturn = 'session';
+
+// Weiche am Ende der Einstimmung. Ersetzt den frueheren direkten Aufruf
+// von startContact() an beiden Stellen in startPreparation().
+function afterPreparation() {
+  if (licActive()) { startContact(); return; }
+  // Augen sind zu, Telefon liegt quer. Erst den Screen wechseln (sonst
+  // schlaegt beim Zurueckdrehen der Landscape-Waechter von screenCalib2 an),
+  // dann die vorhandene Ansage 'Augen auf, Telefon senkrecht' abspielen.
+  spiralStop();
+  stopAudioKeepalive();
+  gateOpen('session');
+  speak(L.screens.eyes_open_tts, null, null, L.screens.eyes_open_mp3 || null);
+}
+
+function gateOpen(mode) {
+  _gateReturn = (mode === 'splash') ? 'splash' : 'session';
+  goTo('screenGate');
+  const buyBtn = document.getElementById('gateBuyBtn');
+  if (buyBtn) buyBtn.href = CHECKOUT_URL;
+  const backLink = document.getElementById('gateBackLink');
+  if (backLink) backLink.style.display = (_gateReturn === 'splash') ? 'block' : 'none';
+  const msg = document.getElementById('gateMsg');
+  if (msg) { msg.textContent = ''; msg.classList.remove('ok'); }
+  const inp = document.getElementById('gateInput');
+  // Vorhandenen (z.B. abgelaufenen) Schluessel vorbelegen – erspart das
+  // Abtippen, wenn nur verlaengert werden muss.
+  if (inp) inp.value = licLoad();
+}
+
+function gateUnlock() {
+  const inp = document.getElementById('gateInput');
+  const msg = document.getElementById('gateMsg');
+  const raw = inp ? inp.value : '';
+  const res = licCheck(raw);
+  if (!res.ok) {
+    if (msg) {
+      msg.classList.remove('ok');
+      msg.textContent = (res.reason === 'expired') ? L.tx.gate_msg_expired : L.tx.gate_msg_invalid;
+    }
+    return;
+  }
+  licSave(String(raw).toUpperCase().replace(/\s+/g, ''));
+  if (msg) { msg.classList.add('ok'); msg.textContent = L.tx.gate_msg_ok; }
+  if (_gateReturn === 'splash') {
+    setTimeout(() => goTo('screenSplash'), 1200);
+  } else {
+    setTimeout(() => startContact(), 800);
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -4553,6 +4882,15 @@ function endSession() {
   const postFrom = document.getElementById('protoPostVal');
   const postTo   = document.getElementById('afterPostVal');
   if (postFrom && postTo) postTo.classList.toggle('positive', postFrom.classList.contains('positive'));
+  // v49 E4: Nachbearbeitungs-Angebot nur fuer deutschsprachige Nutzer.
+  // Sichtbarkeit und Ziel-URL werden hier gesetzt, nicht in applyUITexts():
+  // dort geht es ausschliesslich um Textinhalte, die Sprachweiche ist Logik.
+  // Der href kommt aus BOOKING_URL, damit die Adresse nur an einer Stelle
+  // gepflegt wird.
+  const bookingBox = document.getElementById('afterBooking');
+  const bookingBtn = document.getElementById('afterBookingBtn');
+  if (bookingBtn) bookingBtn.href = BOOKING_URL;
+  if (bookingBox) bookingBox.style.display = (currentLang === 'de') ? 'flex' : 'none';
   // v37 G4: Statt direkt zum Splash geht es auf den Abschluss-Screen.
   // Aufraeumen (TTS, Spirale, Wake Lock, Session-Reset) ist zu diesem Zeitpunkt
   // bereits erfolgt – screenAfter ist rein organisatorisch, ohne Audio.

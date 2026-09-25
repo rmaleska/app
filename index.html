@@ -1190,9 +1190,11 @@ const BOOKING_URL = 'https://tidycal.com/ralfmaleska/nachgespraech';
 // ══════════════════════════════════════════════════
 // §JS:LICENSE  – v51 L1: Jahreslizenz ueber Digistore24
 // ══════════════════════════════════════════════════
-// CHECKOUT_URL: Der Digistore24-Bestelllink des Produkts (Jahreslizenz).
-// PLATZHALTER – vor dem Livegang durch den echten Produktlink ersetzen.
-const CHECKOUT_URL = 'https://www.digistore24.com/product/732132';
+// CHECKOUT_URL: v52 S1 – zeigt jetzt auf den eigenen Stripe-Endpunkt
+// (api/create-checkout-session.js) statt auf den Digistore24-Bestelllink.
+// Relativer Pfad, funktioniert automatisch auf jeder Domain, auf der die
+// App laeuft (kein hartcodierter Domainname noetig).
+const CHECKOUT_URL = '/api/create-checkout-session';
 
 // LIC_SECRET: gemeinsames Geheimwort von App und Lizenzserver (api/lizenz.js).
 // Beide Seiten MUESSEN denselben Wert benutzen, sonst gilt kein Schluessel.
@@ -1445,6 +1447,7 @@ const LANG = {
       gate_msg_invalid:    'Dieser Schlüssel ist nicht gültig. Bitte prüfe die Schreibweise.',
       gate_msg_expired:    'Dieser Schlüssel ist abgelaufen. Mit einer neuen Lizenz geht es weiter.',
       gate_msg_ok:         'Freigeschaltet. Es geht gleich weiter.',
+      gate_msg_checking:   'Zahlung wird geprüft …', // v52 S3
       gate_have_key:       'Ich habe schon eine Lizenz',
       gate_back:           'Zurück',
       // Dev-Menü (interner Einsatz, aber Ralf nutzt EN beim Pitch ggf.)
@@ -1795,6 +1798,7 @@ const LANG = {
       gate_msg_invalid:    'This key is not valid. Please check the spelling.',
       gate_msg_expired:    'This key has expired. A new licence continues the session.',
       gate_msg_ok:         'Unlocked. Continuing in a moment.',
+      gate_msg_checking:   'Checking payment …', // v52 S3
       gate_have_key:       'I already have a licence',
       gate_back:           'Back',
       // Dev menu
@@ -2590,6 +2594,7 @@ const LANG = {
       gate_msg_invalid:         'Этот ключ недействителен. Пожалуйста, проверь написание.',
       gate_msg_expired:         'Срок действия ключа истёк. С новой лицензией можно продолжить.',
       gate_msg_ok:              'Активировано. Сейчас продолжим.',
+      gate_msg_checking:        'Проверка платежа …', // v52 S3
       gate_have_key:            'У меня уже есть лицензия',
       gate_back:                'Назад',
     },
@@ -4096,6 +4101,45 @@ function gateUnlock() {
   }
 }
 
+// v52 S2: Rueckkehr von Stripe nach erfolgreicher Zahlung.
+// Stripe leitet den Kunden zurueck mit ?session_id=... in der URL (siehe
+// SUCCESS_URL in api/create-checkout-session.js). Diese Funktion prueft
+// beim Laden der Seite, ob eine solche Session-ID vorhanden ist, fragt bei
+// api/verify-session.js nach, und schaltet bei erfolgreicher Zahlung
+// automatisch frei - kein manuelles Abtippen des Schluessels noetig.
+function checkStripeReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+  if (!sessionId) return;
+
+  // Session-ID aus der sichtbaren URL entfernen, damit ein Neuladen der
+  // Seite (z.B. F5) nicht denselben Kauf erneut abfragt.
+  history.replaceState(null, '', window.location.pathname);
+
+  goTo('screenGate');
+  const msg = document.getElementById('gateMsg');
+  if (msg) { msg.classList.remove('ok'); msg.textContent = L.tx.gate_msg_checking; }
+
+  fetch('/api/verify-session?session_id=' + encodeURIComponent(sessionId))
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success' && data.key) {
+        licSave(data.key);
+        const inp = document.getElementById('gateInput');
+        if (inp) inp.value = data.key;
+        if (msg) { msg.classList.add('ok'); msg.textContent = L.tx.gate_msg_ok; }
+        setTimeout(() => goTo('screenSplash'), 1500);
+      } else {
+        // Zahlung noch nicht bestaetigt oder Fehler - Kunde bleibt auf dem
+        // Gate-Screen und kann den Schluessel bei Bedarf manuell eintragen.
+        if (msg) { msg.textContent = L.tx.gate_msg_invalid; }
+      }
+    })
+    .catch(() => {
+      if (msg) { msg.textContent = L.tx.gate_msg_invalid; }
+    });
+}
+
 // ══════════════════════════════════════════════════
 // §JS:PRE-SUD  (startPreSUD, buildSUD)
 // ══════════════════════════════════════════════════
@@ -5002,8 +5046,12 @@ function adminSave(silent) {
 // nachträglich erweitert wird.
 applyUITexts();
 
+// v52 S4: prueft beim Start, ob wir gerade von einer erfolgreichen
+// Stripe-Zahlung zurueckkommen (siehe checkStripeReturn oben bei §JS:GATE).
+checkStripeReturn();
+
 </script>
 
 </body>
 </html>
-<!-- --- Erstellt: 2026-05-07 · 11:35 Uhr -->
+<!-- --- Erstellt: 2026-09-25 · 10:45 Uhr -->

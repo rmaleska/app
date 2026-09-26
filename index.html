@@ -1448,6 +1448,7 @@ const LANG = {
       gate_msg_expired:    'Dieser Schlüssel ist abgelaufen. Mit einer neuen Lizenz geht es weiter.',
       gate_msg_ok:         'Freigeschaltet. Es geht gleich weiter.',
       gate_msg_checking:   'Zahlung wird geprüft …', // v52 S3
+      gate_msg_stripe_ok:  'Freigeschaltet! Notiere dir diesen Schlüssel sicherheitshalber – dann tippe auf „Freischalten".', // v53 S5
       gate_have_key:       'Ich habe schon eine Lizenz',
       gate_back:           'Zurück',
       // Dev-Menü (interner Einsatz, aber Ralf nutzt EN beim Pitch ggf.)
@@ -1799,6 +1800,7 @@ const LANG = {
       gate_msg_expired:    'This key has expired. A new licence continues the session.',
       gate_msg_ok:         'Unlocked. Continuing in a moment.',
       gate_msg_checking:   'Checking payment …', // v52 S3
+      gate_msg_stripe_ok:  'Unlocked! Write down this key just in case, then tap "Unlock".', // v53 S5
       gate_have_key:       'I already have a licence',
       gate_back:           'Back',
       // Dev menu
@@ -2595,6 +2597,7 @@ const LANG = {
       gate_msg_expired:         'Срок действия ключа истёк. С новой лицензией можно продолжить.',
       gate_msg_ok:              'Активировано. Сейчас продолжим.',
       gate_msg_checking:        'Проверка платежа …', // v52 S3
+      gate_msg_stripe_ok:       'Активировано! Запиши этот ключ на всякий случай, затем нажми «Активировать».', // v53 S5
       gate_have_key:            'У меня уже есть лицензия',
       gate_back:                'Назад',
     },
@@ -4127,8 +4130,12 @@ function checkStripeReturn() {
         licSave(data.key);
         const inp = document.getElementById('gateInput');
         if (inp) inp.value = data.key;
-        if (msg) { msg.classList.add('ok'); msg.textContent = L.tx.gate_msg_ok; }
-        setTimeout(() => goTo('screenSplash'), 1500);
+        // v53 S5: kein automatischer Sprung mehr weiter - der Nutzer soll
+        // Zeit haben, sich den Schluessel zu notieren, bevor es weitergeht.
+        // Er tippt selbst auf "Freischalten" (Button ist bereits vorhanden),
+        // sobald er bereit ist; gateUnlock() findet den Schluessel gueltig
+        // und macht ganz normal weiter.
+        if (msg) { msg.classList.add('ok'); msg.textContent = L.tx.gate_msg_stripe_ok; }
       } else {
         // Zahlung noch nicht bestaetigt oder Fehler - Kunde bleibt auf dem
         // Gate-Screen und kann den Schluessel bei Bedarf manuell eintragen.
@@ -5054,4 +5061,4 @@ checkStripeReturn();
 
 </body>
 </html>
-<!-- --- Erstellt: 2026-09-25 · 10:45 Uhr -->
+<!-- --- Erstellt: 2026-09-25 · 12:35 Uhr -->

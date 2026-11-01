@@ -20,11 +20,11 @@
 
 // ── Konfiguration ─────────────────────────────────
 // Die Preis-ID aus dem Stripe-Produktkatalog (Reiter "Preisgestaltung").
-// LIVE-Wert fuer "Influencial Jahreslizenz DE" (prod_VK5n4xQNvLD1CR).
+// LIVE-Wert (37 EUR, einmalig, 30 Tage) fuer "Influencial Silent Coaching – 30 Tage Zugang" (prod_VK5n4xQNvLD1CR).
 // Zum Testen voruebergehend auf die Test-ID umstellen und gleichzeitig
 // STRIPE_SECRET_KEY in Vercel auf den Test-Schluessel setzen:
 //   Test-Preis-ID: price_1UJSbh1zknhYmzrdRRHjTYlz
-const PRICE_ID = 'price_1UJRcG1zknhYmzrdp2XK2X33';
+const PRICE_ID = 'price_1UWrWP1zknhYmzrdPqtuIxgA';
 
 // Wohin der Kunde nach Kauf bzw. Abbruch zurueckgeleitet wird.
 // {CHECKOUT_SESSION_ID} wird von Stripe automatisch durch die echte

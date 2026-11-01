@@ -22,8 +22,8 @@ const LIC_SECRET = 'infl-yager-2026-8fK3qP';
 const LIC_PREFIX = 'INF1';
 const LIC_EPOCH  = Date.UTC(2020, 0, 1);
 
-// Laufzeit der Lizenz in Tagen (1 Jahr).
-const LIC_DAYS = 365;
+// Laufzeit der Lizenz in Tagen (30 Tage, einmalig, kein Abo).
+const LIC_DAYS = 30;
 
 const STRIPE_API_VERSION = '2025-03-31.basil';
 

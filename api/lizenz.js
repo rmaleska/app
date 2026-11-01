@@ -1,18 +1,18 @@
 // ══════════════════════════════════════════════════
-// LIZENZSERVER fuer Digistore24  –  v51 L2
+// NOTFALL-LIZENZSCHLUESSEL  –  v54 (frueher Lizenzserver fuer Digistore24)
 // ══════════════════════════════════════════════════
 // Ablage im Repository:  api/lizenz.js
 // Erreichbar unter:      https://DEINE-DOMAIN.vercel.app/api/lizenz?s=GEHEIMWORT
 //
-// Digistore24 ruft diese Adresse bei jedem Kauf per POST auf und erwartet
-// als Antwort ein JSON-Objekt mit den Feldern status, key und data.
-// Uebergeben werden u.a. order_id, email, product_id, product_name,
-// quantity und api_mode ('live' oder 'test').
+// Seit der Umstellung auf Stripe wird diese Adresse NICHT mehr automatisch
+// beim Kauf aufgerufen (das macht jetzt api/verify-session.js). Sie dient
+// nur noch als Notfall-Werkzeug: Ralf ruft sie im Browser auf, wenn ein
+// Kunde bezahlt, aber keinen Schluessel erhalten hat
+// (siehe Notfall-Lizenzschluessel.md).
 //
-// Der Schluessel wird hier erzeugt und ist danach OHNE Rueckfrage an
-// diesen Server pruefbar: die App rechnet dieselbe Pruefsumme nach.
-// Deshalb muessen LIC_SECRET und LIC_EPOCH exakt mit den Werten in der
-// coaching-app-v51.html uebereinstimmen.
+// Der Schluessel ist danach OHNE Rueckfrage an diesen Server pruefbar:
+// die App rechnet dieselbe Pruefsumme nach. Deshalb muessen LIC_SECRET
+// und LIC_EPOCH exakt mit der App und api/verify-session.js uebereinstimmen.
 //
 // CommonJS (module.exports) ist bewusst gewaehlt: funktioniert auf Vercel
 // auch ohne package.json mit "type": "module".
@@ -23,8 +23,9 @@ const LIC_SECRET = 'infl-yager-2026-8fK3qP';
 const LIC_PREFIX = 'INF1';
 const LIC_EPOCH  = Date.UTC(2020, 0, 1);
 
-// Laufzeit der Lizenz in Tagen (1 Jahr).
-const LIC_DAYS = 365;
+// Laufzeit der Lizenz in Tagen (30 Tage, einmalig, kein Abo) –
+// muss mit api/verify-session.js uebereinstimmen.
+const LIC_DAYS = 30;
 
 // Geheimwort in der Aufruf-URL (?s=...). Bevorzugt aus der Vercel-
 // Umgebungsvariablen LIZENZ_SECRET, sonst der Wert hier als Rueckfall.

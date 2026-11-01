@@ -739,7 +739,7 @@ text-decoration: none; display: block;
        immer sichtbar direkt ueber der Bestaetigungs-Checkbox.
        Nicht Teil von ui-01.mp3 – rein visuell, damit Preisaenderungen keine
        Neuaufnahmen erzwingen. -->
-  <div class="info-price" data-i18n="info_price">Einstieg und Kalibrierung sind kostenlos. So erlebst du erst, ob du den Zugang findest – und entscheidest danach. Die vollständige Sitzung ist Teil der Jahreslizenz für 149 €.</div>
+  <div class="info-price" data-i18n="info_price">Einstieg und Kalibrierung sind kostenlos. So erlebst du erst, ob du den Zugang findest – und entscheidest danach. Die vollständige Sitzung kostet einmalig 37 € für 30 Tage Zugang – kein Abo.</div>
   <label class="info-checkbox-wrap">
     <input type="checkbox" id="infoCheckbox" onchange="infoCheckChanged()">
     <span class="info-checkbox-label" data-i18n="info_checkbox">Ich bestätige, dass keiner dieser Ausschlussgründe auf mich zutrifft, und nutze diese App eigenverantwortlich.</span>
@@ -904,7 +904,7 @@ text-decoration: none; display: block;
 <div class="screen" id="screenGate">
   <div class="label" data-i18n="gate_label">Freischaltung</div>
   <h2 class="headline" data-i18n="gate_h2_html" style="font-size:1.5rem;">Der Einstieg <em>ist geschafft.</em></h2>
-  <div class="gate-text" data-i18n="gate_body_html">Deine Verbindung steht – die Kalibrierung hat funktioniert. Die vollständige Sitzung ist Teil der <strong>Jahreslizenz</strong>. Nach dem Kauf bekommst du einen Lizenzschlüssel per E-Mail und auf der Bestellseite angezeigt.</div>
+  <div class="gate-text" data-i18n="gate_body_html">Deine Verbindung steht – die Kalibrierung hat funktioniert. Die vollständige Sitzung ist Teil des <strong>30-Tage-Zugangs</strong> – einmalig, kein Abo, endet automatisch. Nach dem Kauf wird die App sofort freigeschaltet.</div>
   <a class="btn" id="gateBuyBtn" href="#" target="_blank" rel="noopener" data-i18n="gate_buy_btn" style="text-decoration:none;text-align:center;">Lizenz kaufen</a>
   <div class="gate-divider"></div>
   <input class="gate-input" id="gateInput" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="INF1-XXXX-XXXX-XXXX"><!-- v51 G3: Platzhalter ist sprachneutral (Schluesselformat) und wird bewusst NICHT uebersetzt. -->
@@ -1171,14 +1171,14 @@ text-decoration: none; display: block;
 // weil die Textstrings beim Aufbau des Objekts zusammengesetzt werden.
 //
 // v49 A1: Umstellung von PRICE_USD (17 $, Krypto/Pi) auf PRICE_EUR
-// (149 EUR Jahreslizenz, Verkauf ueber Digistore24). Der Preis steht ab
+// (einmalig, 30 Tage Zugang, kein Abo, Verkauf ueber Stripe). Der Preis steht ab
 // v49 NICHT mehr auf dem Pre-Screen, sondern nur noch auf dem Info-Screen
 // (info_price) – der Nutzer soll den kostenlosen Einstieg erleben, bevor
 // eine Zahl genannt wird, die Zahl aber gelesen haben, bevor er beginnt.
 //
 // Der Preis erscheint bewusst in KEINER MP3. Sonst wuerde jede
 // Preisaenderung drei Neuaufnahmen (DE/EN/RU) erzwingen.
-const PRICE_EUR = 149;
+const PRICE_EUR = 37;  // v54: 37 EUR, einmalig, 30 Tage
 
 // v50 F1: Buchungslink fuer das Nachbearbeitungs-Gespraech (30 Min).
 // Echte TidyCal-URL eingetragen (Stripe verbunden, 89 EUR, 15 Min Puffer,
@@ -1188,7 +1188,7 @@ const PRICE_EUR = 149;
 const BOOKING_URL = 'https://tidycal.com/ralfmaleska/nachgespraech';
 
 // ══════════════════════════════════════════════════
-// §JS:LICENSE  – v51 L1: Jahreslizenz ueber Digistore24
+// §JS:LICENSE  – v54: 30-Tage-Zugang ueber Stripe
 // ══════════════════════════════════════════════════
 // CHECKOUT_URL: v52 S1 – zeigt jetzt auf den eigenen Stripe-Endpunkt
 // (api/create-checkout-session.js) statt auf den Digistore24-Bestelllink.
@@ -1344,7 +1344,7 @@ const LANG = {
       // v50 A6: Mittelsatz ergaenzt. Bewusst NICHT 'ob dein Bauchgefuehl
       // antwortet' (es antwortet immer) und NICHT 'ob die Methode wirkt'
       // (waere ein Wirkversprechen). Es geht um den Zugang des Nutzers.
-      info_price:          'Einstieg und Kalibrierung sind kostenlos. So erlebst du erst, ob du den Zugang findest – und entscheidest danach. Die vollständige Sitzung ist Teil der Jahreslizenz für ' + PRICE_EUR + ' €.',
+      info_price:          'Einstieg und Kalibrierung sind kostenlos. So erlebst du erst, ob du den Zugang findest – und entscheidest danach. Die vollständige Sitzung kostet einmalig ' + PRICE_EUR + ' € für 30 Tage Zugang – kein Abo.',
       info_btn:            'Weiter',
       // Welcome
       welcome_label:       'Coaching App',
@@ -1441,7 +1441,7 @@ const LANG = {
       // steht also auch hier nur an einer Stelle im Code.
       gate_label:          'Freischaltung',
       gate_h2_html:        'Der Einstieg <em>ist geschafft.</em>',
-      gate_body_html:      'Deine Verbindung steht – die Kalibrierung hat funktioniert. Die vollständige Sitzung ist Teil der <strong>Jahreslizenz für ' + PRICE_EUR + ' €</strong>. Nach dem Kauf bekommst du einen Lizenzschlüssel per E-Mail und direkt auf der Bestellseite angezeigt.',
+      gate_body_html:      'Deine Verbindung steht – die Kalibrierung hat funktioniert. Die vollständige Sitzung ist Teil des <strong>30-Tage-Zugangs für ' + PRICE_EUR + ' €</strong> – einmalig, kein Abo, endet automatisch. Nach dem Kauf wird die App sofort freigeschaltet.',
       gate_buy_btn:        'Lizenz kaufen',
       gate_unlock_btn:     'Freischalten',
       gate_msg_invalid:    'Dieser Schlüssel ist nicht gültig. Bitte prüfe die Schreibweise.',
@@ -1703,7 +1703,7 @@ const LANG = {
       info_checkbox:       'I confirm that none of these exclusion criteria apply to me, and I use this app on my own responsibility.',
       // v49 A4: siehe DE-Block.
       // v50 A6: siehe DE-Block.
-      info_price:          'Getting started and calibration are free. So you first experience whether you find your way in – and decide afterwards. The full session is part of the annual licence at €' + PRICE_EUR + '.',
+      info_price:          'Getting started and calibration are free. So you first experience whether you find your way in – and decide afterwards. The full session costs a one-time €' + PRICE_EUR + ' for 30 days of access – no subscription.',
       info_btn:            'Continue',
       // Welcome
       welcome_label:       'Coaching App',
@@ -1793,7 +1793,7 @@ const LANG = {
       // v51 T2: Gate-Screen (unlock). Siehe DE-Block.
       gate_label:          'Unlock',
       gate_h2_html:        'The first part <em>is done.</em>',
-      gate_body_html:      'Your connection is working – the calibration went through. The full session is part of the <strong>annual licence at €' + PRICE_EUR + '</strong>. After the purchase you receive a licence key by email and directly on the order page.',
+      gate_body_html:      'Your connection is working – the calibration went through. The full session is part of the <strong>30-day access for €' + PRICE_EUR + '</strong> – one-time payment, no subscription, ends automatically. After the purchase the app is unlocked immediately.',
       gate_buy_btn:        'Buy licence',
       gate_unlock_btn:     'Unlock',
       gate_msg_invalid:    'This key is not valid. Please check the spelling.',
@@ -2503,7 +2503,7 @@ const LANG = {
       // v49 A4: siehe DE-Block.
       // v50 A6: siehe DE-Block. Verbformen geschlechtsneutral (узнаешь,
       // найдёшь, решишь) – muttersprachliche Pruefung steht noch aus.
-      info_price:               'Начало и калибровка бесплатны. Так ты сначала узнаешь, найдёшь ли ты доступ — и решишь потом. Полная сессия входит в годовую лицензию за ' + PRICE_EUR + ' €.',
+      info_price:               'Начало и калибровка бесплатны. Так ты сначала узнаешь, найдёшь ли ты доступ — и решишь потом. Полная сессия стоит ' + PRICE_EUR + ' € один раз за 30 дней доступа – без подписки.',
       info_btn:                 'Далее',
       // Welcome
       welcome_label:            'Коуч-приложение',
@@ -2590,7 +2590,7 @@ const LANG = {
       // Muttersprachliche Pruefung steht noch aus – wie bei info_price (v50 A6).
       gate_label:               'Активация',
       gate_h2_html:             'Начало <em>пройдено.</em>',
-      gate_body_html:           'Связь установлена — калибровка удалась. Полная сессия входит в <strong>годовую лицензию за ' + PRICE_EUR + ' €</strong>. После покупки ты получишь лицензионный ключ по электронной почте и увидишь его на странице заказа.',
+      gate_body_html:           'Связь установлена — калибровка удалась. Полная сессия входит в <strong>30-дневный доступ за ' + PRICE_EUR + ' €</strong> – разовый платёж, без подписки, заканчивается автоматически. После покупки приложение сразу активируется.',
       gate_buy_btn:             'Купить лицензию',
       gate_unlock_btn:          'Активировать',
       gate_msg_invalid:         'Этот ключ недействителен. Пожалуйста, проверь написание.',

@@ -658,7 +658,7 @@ text-decoration: none; display: block;
   <!-- v43 F1: Marke ersetzt durch Slogan. splash_brand/splash_sub behalten
        ihre Schluesselnamen, nur die Textwerte in tx: haben sich geaendert. -->
   <div class="splash-brand" data-i18n="splash_brand">Coach dich selbst</div>
-  <div class="splash-sub" data-i18n="splash_sub">Verhaltensmuster und Blockaden lösen</div>
+  <div class="splash-sub" data-i18n="splash_sub">Selbstcoaching ohne Worte</div>
   <div class="splash-cred" data-i18n="splash_cred">von einem Psychologen entwickelt</div>
   <div class="lang-selector">
     <!-- v43 F1: Dropdown statt Einzel-Buttons. setLang() ist unveraendert –
@@ -731,7 +731,7 @@ text-decoration: none; display: block;
     <p data-i18n="info_p1_html">Du hast ein inneres Wissen, das klüger ist als dein Verstand. Manche nennen es Bauchgefühl, innere Stimme oder Intuition. Diese App gibt ihm Raum, <strong>alte Muster zu verändern</strong> – ohne dass du über dein Problem sprechen oder nachdenken musst.</p>
     <p data-i18n="info_p2_html">Du drückst während der Sitzung nur zwei Buttons: <strong>Ja</strong> oder <strong>Nein</strong>. Mehr wird nicht von dir verlangt.</p>
     <p class="warning" data-i18n="info_warning_html"><strong>Wichtiger Hinweis</strong><br>
-    Diese App ist ein Coaching-Angebot und kein medizinisches Produkt. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.</p>
+    Diese App ist ein Coaching-Angebot, keine Therapie und kein Medizinprodukt. Sie ersetzt keine ärztliche oder psychotherapeutische Behandlung. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.</p>
   </div>
   <!-- v49 A4: Preisnennung. Steht bewusst AUSSERHALB von .info-onboard-text:
        jener Block hat max-height 52vh und scrollt, die Zeile koennte dort
@@ -765,7 +765,7 @@ text-decoration: none; display: block;
   <h2 class="headline" data-i18n="problem_h2_html">Dein <em>Kernsatz.</em></h2>
   <div class="info-onboard-text" style="text-align:center;max-height:none;">
     <p data-i18n="problem_p1">Bevor du beginnst — nimm dir einen Moment.</p>
-    <p data-i18n="problem_p2_html">Formuliere dein Thema als einen klaren Satz. Zum Beispiel: <strong>„Ich kann schlecht einschlafen."</strong> Oder: <strong>„Ich fühle mich in sozialen Situationen unwohl."</strong></p>
+    <p data-i18n="problem_p2_html">Formuliere dein Thema als einen klaren Satz. Zum Beispiel: <strong>„Ich schiebe wichtige Dinge vor mir her."</strong> Oder: <strong>„Ich fühle mich in sozialen Situationen unwohl."</strong></p>
     <p data-i18n="problem_p3">Kein Erklären, kein Analysieren — nur ein Satz, so konkret wie möglich. Halte ihn innerlich bereit.</p>
   </div>
   <button class="btn hidden-until-tts" id="problemBtn" data-i18n="problem_btn" onclick="problemNext()">Ich habe meinen Satz</button>
@@ -1178,7 +1178,7 @@ text-decoration: none; display: block;
 //
 // Der Preis erscheint bewusst in KEINER MP3. Sonst wuerde jede
 // Preisaenderung drei Neuaufnahmen (DE/EN/RU) erzwingen.
-const PRICE_EUR = 37;  // v54: 37 EUR, einmalig, 30 Tage
+const PRICE_EUR = 37;  // v55: HWG-Textkorrekturen (Splash, Hinweis, Beispielsatz) | v54: 37 EUR, einmalig, 30 Tage
 
 // v50 F1: Buchungslink fuer das Nachbearbeitungs-Gespraech (30 Min).
 // Echte TidyCal-URL eingetragen (Stripe verbunden, 89 EUR, 15 Min Puffer,
@@ -1317,7 +1317,7 @@ const LANG = {
     tx: {
       // Splash
       splash_brand:        'Coach dich selbst',                        // v43 F4
-      splash_sub:          'Verhaltensmuster und Blockaden lösen',       // v43 F4
+      splash_sub:          'Selbstcoaching ohne Worte',       // v43 F4
       splash_cred:         'von einem Psychologen entwickelt',           // v43 F4
       splash_hint:         'Tippe um zu beginnen',
       // v43 F4: Pre-Screen (Screen 2)
@@ -1335,7 +1335,7 @@ const LANG = {
       info_label:          'Influencial · Silent Coaching',
       info_p1_html:        'Du hast ein inneres Wissen, das klüger ist als dein Verstand. Manche nennen es Bauchgefühl, innere Stimme oder Intuition. Diese App gibt ihm Raum, <strong>alte Muster zu verändern</strong> – ohne dass du über dein Problem sprechen oder nachdenken musst.',
       info_p2_html:        'Du drückst während der Sitzung nur zwei Buttons: <strong>Ja</strong> oder <strong>Nein</strong>. Mehr wird nicht von dir verlangt.',
-      info_warning_html:   '<strong>Wichtiger Hinweis</strong><br>Diese App ist ein Coaching-Angebot und kein medizinisches Produkt. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.',
+      info_warning_html:   '<strong>Wichtiger Hinweis</strong><br>Diese App ist ein Coaching-Angebot, keine Therapie und kein Medizinprodukt. Sie ersetzt keine ärztliche oder psychotherapeutische Behandlung. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.',
       info_checkbox:       'Ich bestätige, dass keiner dieser Ausschlussgründe auf mich zutrifft, und nutze diese App eigenverantwortlich.',
       // v49 A4: Preisnennung vor dem Start. Bewusst hier und nicht auf dem
       // Pre-Screen: der Nutzer ist an dieser Stelle noch nuechtern, liest
@@ -1356,7 +1356,7 @@ const LANG = {
       problem_label:       'Dein Thema',
       problem_h2_html:     'Dein <em>Kernsatz.</em>',
       problem_p1:          'Bevor du beginnst — nimm dir einen Moment.',
-      problem_p2_html:     'Formuliere dein Thema als einen klaren Satz. Zum Beispiel: <strong>„Ich kann schlecht einschlafen."</strong> Oder: <strong>„Ich fühle mich in sozialen Situationen unwohl."</strong>',
+      problem_p2_html:     'Formuliere dein Thema als einen klaren Satz. Zum Beispiel: <strong>„Ich schiebe wichtige Dinge vor mir her."</strong> Oder: <strong>„Ich fühle mich in sozialen Situationen unwohl."</strong>',
       problem_p3:          'Kein Erklären, kein Analysieren — nur ein Satz, so konkret wie möglich. Halte ihn innerlich bereit.',
       problem_btn:         'Ich habe meinen Satz',
       // Intro (Drei Ebenen)
@@ -1488,7 +1488,7 @@ const LANG = {
 
     screens: {
       // Info-Screen
-      info_tts: 'Du hast ein inneres Wissen, das klüger ist als dein Verstand. Manche nennen es Bauchgefühl, innere Stimme oder Intuition. Diese App gibt ihm Raum, alte Muster zu verändern – ohne dass du über dein Problem sprechen oder nachdenken musst. Du drückst während der Sitzung nur zwei Buttons: Ja oder Nein. Mehr wird nicht von dir verlangt. Wichtiger Hinweis: Diese App ist ein Coaching-Angebot und kein medizinisches Produkt. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.',
+      info_tts: 'Du hast ein inneres Wissen, das klüger ist als dein Verstand. Manche nennen es Bauchgefühl, innere Stimme oder Intuition. Diese App gibt ihm Raum, alte Muster zu verändern – ohne dass du über dein Problem sprechen oder nachdenken musst. Du drückst während der Sitzung nur zwei Buttons: Ja oder Nein. Mehr wird nicht von dir verlangt. Wichtiger Hinweis: Diese App ist ein Coaching-Angebot, keine Therapie und kein Medizinprodukt. Sie ersetzt keine ärztliche oder psychotherapeutische Behandlung. Sie ist nicht geeignet bei akuten psychischen Erkrankungen, psychischen Krisen oder Suizidgedanken. Bitte wende dich in diesen Fällen an einen Arzt oder eine psychiatrische Notaufnahme.',
       info_mp3: 'ui-01',
 
       // Welcome-Screen
@@ -1498,7 +1498,7 @@ const LANG = {
       welcome2_mp3: 'ui-03',
 
       // Problem-Screen
-      problem_tts: 'Bevor du beginnst — nimm dir einen Moment. Formuliere dein Thema als einen klaren Satz. Zum Beispiel: Ich kann schlecht einschlafen. Oder: Ich fühle mich in sozialen Situationen unwohl. Kein Erklären, kein Analysieren — nur ein Satz, so konkret wie möglich. Halte ihn innerlich bereit.',
+      problem_tts: 'Bevor du beginnst — nimm dir einen Moment. Formuliere dein Thema als einen klaren Satz. Zum Beispiel: Ich schiebe wichtige Dinge vor mir her. Oder: Ich fühle mich in sozialen Situationen unwohl. Kein Erklären, kein Analysieren — nur ein Satz, so konkret wie möglich. Halte ihn innerlich bereit.',
       problem_mp3: 'ui-04',
 
       // PreSUD
@@ -1684,7 +1684,7 @@ const LANG = {
     tx: {
       // Splash
       splash_brand:        'Be your own coach',                          // v43 F4
-      splash_sub:          'Break old patterns and blocks',               // v43 F4
+      splash_sub:          'Self-coaching without words',                 // v43 F4
       splash_cred:         'Developed by a psychologist',                 // v43 F4
       splash_hint:         'Tap to begin',
       // v43 F4: Pre-Screen (Screen 2)
@@ -1699,7 +1699,7 @@ const LANG = {
       info_label:          'Influencial · Silent Coaching',
       info_p1_html:        'You have an inner wisdom that is smarter than your conscious mind. Some call it gut feeling, inner voice, or intuition. This app gives it space to <strong>change old patterns</strong> – without you having to talk or think about your problem.',
       info_p2_html:        'During the session you press only two buttons: <strong>Yes</strong> or <strong>No</strong>. Nothing more is required of you.',
-      info_warning_html:   '<strong>Important notice</strong><br>This app is a coaching offering and not a medical product. It is not suitable for acute mental illness, mental crises, or suicidal thoughts. Please contact a doctor or psychiatric emergency service in those cases.',
+      info_warning_html:   '<strong>Important notice</strong><br>This app is a coaching offering, not therapy and not a medical device. It does not replace medical or psychotherapeutic treatment. It is not suitable for acute mental illness, mental crises, or suicidal thoughts. Please contact a doctor or psychiatric emergency service in those cases.',
       info_checkbox:       'I confirm that none of these exclusion criteria apply to me, and I use this app on my own responsibility.',
       // v49 A4: siehe DE-Block.
       // v50 A6: siehe DE-Block.
@@ -1715,7 +1715,7 @@ const LANG = {
       problem_label:       'Your topic',
       problem_h2_html:     'Your <em>core sentence.</em>',
       problem_p1:          'Before you begin — take a moment.',
-      problem_p2_html:     'Formulate your topic as one clear sentence. For example: <strong>„I sleep poorly."</strong> Or: <strong>„I feel uncomfortable in social situations."</strong>',
+      problem_p2_html:     'Formulate your topic as one clear sentence. For example: <strong>„I keep putting important things off."</strong> Or: <strong>„I feel uncomfortable in social situations."</strong>',
       problem_p3:          'No explaining, no analyzing — just one sentence, as concrete as possible. Hold it ready inside you.',
       problem_btn:         'I have my sentence',
       // Intro (Three Levels)
@@ -1839,13 +1839,13 @@ const LANG = {
     },
 
     screens: {
-      info_tts: 'You have an inner wisdom that is smarter than your conscious mind. Some call it gut feeling, inner voice, or intuition. This app gives it space to change old patterns – without you having to talk or think about your problem. During the session you press only two buttons: Yes or No. Nothing more is required of you. Important notice: This app is a coaching offering and not a medical product. It is not suitable for acute mental illness, mental crises, or suicidal thoughts. Please contact a doctor or psychiatric emergency service in those cases.',
+      info_tts: 'You have an inner wisdom that is smarter than your conscious mind. Some call it gut feeling, inner voice, or intuition. This app gives it space to change old patterns – without you having to talk or think about your problem. During the session you press only two buttons: Yes or No. Nothing more is required of you. Important notice: This app is a coaching offering, not therapy and not a medical device. It does not replace medical or psychotherapeutic treatment. It is not suitable for acute mental illness, mental crises, or suicidal thoughts. Please contact a doctor or psychiatric emergency service in those cases.',
       info_mp3: 'ui-01',
       welcome1_tts: 'Welcome to yourself.',
       welcome1_mp3: 'ui-02',
       welcome2_tts: 'You only need two things: your attention – and your gut feeling.',
       welcome2_mp3: 'ui-03',
-      problem_tts: 'Before you begin — take a moment. Formulate your topic as one clear sentence. For example: I sleep poorly. Or: I feel uncomfortable in social situations. No explaining, no analyzing — just one sentence. Hold it in your mind.',
+      problem_tts: 'Before you begin — take a moment. Formulate your topic as one clear sentence. For example: I keep putting important things off. Or: I feel uncomfortable in social situations. No explaining, no analyzing — just one sentence. Hold it in your mind.',
       problem_mp3: 'ui-04',
       presud_tts: 'Recall your sentence internally now. Feel how strongly this topic is burdening you right now — and tap a number spontaneously.',
       presud_mp3: 'ui-05',
@@ -2481,7 +2481,7 @@ const LANG = {
     tx: {
       // Splash
       splash_brand:             'Стань себе коучем',
-      splash_sub:               'Освободись от привычных шаблонов и внутренних блоков',
+      splash_sub:               'Самокоучинг без слов',
       splash_cred:              'разработано психологом',
       splash_hint:              'Нажми, чтобы начать',
       // Pre-Screen (Screen 2)
@@ -2498,7 +2498,7 @@ const LANG = {
       info_label:               'Influencial · Silent Coaching',
       info_p1_html:             'У тебя есть внутреннее знание, которое превосходит твой разум. Кто-то называет это интуицией, внутренним голосом или внутренним чутьём. Это приложение даёт ему пространство, чтобы <strong>изменить привычные шаблоны</strong> – не заставляя тебя говорить о своей проблеме или анализировать её.',
       info_p2_html:             'Во время сессии ты нажимаешь только две кнопки: <strong>Да</strong> или <strong>Нет</strong>. Большего от тебя не требуется.',
-      info_warning_html:        '<strong>Важное примечание</strong><br>Это приложение предназначено для коучинга и не является медицинским продуктом. Оно не подходит при острых психических заболеваниях, психических кризисах или суицидальных мыслях. В таких случаях, пожалуйста, обратись к врачу или в отделение неотложной психиатрической помощи.',
+      info_warning_html:        '<strong>Важное примечание</strong><br>Это приложение предназначено для коучинга, не является психотерапией и медицинским изделием. Оно не заменяет врачебную или психотерапевтическую помощь. Оно не подходит при острых психических заболеваниях, психических кризисах или суицидальных мыслях. В таких случаях, пожалуйста, обратись к врачу или в отделение неотложной психиатрической помощи.',
       info_checkbox:            'Я подтверждаю, что ни одно из указанных ограничений ко мне не относится, и использую это приложение под свою ответственность.',
       // v49 A4: siehe DE-Block.
       // v50 A6: siehe DE-Block. Verbformen geschlechtsneutral (узнаешь,
@@ -2515,7 +2515,7 @@ const LANG = {
       problem_label:            'Твоя тема',
       problem_h2_html:          'Твоё <em>ключевое предложение.</em>',
       problem_p1:               'Прежде чем начать — удели себе минутку.',
-      problem_p2_html:          'Сформулируй свою тему одним чётким предложением. Например: <strong>«Мне трудно заснуть.»</strong> Или: <strong>«Я чувствую себя некомфортно в общении с другими людьми.»</strong>',
+      problem_p2_html:          'Сформулируй свою тему одним чётким предложением. Например: <strong>«Я чувствую себя некомфортно в общении с другими людьми.»</strong>',
       problem_p3:               'Ничего не объясняй и не анализируй — только одно предложение, как можно конкретнее. Просто держи его в уме.',
       problem_btn:              'Предложение готово',
       // Intro (Drei Ebenen)
@@ -2606,10 +2606,10 @@ const LANG = {
       // v45 A1: Wortlaute aus mp3-aufnahmeliste-ru-v12.docx (muttersprachlich
       // geprueft). MP3-Verweise gesetzt – speak() nutzt jetzt die Aufnahmen und
       // faellt nur bei fehlender Datei auf TTS zurueck.
-      info_tts: 'У тебя есть внутреннее знание, которое превосходит твой разум. Кто-то называет это интуицией, внутренним голосом или внутренним чутьём. Это приложение даёт ему проявиться, чтобы изменить привычные шаблоны  – не заставляя тебя говорить о своей проблеме или постоянно ее анализировать. Во время сессии ты нажимаешь только две кнопки: Да или Нет. Большего от тебя не требуется.  Важное примечание: это приложение предназначено для коучинга и не является медицинским продуктом. Оно не подходит при острых психических заболеваниях, психических кризисах или суицидальных мыслях. В таких случаях, пожалуйста, обратитесь к врачу или в отделение неотложной психиатрической помощи.', info_mp3: 'ui-01',
+      info_tts: 'У тебя есть внутреннее знание, которое превосходит твой разум. Кто-то называет это интуицией, внутренним голосом или внутренним чутьём. Это приложение даёт ему проявиться, чтобы изменить привычные шаблоны  – не заставляя тебя говорить о своей проблеме или постоянно ее анализировать. Во время сессии ты нажимаешь только две кнопки: Да или Нет. Большего от тебя не требуется.  Важное примечание: это приложение предназначено для коучинга, не является психотерапией и медицинским изделием. Оно не заменяет врачебную или психотерапевтическую помощь. Оно не подходит при острых психических заболеваниях, психических кризисах или суицидальных мыслях. В таких случаях, пожалуйста, обратитесь к врачу или в отделение неотложной психиатрической помощи.', info_mp3: 'ui-01',
       welcome1_tts: 'Добро пожаловать к самому себе.', welcome1_mp3: 'ui-02',
       welcome2_tts: 'Тебе нужны всего две вещи: твое внимание – и твоё внутреннее чутьё.', welcome2_mp3: 'ui-03',
-      problem_tts: 'Прежде чем начать – удели себе минутку. Сформулируй свою тему одним чётким предложением. Например: мне трудно заснуть. Или: я чувствую себя некомфортно в общении с другими людьми. Ничего не объясняй и не анализируй – только одно предложение, чем конкретнее, тем лучше. Просто помни о нем.', problem_mp3: 'ui-04',
+      problem_tts: 'Прежде чем начать – удели себе минутку. Сформулируй свою тему одним чётким предложением. Например: я чувствую себя некомфортно в общении с другими людьми. Ничего не объясняй и не анализируй – только одно предложение, чем конкретнее, тем лучше. Просто помни о нем.', problem_mp3: 'ui-04',
       presud_tts: 'Теперь вспомни свое предложение. Почувствуй, насколько сильно эта тема волнует тебя сейчас, а затем, не раздумывая, нажми на число.', presud_mp3: 'ui-05',
       intro1_tts: 'Хорошо. Теперь я покажу тебе, как проходит сессия.', intro1_mp3: 'ui-06',
       intro2_tts: 'В тебе есть три уровня. Твое внутреннее чутьё – мудрая внутренняя сила, которая направляет эту сессию. Твое подсознание – система внутренних частей, хранящая прошлый опыт. И ты, -  тот, кто наблюдает и нажимает на кнопки.', intro2_mp3: 'ui-07',

@@ -637,7 +637,7 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
   </button>
   <div class="splash-hint" data-i18n="splash_hint">Tippe um zu beginnen</div>
   <!-- PRIVAT P1: Kennzeichnung, damit die Datei nicht mit der Verkaufsversion verwechselt wird. -->
-  <div style="font-size:0.62rem;letter-spacing:0.18em;color:#c4a05a88;margin-top:0.9rem;text-transform:uppercase;">Privatversion P5</div>
+  <div style="font-size:0.62rem;letter-spacing:0.18em;color:#c4a05a88;margin-top:0.9rem;text-transform:uppercase;">Privatversion P7</div>
   <!-- v43 F1: Der frueher hier stehende Rotations-/Voraussetzungs-Hinweis
        (v35 R1) ist auf den Pre-Screen (screenPre) gewandert und dort gekuerzt.
        Der tx-Schluessel splash_rotation_hint_html bleibt im Code erhalten. -->
@@ -4231,8 +4231,14 @@ function primeCueAudio() {
   startSilenceLoop(); // PRIVAT P3: laeuft innerhalb der User-Geste (Splash-/Dev-Tap)
   try {
     _cueEl = new Audio(_cuePath());
-    _cueEl.muted = true;
-    _cueEl.volume = 0;
+    // PRIVAT P7: Das Ton-Element wird NICHT mehr stumm (muted) vorbereitet.
+    // Befund: Der erste Ton jeder Sitzung (Kontakt) war nie zu hoeren, obwohl
+    // das Protokoll "gespielt und beendet" meldete – passend zu einer
+    // Wiedergabe, die trotz muted=false noch stumm lief. Der Ton hat jetzt
+    // 250 ms Stille am Anfang; das Anspielen wird sofort beim Start pausiert,
+    // also innerhalb dieser Stille, und ist deshalb nicht zu hoeren.
+    _cueEl.muted = false;
+    _cueEl.volume = 1;
     _cueEl.play().then(() => { _cueEl.pause(); _cueEl.currentTime = 0; }).catch(() => {});
     _cueErrEl = new Audio(_cueErrPath());
     _cueErrEl.muted = true;
@@ -4244,7 +4250,9 @@ function primeCueAudio() {
     _tapHintEl = new Audio(_tapHintPath());
     _tapHintEl.muted = true;
     _tapHintEl.volume = 0;
-    _tapHintEl.play().then(() => { _tapHintEl.pause(); _tapHintEl.currentTime = 0; }).catch(() => {});
+    // PRIVAT P7: Stummschaltung direkt nach dem Anspielen aufheben, nicht erst
+    // unmittelbar vor der ersten echten Wiedergabe (gleicher Verdacht wie oben).
+    _tapHintEl.play().then(() => { _tapHintEl.pause(); _tapHintEl.currentTime = 0; _tapHintEl.muted = false; }).catch(() => {});
   } catch(e) {}
 }
 
@@ -4287,17 +4295,37 @@ function _cueLogAdd() {
   const scr = document.querySelector('.screen.active');
   let where = scr ? scr.id.replace('screen', '') : '?';
   if (scr && scr.id === 'screenStep' && S.current_step) where = 'S' + S.current_step.num;
-  const entry = { where: where, status: 'offen', ended: false, loopOff: false };
+  const entry = { where: where, status: 'offen', ended: false, loopOff: false, retries: 0, diag: '' };
   _cueLog.push(entry);
   return entry;
 }
 function _cueLogText() {
   if (_cueLog.length === 0) return '';
   return 'Ton-Protokoll: ' + _cueLog.map(e => {
-    const loop = e.loopOff ? '°' : '';
-    if (e.status === 'ok') return e.where + loop + (e.ended ? ' ✓' : ' ~');
+    const loop = (e.loopOff ? '°' : '') + (e.retries ? ' ↻' + e.retries : '');
+    if (e.status === 'ok') return e.where + loop + (e.ended ? ' ✓' : ' ~[' + e.diag + ']');
     return e.where + loop + ' ✗ ' + e.status;
   }).join(' · ');
+}
+
+// PRIVAT P6: Wachhund fuer haengende Toene. Befund aus den Tests: Bei einzelnen
+// Toenen meldet iOS "gestartet", der Ton ist aber nicht zu hoeren und endet nie
+// (im Protokoll "~"). 500 ms nach dem Start wird geprueft, ob die Wiedergabe
+// vorangekommen ist. Steht sie noch am Anfang, wird der Ton neu gestartet
+// (hoechstens zweimal). Gleiches Element, daher kein Doppelton moeglich.
+// Fuer nicht beendete Toene landet der Zustand im Protokoll:
+// t = Abspielposition in Sekunden, r = readyState, p = pausiert.
+function _cueWatch(entry, attempt) {
+  setTimeout(() => {
+    if (entry.ended || !_cueEl) return;
+    if (_cueLog[_cueLog.length - 1] !== entry) return; // ein neuerer Ton hat uebernommen
+    const t = _cueEl.currentTime || 0;
+    entry.diag = 't=' + t.toFixed(2) + ' r' + _cueEl.readyState + (_cueEl.paused ? ' p' : '');
+    if (t >= 0.2 || attempt >= 2) return; // laeuft bereits, oder genug versucht
+    entry.retries = attempt + 1;
+    try { _cueEl.currentTime = 0; _cueEl.play().catch(() => {}); } catch(e) {}
+    _cueWatch(entry, attempt + 1);
+  }, 500);
 }
 
 function _playCueMp3(volume) {
@@ -4314,6 +4342,7 @@ function _playCueMp3(volume) {
     _cueEl.volume = volume;
     _cueEl.currentTime = 0;
     _cueEl.onended = () => { entry.ended = true; };
+    _cueWatch(entry, 0); // PRIVAT P6
     _cueEl.play().then(() => { entry.status = 'ok'; }).catch(err => {
       entry.status = 'abgelehnt' + (err && err.name ? ' (' + err.name + ')' : '');
       _emitCueTone(volume * 0.27); // Web-Audio ist subjektiv lauter, daher reduzieren
@@ -4744,7 +4773,7 @@ function endSession() {
   setTimeout(() => {
     const logEl = document.getElementById('afterCueLog');
     if (logEl) logEl.textContent = _cueLogText();
-  }, 1200);
+  }, 2000);
   // v37 G4: Statt direkt zum Splash geht es auf den Abschluss-Screen.
   // Aufraeumen (TTS, Spirale, Wake Lock, Session-Reset) ist zu diesem Zeitpunkt
   // bereits erfolgt – screenAfter ist rein organisatorisch, ohne Audio.

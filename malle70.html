@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Coaching App</title>
+<title>Coaching App · Privat</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400&display=swap');
 
@@ -636,6 +636,8 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
     <div class="splash-dot"></div>
   </button>
   <div class="splash-hint" data-i18n="splash_hint">Tippe um zu beginnen</div>
+  <!-- PRIVAT P1: Kennzeichnung, damit die Datei nicht mit der Verkaufsversion verwechselt wird. -->
+  <div style="font-size:0.62rem;letter-spacing:0.18em;color:#c4a05a88;margin-top:0.9rem;text-transform:uppercase;">Privatversion P1</div>
   <!-- v43 F1: Der frueher hier stehende Rotations-/Voraussetzungs-Hinweis
        (v35 R1) ist auf den Pre-Screen (screenPre) gewandert und dort gekuerzt.
        Der tx-Schluessel splash_rotation_hint_html bleibt im Code erhalten. -->
@@ -718,6 +720,14 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
     <p data-i18n="problem_p3">Kein Erklären, kein Analysieren — nur ein Satz, so konkret wie möglich. Halte ihn innerlich bereit.</p>
   </div>
   <button class="btn hidden-until-tts" id="problemBtn" data-i18n="problem_btn" onclick="problemNext()">Ich habe meinen Satz</button>
+</div>
+
+<!-- §SCREEN:PRIVSTART – PRIVAT P1: Auswahl nach der Vorher-Skala. -->
+<div class="screen" id="screenPrivStart">
+  <div class="label">Start</div>
+  <h2 class="headline" style="font-size:1.5rem;">Wie möchtest du <em>starten?</em></h2>
+  <button class="btn" style="margin-bottom:1.1rem;min-width:260px;" onclick="privStart(true)">Mit Einstimmung</button>
+  <button class="btn go" style="min-width:260px;" onclick="privStart(false)">Direkt starten</button>
 </div>
 
 <!-- §SCREEN:INTRO -->
@@ -3087,9 +3097,30 @@ function splashStart() {
   // v30 F2: Cue-Elemente innerhalb dieser User-Geste freischalten (iOS).
   primeCueAudio();
   ensureWakeLock();
-  // v43 F3: Der Splash fuehrt jetzt auf den Pre-Screen (Screen 2) statt direkt
-  // auf screenInfo. primeCueAudio() bleibt bewusst HIER – erster User-Tap.
-  goTo('screenPre');
+  // PRIVAT P1: Kein Pre-Screen, kein Hinweis-Gate, keine Begruessung, keine
+  // Einstiegsfragen. Der Splash-Tap fuehrt direkt zum Kernsatz. Der Button ist
+  // sofort sichtbar, die Kernsatz-Ansage entfaellt.
+  S = freshSession();
+  S.client_name = 'Ralf';
+  goTo('screenProblem');
+  showBtn('problemBtn');
+}
+
+// PRIVAT P1: Start nach der Vorher-Skala. withPrep=true spielt die Einstimmung
+// (Atem, Koerper, Farben) und geht danach automatisch in den Kontakt.
+// withPrep=false startet den Kontakt sofort. Kalibrierung, Uebungsrunde und
+// Querformat-Pruefung entfallen in beiden Faellen.
+function privStart(withPrep) {
+  ensureWakeLock();
+  ensureAudioCtx();
+  if (!withPrep) { startContact(); return; }
+  goTo('screenCalib2');
+  document.getElementById('calib2Btns').classList.remove('active', 'large');
+  document.getElementById('calib2Text').textContent = '';
+  document.getElementById('calib2SpiralWrap').style.display = 'flex';
+  spiralStart();
+  startAudioKeepalive();
+  startPreparation();
 }
 
 // v43 F3: Uebernimmt den frueheren zweiten Teil von splashStart() unveraendert.
@@ -3859,12 +3890,11 @@ function startPreparation() {
 // §JS:PRE-SUD  (startPreSUD, buildSUD)
 // ══════════════════════════════════════════════════
 function startPreSUD() {
+  // PRIVAT P1: Skala sofort bedienbar (nicht erst nach der Ansage). Nach der
+  // Auswahl folgt der Auswahl-Screen statt Lofty/Intro/Uebungsrunde/Kalibrierung.
   goTo('screenPreSUD');
-  setTimeout(() => {
-    speak(L.screens.presud_tts, () => {
-      buildSUD('preSudGrid', val => { S.sud_pre = val; showLofty(); });
-    }, null, L.screens.presud_mp3 || null);
-  }, 400);
+  buildSUD('preSudGrid', val => { S.sud_pre = val; cancelTTS(); goTo('screenPrivStart'); });
+  speak(L.screens.presud_tts, null, null, L.screens.presud_mp3 || null);
 }
 
 function showLofty() {
@@ -4094,12 +4124,17 @@ function startStepTapMode(step, displayText, stepMp3) {
   // stepAnswer prüft dieses Flag und ruft startStepTapAudio auf statt direkt weiterzuleiten.
   step._pendingAudio = { text: displayText, mp3: stepMp3 };
   playTapHint(() => {
-    cueSignal();
-    document.getElementById('sessionBtns').classList.add('active', 'large');
-    setOff(['stepYes'], false);
-    S.locked = false;
-    // v25 FIX 2: Auch hier Reminder-Timer - erinnert daran, dass ein Tap erwartet wird.
-    startReminderTimer();
+    // PRIVAT P1: 250 ms Abstand zwischen Ende der Ansage und Ton. Vorher
+    // startete der Ton im selben Moment, in dem die Ansage endete – die einzige
+    // Stelle im Ablauf ohne Pause, Verdacht auf verschluckten Ton unter iOS.
+    setTimeout(() => {
+      cueSignal();
+      document.getElementById('sessionBtns').classList.add('active', 'large');
+      setOff(['stepYes'], false);
+      S.locked = false;
+      // v25 FIX 2: Auch hier Reminder-Timer - erinnert daran, dass ein Tap erwartet wird.
+      startReminderTimer();
+    }, 250);
   });
 }
 
@@ -4157,9 +4192,14 @@ let _cueEl = null;     // Bestätigungs-/Hinweiston (cue.mp3)
 let _cueErrEl = null;  // Fehlerton Kalibrierung (cue-err.mp3)
 let _tapHintEl = null; // v33 F2: Hinweis-Ansage Tap-Modus S18/S19 (tap-weiter.mp3)
 
+// PRIVAT P1: Der bisherige Hinweiston (audio/de/cue.mp3, 880 Hz), um 21,5 dB
+// angehoben und direkt eingebettet. Grund: iOS ignoriert die volume-Eigenschaft
+// von <audio>, die Lautstaerke haengt allein an der Tondatei. Das Original hatte
+// einen Spitzenpegel von -33,5 dB (Sprachaufnahmen: ca. -4 dB), jetzt -12 dB.
+// Bleibt ein <audio>-Element und spielt damit weiter trotz Stummschalter.
+const CUE_DATA_URI = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//uQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAFAAAJygBVVVVVVVVVVVVVVVVVVVVVVVVVf39/f39/f39/f39/f39/f39/f3+qqqqqqqqqqqqqqqqqqqqqqqqqqtXV1dXV1dXV1dXV1dXV1dXV1dXV//////////////////////////8AAAAATGF2YzYwLjMxAAAAAAAAAAAAAAAAJAaRAAAAAAAACcoQXf1iAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//uQxAAAFKDbGlWGAAsvt+LjPUAAAAFtyuG5fQNYYg3UxrP3DsxIBAWYRlo1dxt2wAACA0BoJAkCQJAiA3BuJYliWJYliWTxIEgwMDAwMDAwMzMzMzNevXn5gYGB4sWLFh4ZmZmvXr169esWLFixZRhxevXr169evXrFixYsWLFji9evXr1797uAAAAAAeHh4eGAAAACA8PDw9IAAAAIDw8PD1gAAAHB4eHh4YAAAAIDw8PD0gAAAAgPAAAgAQgAARdLAGYoAGYHoXpgAgSGAyEOYaIkJlDprhgYxmvDUGBmHyZBzMhmuinmAAAACp6jCJApMJgoQwKAUwtCAyIgDeCAMSRAKLAFKgv8KREFQMiDAsQDkxQYYMFBCgRrCyhmg5cPoMeMnIUXNJsojhiyhVEqOeS3+kXiiRUhSEH8XOLk/oVJLLpM//5kTRAiGjmjmk0RYi3//5iXSZMi8TRiXS6kl///5eRRLqSRkiiYpJGSKP////5ikkZIomKSRkiiYpJGSKJiTfQUC4BWYAOAZAIAlMAJAWTBvg5IwQIB4MGd//uSxA2DzCBFAh38AAEXhaCBn+CYCXDCsgdsxSUiiP9lY4zcJjw0xUQG9MACACzAiQExmhgEQAwdDLXAyVSrtWFQkslrc7JETl7Uuvf/6f/+//0////v/30/6XJZ+h+ChSoKBMTALRScwFMDYBQMAYWuGXmR+MJh+FS00ZkkPxmQRhRZgpQE8eQiUZUjg09w7P/u/9H//d/6P///3f7qP9H/UaRVDgBjAyBSMYVDwzbQ+DC0C1MAQlcyfYrMPj7OKDITDiAxbcEvKwdQB9MDBIgMGTBsHhdb//BsGe//0////6f///3/76f8rKRWUzVQkP8qoxiIofMdGDTDGlQ7Yw7c46NCTKTzrqukU9ARr/KhB0WBA8wJALsMCRB6zAkATw9Ggr0mkSlhIaRKVpSiQaVKWHH/srcFhL5YSGlSlaQsJCwl8rSFhKWEhUT/5bO//5X/////5V39eGv8Nf57/Z8qdySqZl31/GAgMG8oCG+UFmCNLGBdHBahzCYCEQTAcAS06KbrxBYdQdY7Xy2kEAEAaCOrYJANAaExxsSBIEgmOf/7ksSAg8j4SQQPfohB5Irdwc/ooAnZmZmDmnZmZn79DszMz9/FhweH7+LAQAEEHIAgQQQc8mTIIc8mTJ3zyZMnfggQJ3sECBCPBAgQjLsmQQyzyZO/Z5MnetCBO9aDEIxoMQjHu0Iz3d3r3d3rRCd74iIzxERHu0IMDw94eHnwA8+AAGQAAyOAGRw8+OHj8A8fgACcAAARlMKC0aWQGSrxu6YZJPnZJpp8wZkrHbwRklKcsdzaDhzga4HFhgCr1mRZ4wiAQi7TbMhQTFpi2yYTrQCpiiqiqu5+o6uVMVMVdMCwEw1UqpWIxWaa0u5YZrsO0DtMOXc16LTLtM6Z014tQkkEQIg2JzZJBqBEGpZgJINQaiKWaGQhA2Ekm0OhCBsIx9c6EoGwlH3nJJEESjKM5JIkiSe0OSSJIkmMTRkJRJMXWjIShKPvaMhKEoyeZOSSSjJ5k5JJNPXWTkxJpi7h0SjExdw6MjI+ew6MjIye1aYmRk9q0xMTF3VpiYmK3mjIxMVvNHRkZLpaOjIyXeycmRku9k5MTFb7JyYmK3rHRib/+5LE5oPYSX7SDrDRTIXBWQG8MbkntbLjIyXdZcZGR89pydGR89q0xPVoVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//uSxDkDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
 function _cuePath() {
-  const file = (L.screens && L.screens.cue_mp3) ? L.screens.cue_mp3 : 'cue';
-  return L.mp3_base + file + '.mp3';
+  return CUE_DATA_URI;
 }
 function _tapHintPath() {
   return L.mp3_base + 'tap-weiter.mp3'; // v33 F2: sprachabhängiger Ordner (audio/de/, audio/en/, …)
@@ -4605,6 +4645,8 @@ function startProtoClosing() {
         // screenAfter, damit die Lofty-Frage hier als Letztes stehen bleibt.
         if (wipeEl) wipeEl.style.display = 'block';
         if (endBtn) endBtn.classList.remove('hidden-until-tts');
+        // PRIVAT P1: Ton, sobald der Beenden-Button da ist (vorher lautlos).
+        setTimeout(cueSignal, 250);
       });
     });
   });
@@ -4649,7 +4691,7 @@ function endSession() {
   const bookingBox = document.getElementById('afterBooking');
   const bookingBtn = document.getElementById('afterBookingBtn');
   if (bookingBtn) bookingBtn.href = BOOKING_URL;
-  if (bookingBox) bookingBox.style.display = (currentLang === 'de') ? 'flex' : 'none';
+  if (bookingBox) bookingBox.style.display = 'none'; // PRIVAT P1: kein Buchungsangebot
   // v37 G4: Statt direkt zum Splash geht es auf den Abschluss-Screen.
   // Aufraeumen (TTS, Spirale, Wake Lock, Session-Reset) ist zu diesem Zeitpunkt
   // bereits erfolgt – screenAfter ist rein organisatorisch, ohne Audio.

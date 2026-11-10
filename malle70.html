@@ -637,7 +637,7 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
   </button>
   <div class="splash-hint" data-i18n="splash_hint">Tippe um zu beginnen</div>
   <!-- PRIVAT P1: Kennzeichnung, damit die Datei nicht mit der Verkaufsversion verwechselt wird. -->
-  <div style="font-size:0.62rem;letter-spacing:0.18em;color:#c4a05a88;margin-top:0.9rem;text-transform:uppercase;">Privatversion P4</div>
+  <div style="font-size:0.62rem;letter-spacing:0.18em;color:#c4a05a88;margin-top:0.9rem;text-transform:uppercase;">Privatversion P5</div>
   <!-- v43 F1: Der frueher hier stehende Rotations-/Voraussetzungs-Hinweis
        (v35 R1) ist auf den Pre-Screen (screenPre) gewandert und dort gekuerzt.
        Der tx-Schluessel splash_rotation_hint_html bleibt im Code erhalten. -->
@@ -720,14 +720,6 @@ margin-bottom: 2.2rem; max-width: 18rem; line-height: 1.6;
     <p data-i18n="problem_p3">Kein Erklären, kein Analysieren — nur ein Satz, so konkret wie möglich. Halte ihn innerlich bereit.</p>
   </div>
   <button class="btn hidden-until-tts" id="problemBtn" data-i18n="problem_btn" onclick="problemNext()">Ich habe meinen Satz</button>
-</div>
-
-<!-- §SCREEN:PRIVSTART – PRIVAT P1: Auswahl nach der Vorher-Skala. -->
-<div class="screen" id="screenPrivStart">
-  <div class="label">Start</div>
-  <h2 class="headline" style="font-size:1.5rem;">Wie möchtest du <em>starten?</em></h2>
-  <button class="btn" style="margin-bottom:1.1rem;min-width:260px;" onclick="privStart(true)">Mit Einstimmung</button>
-  <button class="btn go" style="min-width:260px;" onclick="privStart(false)">Direkt starten</button>
 </div>
 
 <!-- §SCREEN:INTRO -->
@@ -3109,29 +3101,13 @@ function splashStart() {
   showBtn('problemBtn');
 }
 
-// PRIVAT P1: Start nach der Vorher-Skala. withPrep=true spielt die Einstimmung
-// (Atem, Koerper, Farben) und geht danach automatisch in den Kontakt.
-// withPrep=false startet den Kontakt sofort. Kalibrierung, Uebungsrunde und
-// Querformat-Pruefung entfallen in beiden Faellen.
-function privStart(withPrep) {
+// PRIVAT P5: Start nach der Vorher-Skala. Die Einstimmung ist gestrichen, es
+// geht immer direkt in den Kontakt. Der Keepalive laeuft wie in v50 mit.
+function privStart() {
   ensureWakeLock();
   ensureAudioCtx();
-  // PRIVAT P2: Keepalive auch beim Direktstart (in v50 lief er an dieser Stelle
-  // immer, weil er in der Kalibrierung gestartet wurde).
   startAudioKeepalive();
-  if (!withPrep) { startContact(); return; }
-  // PRIVAT P4: Die Einstimmung laeuft auf dem Kalibrierungs-Screen. Dort
-  // schickt der Querformat-Waechter (resize-Listener) den Nutzer bei Hochformat
-  // zurueck zum Querformat-Hinweis und von dort in die Kalibrierung. Genau das
-  // ist in P2/P3 passiert. Dieses Flag schaltet den Waechter fuer die
-  // Privat-Einstimmung ab.
-  S.priv_prep = true;
-  goTo('screenCalib2');
-  document.getElementById('calib2Btns').classList.remove('active', 'large');
-  document.getElementById('calib2Text').textContent = '';
-  document.getElementById('calib2SpiralWrap').style.display = 'flex';
-  spiralStart();
-  startPreparation();
+  startContact();
 }
 
 // v43 F3: Uebernimmt den frueheren zweiten Teil von splashStart() unveraendert.
@@ -3646,7 +3622,6 @@ function screenLandscapeNext() {
 
 // Orientierungswechsel während Kalibrierung: zurück zum Landscape-Screen
 window.addEventListener('resize', () => {
-  if (S.priv_prep) return; // PRIVAT P4: Einstimmung ohne Kalibrierung, kein Querformat-Zwang
   const inCalib = document.getElementById('screenCalib').classList.contains('active')
                || document.getElementById('screenCalib2').classList.contains('active');
   if (inCalib && !isLandscape()) {
@@ -3902,10 +3877,11 @@ function startPreparation() {
 // §JS:PRE-SUD  (startPreSUD, buildSUD)
 // ══════════════════════════════════════════════════
 function startPreSUD() {
-  // PRIVAT P1: Skala sofort bedienbar (nicht erst nach der Ansage). Nach der
-  // Auswahl folgt der Auswahl-Screen statt Lofty/Intro/Uebungsrunde/Kalibrierung.
+  // PRIVAT P1: Skala sofort bedienbar (nicht erst nach der Ansage).
+  // PRIVAT P5: Nach der Auswahl geht es direkt in den Kontakt (keine Auswahl,
+  // keine Einstimmung, kein Lofty/Intro, keine Uebungsrunde/Kalibrierung).
   goTo('screenPreSUD');
-  buildSUD('preSudGrid', val => { S.sud_pre = val; cancelTTS(); goTo('screenPrivStart'); });
+  buildSUD('preSudGrid', val => { S.sud_pre = val; cancelTTS(); privStart(); });
   speak(L.screens.presud_tts, null, null, L.screens.presud_mp3 || null);
 }
 
